@@ -27,6 +27,8 @@ class DVS : public BaseThread {
         ~DVS();
 
         std::vector<long int> getPolarities();
+        void Displayed();
+        long int getTaff();
     protected:
         void* ThreadRun();
 
@@ -34,6 +36,7 @@ class DVS : public BaseThread {
         void Restart();
     	void toLengthRead();
     	pointDVS<unsigned int> toDatas(std::vector<unsigned char> buf);
+        bool toDatasAtomic(std::vector<unsigned char> buf);
         void Configuration(const unsigned char format, const bool prev);
 
         bool m_prev = false;
@@ -45,6 +48,7 @@ class DVS : public BaseThread {
         unsigned int m_Told = 0;
 
         std::array<std::atomic<long int>, 16384> m_pix;
+        std::atomic<long int> m_Taff;
 };
 
 #endif //DVS_H

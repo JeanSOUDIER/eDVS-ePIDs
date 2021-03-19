@@ -15,6 +15,7 @@ DVS::DVS(const int nb_usb, const int bdrate, const unsigned char format, const b
 void DVS::Configuration(const unsigned char format, const bool prev) {
 	m_prev = prev;
 	for (auto& item : m_pix) { std::atomic_init(&item, 0); }
+	std::atomic_init(&m_Taff, 0);
 
 	//config
 	m_format = format;
@@ -76,16 +77,17 @@ void* DVS::ThreadRun() {
 		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
 
 		if(buf.size() > m_len) {
-			d = toDatas(buf);
+				//d = toDatas(buf);
+			if(!toDatasAtomic(buf)) {buf.erase(buf.begin());}
 			//if(!d.getValidTimestamp()) {buf.erase(buf.begin());} //test bug
 			buf.erase(buf.begin(), buf.begin() + m_len);
 			if(m_format == 1) {m_len = 3;}
 			//std::cout << d << std::endl;
-			if(d.getValidTimestamp()) {data.push_back(d);}
+				//if(d.getValidTimestamp()) {data.push_back(d);}
 
         	//filter
 
-			current_timestamp = std::chrono::high_resolution_clock::now();
+			/*current_timestamp = std::chrono::high_resolution_clock::now();
 			if(std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - begin_timestamp).count() >= 20) { // && data.size()
 				begin_timestamp = std::chrono::high_resolution_clock::now();
 				if(m_prev) {
@@ -101,7 +103,7 @@ void* DVS::ThreadRun() {
 					}
 					data.clear();
 				}
-			}
+			}*/
 		}
     }
 	m_usb->SendBytes("E-\n");           //disable event sending
@@ -219,10 +221,106 @@ pointDVS<unsigned int> DVS::toDatas(std::vector<unsigned char> buf) {
 	return pt;
 }
 
+bool DVS::toDatasAtomic(std::vector<unsigned char> buf) {
+	unsigned int x, y, t;
+	unsigned char c, p, b;
+	int pol = 1;
+	bool test = false;
+	switch (m_format) {
+	case 0:
+		y = buf.at(0) & 0x7F;
+		x = buf.at(1) & 0x7F;
+		c = (buf.at(0) & 0x80) >> 7;
+		p = (buf.at(1) & 0x80) >> 7;
+		t = 0;
+		test = c;
+		break;
+	case 1:
+		y = buf.at(0) & 0x7F;
+		x = buf.at(1) & 0x7F;
+		t = buf.at(2) & 0x7F;
+		c = (buf.at(0) & 0x80) >> 7;
+		p = (buf.at(1) & 0x80) >> 7;
+		b = (buf.at(2) & 0x80) >> 7;
+		if (!b) {
+			b = (buf.at(3) & 0x80) >> 7;
+			t = (t << 8) + (buf.at(3) & 0x7F);
+			m_len = 4;
+			if (!b) {
+				b = (buf.at(4) & 0x80) >> 7;
+				t = (t << 8) + (buf.at(4) & 0x7F);
+				m_len = 5;
+				if (!b) {
+					b = (buf.at(5) & 0x80) >> 7;
+					t = (t << 8) + (buf.at(5) & 0x7F);
+					m_len = 6;
+				}
+			}
+		}
+		c = c & b;
+		test = (c && (t >= m_Told));
+		break;
+	case 2:
+		y = buf.at(0) & 0x7F;
+		x = buf.at(1) & 0x7F;
+		c = (buf.at(0) & 0x80) >> 7;
+		p = (buf.at(1) & 0x80) >> 7;
+		t = (buf.at(2) << 8) + buf.at(3);
+		test = (c && (t >= m_Told));
+		break;
+	case 3:
+		y = buf.at(0) & 0x7F;
+		x = buf.at(1) & 0x7F;
+		c = (buf.at(0) & 0x80) >> 7;
+		p = (buf.at(1) & 0x80) >> 7;
+		t = (buf.at(2) << 16) + (buf.at(3) << 8) + buf.at(4);
+		test = (c && (t >= m_Told));
+		break;
+	case 4:
+		y = buf.at(0) & 0x7F;
+		x = buf.at(1) & 0x7F;
+		c = (buf.at(0) & 0x80) >> 7;
+		p = (buf.at(1) & 0x80) >> 7;
+		t = (buf.at(2) << 24) + (buf.at(3) << 16) + (buf.at(4) << 8) + buf.at(5);
+		test = (c && (t >= m_Told));
+		break;
+	}
+	if (!test) {
+		if (!c) {
+			if (m_format && (t < m_Told)) {
+				std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+				m_Told = 0;
+			}
+			std::cerr << "Error control" << std::endl;
+		}
+		else if (m_format && (t < m_Told)) {
+			std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+			m_Told = 0;
+		}
+	} else {
+		if(m_Taff.load() == 0) {
+			m_Taff.store(t);
+
+		}
+		if(!p) {pol = -1;}
+		m_pix[x*128 + y].store(t*pol);
+		m_Told = t;
+	}
+	return test;
+}
+
 void DVS::Restart() {
     m_usb->SendBytes("E-\n");           //disable event sending
     std::cout << "Reset DVS" << std::endl;
     m_usb->SendBytes("R\n");
     delay(5000);
     m_usb->SendBytes("E+\n");           //disable event sending
+}
+
+void DVS::Displayed() {
+	m_Taff.store(0);
+}
+
+long int DVS::getTaff() {
+	return m_Taff.load();
 }

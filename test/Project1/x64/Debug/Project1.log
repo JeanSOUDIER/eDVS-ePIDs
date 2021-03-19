@@ -1,0 +1,23 @@
+﻿  ePID.cpp
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.hpp(80,22): error C2059: erreur de syntaxe : 'chaîne'
+D:\école\GE5\PFE\PROG\Project1\Robot\Controller\ePID.cpp(16,36): warning C4244: '=' : conversion de 'int' en 'float', perte possible de données
+D:\école\GE5\PFE\PROG\Project1\Robot\Controller\ePID.cpp(71,24): warning C4244: 'argument' : conversion de 'float' en 'int', perte possible de données
+  HardCommand.cpp
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.hpp(80,22): error C2059: erreur de syntaxe : 'chaîne'
+  DVS.cpp
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.hpp(80,22): error C2059: erreur de syntaxe : 'chaîne'
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.hpp(67,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.cpp(181,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.cpp(189,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.cpp(197,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.cpp(205,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.cpp(211,23): warning C4018: '<' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.cpp(216,28): warning C4018: '<' : incompatibilité signed/unsigned
+  preview.cpp
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.hpp(80,22): error C2059: erreur de syntaxe : 'chaîne'
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\preview.cpp(70,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\preview.cpp(71,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
+  logger.cpp
+  Source.cpp
+D:\école\GE5\PFE\PROG\Project1\Robot\eDVS\DVS.hpp(80,22): error C2059: erreur de syntaxe : 'chaîne'
+  Génération de code en cours...

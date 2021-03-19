@@ -49,7 +49,8 @@ bool preview::print() {
 	cv::Mat img(m_xlen*m_zoom+m_htxt, m_ylen*m_zoom, CV_8UC1, cv::Scalar(128, 128, 128));
 	for (int i = 0; i < v.size(); i++) {
 		cv::Rect r((i % m_xlen)*m_zoom+m_htxt, (int)(i / m_xlen)*m_zoom, m_zoom, m_zoom);
-		if(v.at(i) != 0) {
+		//if(v.at(i) != 0) {
+		if(std::abs(v.at(i)) > eDVS_4337->getTaff()) {
 			cpt++;
 			last_id = i;
 			cv::rectangle(img, r, cv::Scalar(255*sign(v.at(i)), 255*sign(v.at(i)), 255*sign(v.at(i))), -1);
@@ -63,6 +64,7 @@ bool preview::print() {
 	PrintText(img, str);
 
 	cv::imshow("eDVS-4337", img);
+	eDVS_4337->Displayed();
 	if (cv::waitKey(20) >= 0) {
 		test = false;
 	}
