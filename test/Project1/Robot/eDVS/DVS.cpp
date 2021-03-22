@@ -58,10 +58,12 @@ void DVS::Configuration(const unsigned char format, const bool prev) {
 	} else {
 		std::cout << "DVS not start" << std::endl;
 	}
+	m_log = new logger("DVS_points");
 }
 
 DVS::~DVS() {
     delete m_usb;
+	delete m_log;
 }
 
 void* DVS::ThreadRun() {
@@ -219,7 +221,7 @@ pointDVS<unsigned int> DVS::toDatas(std::vector<unsigned char> buf) {
 		}
 	} else {
 		m_Told = t;
-		//m_log.Write({ x, y, t });
+		m_log->Write({ x, y, t });
 		if(std::fabs((m_XClustPose-x)+(m_YClustPose-y)) < m_Rmax) {
 			m_XClustPose = m_XClustPose*m_alpha + x*m_alpha_m1;
 			m_YClustPose = m_YClustPose*m_alpha + y*m_alpha_m1;

@@ -148,6 +148,7 @@
     <ClCompile Include="Robot\Controller\HardCommand.cpp" />
     <ClCompile Include="Robot\eDVS\DVS.cpp" />
     <ClCompile Include="Robot\eDVS\preview.cpp" />
+    <ClCompile Include="Robot\logger\CpuUsage.cpp" />
     <ClCompile Include="Robot\logger\logger.cpp" />
     <ClCompile Include="Robot\MotorWheel\MotorWheel.cpp" />
     <ClCompile Include="Robot\RS232_CPP\rs232.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="Robot\eDVS\DVS.hpp" />
     <ClInclude Include="Robot\eDVS\pointDVS.hpp" />
     <ClInclude Include="Robot\eDVS\preview.hpp" />
+    <ClInclude Include="Robot\logger\CpuUsage.hpp" />
     <ClInclude Include="Robot\logger\logger.hpp" />
     <ClInclude Include="Robot\MotorWheel\MotorWheel.hpp" />
     <ClInclude Include="Robot\RS232_CPP\rs232.hpp" />

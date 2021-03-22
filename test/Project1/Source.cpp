@@ -1,6 +1,7 @@
 #include<iostream>
 #include "Robot/eDVS/preview.hpp"
 #include "Robot/Controller/ePID.hpp"
+#include "Robot/logger/CpuUsage.hpp"
 
 int main() {
     DVS* eDVS_4337 = new DVS("COM4", 12000000, 4, true);

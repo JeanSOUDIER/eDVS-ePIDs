@@ -1,13 +1,22 @@
 #ifndef CPU_USAGE_H
 #define CPU_USAGE_H
 
+#include <iostream>
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <thread>
+//#include <thread>
 #include <vector>
+
+#if OS == OS_WINDOWS
+#include<opencv2/opencv.hpp>
+#define delay(x) cv::waitKey(x)
+#include <windows.h>
+#define MB 1048576
+#else
+#include <WiringPi.h>
 
 const int NUM_CPU_STATES = 10;
 
@@ -28,35 +37,31 @@ typedef struct CPUData {
 	std::string cpu;
 	size_t times[NUM_CPU_STATES];
 } CPUData;
+#endif
+
+#include "logger.hpp"
 
 class CpuUsage {
 	public:
-		CpuUsage();
+		CpuUsage(int delay);
 		~CpuUsage();
 
-		void ReadStatsCPU(std::vector<CPUData> &entries);
-		void PrintStats(const std::vector<CPUData> & entries1, const std::vector<CPUData> & entries2);
+		void PrintStats();
 	private:
-		GetIdleTime(const CPUData & e);
-		GetActiveTime(const CPUData & e);
+		#if OS == OS_WINDOWS
+			SYSTEMTIME m_sysTime;
+			MEMORYSTATUSEX m_memStat;
+		#else
+			void ReadStatsCPU(std::vector<CPUData>& entries);
+			std::vector<double> PrintStats(const std::vector<CPUData>& entries1, const std::vector<CPUData>& entries2);
+			size_t GetIdleTime(const CPUData& e);
+			size_t GetActiveTime(const CPUData& e);
+
+			std::vector<CPUData> m_entry;
+		#endif
+
+		logger *m_log;
+		int m_delay;
 };
 
-
 #endif // CPU_USAGE_H
-
-/*
-std::vector<CPUData> entries1;
-	std::vector<CPUData> entries2;
-
-	// snapshot 1
-	ReadStatsCPU(entries1);
-
-	// 100ms pause
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-	// snapshot 2
-	ReadStatsCPU(entries2);
-
-	// print output
-	PrintStats(entries1, entries2);
-*/

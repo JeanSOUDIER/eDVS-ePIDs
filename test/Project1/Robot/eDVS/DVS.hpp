@@ -77,7 +77,7 @@ class DVS : public BaseThread {
         const float m_fx = m_z0/m_Gx;
         const float m_fy = m_z0 / m_Gy;
 
-        logger m_log("DVS_points");
+        logger *m_log;
 };
 
 #endif //DVS_H
