@@ -108,9 +108,7 @@ void CpuUsage::ReadStatsCPU(std::vector<CPUData>& entries) {
 
 void CpuUsage::PrintStats() {
 	#if OS == OS_WINDOWS
-		double t = static_cast<double>(m_sysTime.wMilliseconds);
-		double m = static_cast<double>(m_memStat.dwMemoryLoad);
-		m_log->WriteD({t, m});
+		m_log->WriteD({ static_cast<double>(m_sysTime.wMilliseconds), static_cast<double>(m_memStat.dwMemoryLoad) });
 		//myfile << sysTime.wHour << ":" << sysTime.wMinute << ":" << sysTime.wMilliseconds << ", " << memStat.dwMemoryLoad << "%, " << memStat.ullTotalPhys / MB << ", " << memStat.ullAvailPhys / MB << ", " << memStat.ullTotalPageFile / MB << ", " << memStat.ullAvailPageFile / MB << ", " << memStat.ullTotalVirtual / MB << ", " << memStat.ullAvailVirtual / MB << ", " << memStat.ullAvailExtendedVirtual / MB << "\n";
 	#else
 		std::vector<CPUData> entries;

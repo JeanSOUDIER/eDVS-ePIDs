@@ -19,6 +19,9 @@ ePID::ePID(float Kp, float Ki, float Kd, float hmax, float hnom, unsigned int N,
 	//m_PWM = new HardCommand(0);
 	m_Arduino = new MotorWheel(3, 115200);
 
+	m_log = new logger("ePID_points");
+	m_logCPU = new logger("ePID_timing");
+
 	std::cout << "ePID Start" << std::endl;
 }
 
@@ -33,6 +36,7 @@ void ePID::SetPoint(float sp) {
 void* ePID::ThreadRun() {
 	while (GetStartValue()) {
 		if (m_eDVS_4337->GetEvent()) {
+			m_logCPU->Tic();
 			//Get inputs
 			float ysp = m_ysp.load();
 			float y = m_eDVS_4337->GetXClusterPose();
@@ -68,11 +72,15 @@ void* ePID::ThreadRun() {
 			float u = up + m_ui + m_ud;
 			//std::cout << "u = " << u << std::endl;
 			//m_PWM->analogWrite(u);
-			m_Arduino->SetSpeed(u);
+			//m_Arduino->SetSpeed(u);
 
 			//Update
 			m_yOld = y;
 			m_lastT = temp;
+
+			m_log->WriteD({y, ysp, u}, false);
+			m_log->Tac();
+			m_logCPU->Tac();
 		}
 	}
 	return ReturnFunction();

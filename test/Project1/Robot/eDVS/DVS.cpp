@@ -48,6 +48,7 @@ void DVS::Configuration(const unsigned char format, const bool prev) {
 		m_usb->SendBytes("!B9=7538\n");     //bias diff
 		m_usb->SendBytes("!B10=51\n");      //bias foll
 		m_usb->SendBytes("!B11=3\n");       //bias Pr
+		m_usb->SendBytes("!ET0\n");			//set timestamp to 0
 
 		//clean
 		std::vector<unsigned char> buffer;
@@ -59,6 +60,8 @@ void DVS::Configuration(const unsigned char format, const bool prev) {
 		std::cout << "DVS not start" << std::endl;
 	}
 	m_log = new logger("DVS_points");
+	m_logTrack = new logger("Cluster_points");
+	m_logCPU = new logger("DVS_timing");
 }
 
 DVS::~DVS() {
@@ -83,10 +86,12 @@ void* DVS::ThreadRun() {
 		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
 
 		if(buf.size() > m_len) {
+			m_logCPU->Tic();
 			d = toDatas(buf);
 			if(!d.getValidTimestamp()) {buf.erase(buf.begin());} //test bug
 			buf.erase(buf.begin(), buf.begin() + m_len);
 			if(m_format == 1) {m_len = 3;}
+			m_logCPU->Tac();
 			//std::cout << d << std::endl;
 			if(d.getValidTimestamp()) {data.push_back(d);}
 
@@ -221,10 +226,13 @@ pointDVS<unsigned int> DVS::toDatas(std::vector<unsigned char> buf) {
 		}
 	} else {
 		m_Told = t;
-		m_log->Write({ x, y, t });
+		m_log->Write({x, y, t}, false);
+		m_log->Tac();
 		if(std::fabs((m_XClustPose-x)+(m_YClustPose-y)) < m_Rmax) {
 			m_XClustPose = m_XClustPose*m_alpha + x*m_alpha_m1;
 			m_YClustPose = m_YClustPose*m_alpha + y*m_alpha_m1;
+			m_logTrack->WriteD({m_XClustPose, m_YClustPose, static_cast<double>(t)}, false);
+			m_logTrack->Tac();
 			if(std::fabs((m_XClustPoseOld-m_XClustPose)+(m_YClustPoseOld-m_YClustPose)) > m_thresEvent) {
 				m_XClustPoseOld = m_XClustPose;
 				m_YClustPoseOld = m_YClustPose;

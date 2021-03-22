@@ -78,6 +78,8 @@ class DVS : public BaseThread {
         const float m_fy = m_z0 / m_Gy;
 
         logger *m_log;
+        logger *m_logTrack;
+        logger *m_logCPU;
 };
 
 #endif //DVS_H

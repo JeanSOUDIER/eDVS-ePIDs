@@ -1,9 +1,14 @@
 #include<iostream>
+
 #include "Robot/eDVS/preview.hpp"
 #include "Robot/Controller/ePID.hpp"
 #include "Robot/logger/CpuUsage.hpp"
 
 int main() {
+    logger log("Time");
+    log.Write({ 0, 0 });
+    log.Tic();
+
     DVS* eDVS_4337 = new DVS("COM4", 12000000, 4, true);
 
     ePID myPID(1, 0, 0, 200000, 20000, 100, 0, 1, eDVS_4337);
@@ -16,5 +21,6 @@ int main() {
 
     myPID.StopThread();
 
+    log.Tac();
     return 0;
 }

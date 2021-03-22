@@ -7,6 +7,7 @@
 #include "../eDVS/DVS.hpp"
 #include "HardCommand.hpp"
 #include "../MotorWheel/MotorWheel.hpp"
+#include "../logger/logger.hpp"
 
 class ePID : public BaseThread {
 	public:
@@ -40,6 +41,9 @@ class ePID : public BaseThread {
 
 		HardCommand *m_PWM;
 		MotorWheel *m_Arduino;
+
+		logger *m_log;
+		logger *m_logCPU;
 };
 
 #endif //EPID_H
