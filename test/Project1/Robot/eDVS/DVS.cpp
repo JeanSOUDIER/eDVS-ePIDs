@@ -67,6 +67,8 @@ void DVS::Configuration(const unsigned char format, const bool prev) {
 DVS::~DVS() {
     delete m_usb;
 	delete m_log;
+	delete m_logCPU;
+	delete m_logTrack;
 }
 
 void* DVS::ThreadRun() {

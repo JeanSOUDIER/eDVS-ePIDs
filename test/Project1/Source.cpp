@@ -17,7 +17,12 @@ int main() {
     preview myPrev(128, 128, 5, eDVS_4337);
     myPrev.StartThread();
 
-    while(myPrev.GetStartValue()) {}
+    while(myPrev.GetStartValue()) {
+        cv::waitKey(2000);
+        myPID.SetPoint(5);
+        cv::waitKey(2000);
+        myPID.SetPoint(-5);
+    }
 
     myPID.StopThread();
 

@@ -8,6 +8,8 @@
 #include <chrono>
 #include <ctime>
 
+//#define NO_LOG
+
 class logger {
 	public:
 		logger(const std::string fileName, char delimiter = ';');
@@ -19,12 +21,12 @@ class logger {
 		void WriteLI(std::vector<long int> values, bool test = true);
 		void Tic();
 		void Tac();
+		void TacD();
 	private:
 		bool IsExist(std::string name);
 
 		std::ofstream m_file;
 		char m_delimiter = ';';
-		bool m_empty = true;
 		std::string m_file_name;
 		//std::chrono::time_point<std::chrono::high_resolution_clock> m_zero_timer;
 };

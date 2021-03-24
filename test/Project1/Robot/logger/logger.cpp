@@ -12,10 +12,10 @@ logger::logger(const std::string fileName, char delimiter) {
 
 logger::~logger() {
 	m_file.close();
-	if(m_empty) {
+	#ifdef NO_LOG
 		std::cout << "remove " << m_file_name << std::endl;
 		std::remove(m_file_name.c_str());
-	}
+	#endif
 }
 
 bool logger::IsExist(std::string name) {
@@ -27,7 +27,6 @@ bool logger::IsExist(std::string name) {
 }
 
 void logger::Write(std::vector<int> values, bool test) {
-	m_empty = false;
 	for(int i=0;i<values.size();i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
@@ -35,7 +34,6 @@ void logger::Write(std::vector<int> values, bool test) {
 }
 
 void logger::WriteD(std::vector<double> values, bool test) {
-	m_empty = false;
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
@@ -43,7 +41,6 @@ void logger::WriteD(std::vector<double> values, bool test) {
 }
 
 void logger::WriteUL(std::vector<unsigned long> values, bool test) {
-	m_empty = false;
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
@@ -51,7 +48,6 @@ void logger::WriteUL(std::vector<unsigned long> values, bool test) {
 }
 
 void logger::WriteLI(std::vector<long int> values, bool test) {
-	m_empty = false;
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
@@ -70,4 +66,10 @@ void logger::Tac() {
 	auto nanosec = t0.time_since_epoch();
 	m_file << nanosec.count() / 1000 << '\n';
 	//m_file << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_zero_timer).count() << '\n';
+}
+
+void logger::TacD() {
+	auto t0 = std::chrono::high_resolution_clock::now();
+	auto nanosec = t0.time_since_epoch();
+	m_file << static_cast<double>(nanosec.count() / 1000) << '\n';
 }

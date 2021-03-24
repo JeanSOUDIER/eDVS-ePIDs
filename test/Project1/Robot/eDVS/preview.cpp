@@ -32,7 +32,8 @@ bool preview::print(std::vector<pointDVS<unsigned int>> points) {
 		}
 	}
 	cv::imshow("eDVS-4337", img);
-	if (cv::waitKey(100) >= 0) {
+	if (cv::waitKey(100) == 'ESC') {
+		std::cout << "ESC" << std::endl;
 		test = false;
 	}
 	return test;
@@ -83,7 +84,7 @@ bool preview::print() {
 	PrintText(img, str);
 
 	cv::imshow("eDVS-4337", img);
-	if (cv::waitKey(20) >= 0) {
+	if (cv::waitKey(20) == 27) { //'ESC'
 		test = false;
 	}
 	return test;

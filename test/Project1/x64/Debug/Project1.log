@@ -5,16 +5,19 @@ D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(67,35): warning
 D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\Controller\ePID.cpp(16,36): warning C4244: '=' : conversion de 'int' en 'float', perte possible de données
   DVS.cpp
 D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(67,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(188,20): warning C4018: '>=' : incompatibilité signed/unsigned
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(196,20): warning C4018: '>=' : incompatibilité signed/unsigned
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(204,20): warning C4018: '>=' : incompatibilité signed/unsigned
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(212,20): warning C4018: '>=' : incompatibilité signed/unsigned
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(218,23): warning C4018: '<' : incompatibilité signed/unsigned
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(223,28): warning C4018: '<' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(190,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(198,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(206,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(214,20): warning C4018: '>=' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(220,23): warning C4018: '<' : incompatibilité signed/unsigned
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.cpp(225,28): warning C4018: '<' : incompatibilité signed/unsigned
   preview.cpp
 D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(67,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\preview.cpp(70,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
 D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\preview.cpp(71,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\preview.cpp(72,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
+  CpuUsage.cpp
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\logger\CpuUsage.cpp(22,8): warning C4067: jetons inattendus après la directive du préprocesseur - saut de ligne attendu
+  logger.cpp
   Source.cpp
 D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(67,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
   Génération de code en cours...

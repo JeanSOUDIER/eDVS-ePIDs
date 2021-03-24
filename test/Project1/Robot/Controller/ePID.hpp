@@ -17,6 +17,7 @@ class ePID : public BaseThread {
 		void SetPoint(float sp);
 	private:
 		void* ThreadRun();
+		void ComputePID();
 
 		float m_kp;
 		float m_ki;
