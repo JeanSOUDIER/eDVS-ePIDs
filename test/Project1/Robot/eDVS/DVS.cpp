@@ -236,8 +236,8 @@ pointDVS<unsigned int> DVS::toDatas(std::vector<unsigned char> buf) {
 			if(std::fabs((m_XClustPoseOld-m_XClustPose)+(m_YClustPoseOld-m_YClustPose)) > m_thresEvent) {
 				m_XClustPoseOld = m_XClustPose;
 				m_YClustPoseOld = m_YClustPose;
-				m_XCluster.store((m_XClustPose-64)*m_fx);
-				m_YCluster.store((m_YClustPose-64)*m_fy);
+				m_XCluster.store(m_XClustPose*m_kx+m_u0);
+				m_YCluster.store(m_YClustPose*m_ky+m_v0);
 				m_lastTimestamp.store(t);
 				m_event.store(true);
 				std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;

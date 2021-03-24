@@ -71,11 +71,13 @@ class DVS : public BaseThread {
         std::atomic<long int> m_lastTimestamp;
         std::atomic<bool> m_event;
 
-        const float m_z0 = 150;
-        const float m_Gx = 151;
-        const float m_Gy = m_Gx;
-        const float m_fx = m_z0/m_Gx;
-        const float m_fy = m_z0 / m_Gy;
+        const float m_z0 = -150;
+        const float m_fx = 151;
+        const float m_fy = m_fx;
+        const float m_kx = m_fx/m_z0;
+        const float m_ky = m_fy/m_z0;
+        const float m_u0 = 64;
+        const float m_v0 = m_u0;
 
         logger *m_log;
         logger *m_logTrack;
