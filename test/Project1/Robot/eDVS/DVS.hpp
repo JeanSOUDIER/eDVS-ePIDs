@@ -16,9 +16,7 @@
 #endif
 
 #include "../RS232_CPP/Usb.hpp"
-#include "../RS232_CPP/rs232.hpp"
-#include "filters.hpp"
-#include "pointDVS.hpp"
+//#include "../RS232_CPP/rs232.hpp"
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
 
@@ -30,7 +28,6 @@ class DVS : public BaseThread {
         DVS(const std::string nb_usb, const int bdrate = 12000000);
         ~DVS();
 
-        std::vector<long int> getPolarities();
         float GetXClusterPose();
         float GetYClusterPose();
         int GetRCluster();
@@ -43,11 +40,10 @@ class DVS : public BaseThread {
     private:
         void Restart();
     	void toLengthRead();
-    	pointDVS<unsigned int> toDatas(std::vector<unsigned char> buf);
         void Configuration();
 
-        unsigned char m_format;
-        int m_len;
+        const unsigned char *m_format;
+        const int *m_len;
 
         Usb *m_usb;
 

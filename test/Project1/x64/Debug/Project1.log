@@ -1,9 +1,8 @@
-﻿  HardCommand.cpp
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(69,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
-  ePID.cpp
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(69,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\Controller\ePID.cpp(16,36): warning C4244: '=' : conversion de 'int' en 'float', perte possible de données
+﻿  preview.cpp
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(65,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\preview.cpp(71,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\preview.cpp(72,9): warning C4244: 'initialisation' : conversion de 'float' en 'int', perte possible de données
   Source.cpp
-D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(69,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
+D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\Robot\eDVS\DVS.hpp(65,35): warning C4305: 'initialisation' : troncation de 'double' à 'const float'
   Génération de code en cours...
   Project1.vcxproj -> D:\école\GE5\PFE\PROG\eDVS-LQR\test\Project1\x64\Debug\Project1.exe

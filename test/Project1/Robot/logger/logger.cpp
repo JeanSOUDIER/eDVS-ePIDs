@@ -26,39 +26,69 @@ bool logger::IsExist(std::string name) {
 	return a;
 }
 
-void logger::Write(std::vector<int> values, bool test) {
+void logger::Write(const std::vector<int>& values) {
+	for (int i = 0; i < values.size(); i++) {
+		m_file << values.at(i) << m_delimiter;
+	}
+	m_file << '\n';
+}
+
+void logger::WriteN(const std::vector<int> &values) {
 	for(int i=0;i<values.size();i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
-	if (test) { m_file << '\n'; }
 }
 
-void logger::WriteD(std::vector<double> values, bool test) {
+void logger::WriteD(const std::vector<double>& values) {
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
-	if (test) { m_file << '\n'; }
+	m_file << '\n';
 }
 
-void logger::WriteF(std::vector<float> values, bool test) {
+void logger::WriteDN(const std::vector<double> &values) {
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
-	if (test) { m_file << '\n'; }
 }
 
-void logger::WriteUL(std::vector<unsigned long> values, bool test) {
+void logger::WriteF(const std::vector<float>& values) {
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
-	if (test) { m_file << '\n'; }
+	m_file << '\n';
 }
 
-void logger::WriteLI(std::vector<long int> values, bool test) {
+void logger::WriteFN(const std::vector<float> &values) {
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
-	if(test) {m_file << '\n';}
+}
+
+void logger::WriteUL(const std::vector<unsigned long>& values) {
+	for (int i = 0; i < values.size(); i++) {
+		m_file << values.at(i) << m_delimiter;
+	}
+	m_file << '\n';
+}
+
+void logger::WriteULN(const std::vector<unsigned long> &values) {
+	for (int i = 0; i < values.size(); i++) {
+		m_file << values.at(i) << m_delimiter;
+	}
+}
+
+void logger::WriteLI(const std::vector<long int>& values) {
+	for (int i = 0; i < values.size(); i++) {
+		m_file << values.at(i) << m_delimiter;
+	}
+	m_file << '\n';
+}
+
+void logger::WriteLIN(const std::vector<long int> &values) {
+	for (int i = 0; i < values.size(); i++) {
+		m_file << values.at(i) << m_delimiter;
+	}
 }
 
 void logger::Tic() {

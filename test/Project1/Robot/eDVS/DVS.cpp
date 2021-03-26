@@ -13,7 +13,6 @@ DVS::DVS(const int nb_usb, const int bdrate)
 }
 
 void DVS::Configuration() {
-	for (auto& item : m_pix) { std::atomic_init(&item, 0); }
 	m_event.store(false);
 	m_XClustPose = 64;
 	m_YClustPose = 64;
@@ -21,15 +20,14 @@ void DVS::Configuration() {
 	m_YClustPoseOld = 64;
 
 	//config
-	m_format = DVS_PACKET_TYPE;
-	if (m_format > 5 || m_format < 0) { m_format = 4; }
+	m_format = new const unsigned char(DVS_PACKET_TYPE);
+	if (*m_format > 5 || *m_format < 0) { m_format = new const unsigned char(4); }
 	toLengthRead();
-	char form = m_format + '0';
+	char form = *m_format + '0';
 	std::vector<char> str = { '!', 'E', form, '\n' };
 
 	if (m_usb->GetActive()) {
 		Restart();
-
 		std::cout << "Config DVS" << std::endl;
 		m_usb->SendBytes("E-\n");           //disable event sending
 		m_usb->SendBytes("!L2\n");          //LED blinking
@@ -76,7 +74,7 @@ void* DVS::ThreadRun() {
 	std::vector<unsigned char> buf, buffer;
 	int x, y;
 	float temp;
-	long int t;
+	unsigned int t;
 	unsigned char c, p, b;
 	bool test = false;
 
@@ -86,7 +84,7 @@ void* DVS::ThreadRun() {
         buffer = m_usb->ReadBytes(4000);
 		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
 
-		if(buf.size() > m_len) {
+		if(buf.size() > *m_len) {
 			m_logCPU->Tic();
 
 			//extraction
@@ -147,26 +145,26 @@ void* DVS::ThreadRun() {
 			//tests
 			if (!test) {
 				if (!c) {
-					if (m_format && (t < m_Told)) {
+					if (*m_format && (t < m_Told)) {
 						std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
 						m_Told = 0;
 					}
 					buf.erase(buf.begin());
 					std::cerr << "Error control" << std::endl;
-				} else if (m_format && (t < m_Told)) {
+				} else if (*m_format && (t < m_Told)) {
 					std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
 					m_Told = 0;
 				}
 			} else {
 				//save
 				m_Told = t;
-				m_log->Write({ x, y, t }, false);
+				m_log->WriteN({ x, y, 0 });
 				m_log->Tac();
 				temp = (m_XClustPose - x) + (m_YClustPose - y);
 				if (temp < m_Rmax && temp > m_RmaxM) {
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
-					m_logTrack->WriteF({ m_XClustPose, m_YClustPose, static_cast<float>(t) }, false);
+					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t) });
 					m_logTrack->Tac();
 					temp = (m_XClustPoseOld - m_XClustPose) + (m_YClustPoseOld - m_YClustPose);
 					if (temp > m_thresEvent || temp < m_thresEventM) {
@@ -182,7 +180,7 @@ void* DVS::ThreadRun() {
 			}
 
 			//erase buffer
-			buf.erase(buf.begin(), buf.begin() + m_len);
+			buf.erase(buf.begin(), buf.begin() + *m_len);
 			#if DVS_PACKET_TYPE == 1
 				m_len = 3;
 			#endif
@@ -194,131 +192,24 @@ void* DVS::ThreadRun() {
 	return ReturnFunction();
 }
 
-std::vector<long int> DVS::getPolarities() {
-	std::vector<long int> returnValue(m_pix.size());
-	for(int i=0;i<m_pix.size();i++) {
-		returnValue.at(i) = m_pix[i].load();
-	}
-	return returnValue;
-}
-
 void DVS::toLengthRead() {
-	switch(m_format) {
+	switch(*m_format) {
     	case 0:
-    		m_len = 2;
+    		m_len = new const int(2);
     		break;
     	case 1:
-    		m_len = 6;
+    		m_len = new const int(6);
     		break;
     	case 2:
-    		m_len = 4;
+    		m_len = new const int(4);
     		break;
     	case 3:
-    		m_len = 5;
+    		m_len = new const int(5);
     		break;
     	case 4:
-    		m_len = 6;
+    		m_len = new const int(6);
     		break;
     }
-}
-
-pointDVS<unsigned int> DVS::toDatas(std::vector<unsigned char> buf) {
-    long int x, y, t;
-    unsigned char c, p, b;
-	bool test = false;
-	switch(m_format) {
-		case 0:
-			y = buf.at(0) & 0x7F;
-			x = buf.at(1) & 0x7F;
-			c = (buf.at(0) & 0x80) >> 7;
-			p = (buf.at(1) & 0x80) >> 7;
-			t = 0;
-			test = c;
-			break;
-		case 1:
-			y = buf.at(0) & 0x7F;
-			x = buf.at(1) & 0x7F;
-			t = buf.at(2) & 0x7F;
-			c = (buf.at(0) & 0x80) >> 7;
-			p = (buf.at(1) & 0x80) >> 7;
-			b = (buf.at(2) & 0x80) >> 7;
-			if(!b) {
-				b = (buf.at(3) & 0x80) >> 7;
-				t = (t<<8) + (buf.at(3)&0x7F);
-				m_len = 4;
-				if(!b) {
-					b = (buf.at(4) & 0x80) >> 7;
-					t = (t<<8) + (buf.at(4)&0x7F);
-					m_len = 5;
-					if(!b) {
-    					b = (buf.at(5) & 0x80) >> 7;
-    					t = (t<<8) + (buf.at(5)&0x7F);
-						m_len = 6;
-    				}
-				}
-			}
-			c = c & b;
-			test = (c && (t >= m_Told));
-			break;
-		case 2:
-			y = buf.at(0) & 0x7F;
-			x = buf.at(1) & 0x7F;
-			c = (buf.at(0) & 0x80) >> 7;
-			p = (buf.at(1) & 0x80) >> 7;
-			t = (buf.at(2) << 8) + buf.at(3);
-			test = (c && (t >= m_Told));
-			break;
-		case 3:
-			y = buf.at(0) & 0x7F;
-			x = buf.at(1) & 0x7F;
-			c = (buf.at(0) & 0x80) >> 7;
-			p = (buf.at(1) & 0x80) >> 7;
-			t = (buf.at(2) << 16) + (buf.at(3) << 8) + buf.at(4);
-			test = (c && (t >= m_Told));
-			break;
-		case 4:
-			y = buf.at(0) & 0x7F;
-			x = buf.at(1) & 0x7F;
-			c = (buf.at(0) & 0x80) >> 7;
-			p = (buf.at(1) & 0x80) >> 7;
-			t = (buf.at(2) << 24) + (buf.at(3) << 16) + (buf.at(4) << 8) + buf.at(5);
-			test = (c && (t >= m_Told));
-			break;
-	}
-	pointDVS<unsigned int> pt(x, y, t, p, test);
-	if(!test) {
-		if(!c) {
-			if (m_format && (t < m_Told)) {
-				std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
-				m_Told = 0;
-			}
-			std::cerr << "Error control" << std::endl;
-		} else if(m_format && (t < m_Told)) {
-			std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
-			m_Told = 0;
-		}
-	} else {
-		m_Told = t;
-		m_log->Write({x, y, t}, false);
-		m_log->Tac();
-		if(std::fabs((m_XClustPose-x)+(m_YClustPose-y)) < m_Rmax) {
-			m_XClustPose = m_XClustPose*m_alpha + x*m_alpha_m1;
-			m_YClustPose = m_YClustPose*m_alpha + y*m_alpha_m1;
-			m_logTrack->WriteD({m_XClustPose, m_YClustPose, static_cast<double>(t)}, false);
-			m_logTrack->Tac();
-			if(std::fabs((m_XClustPoseOld-m_XClustPose)+(m_YClustPoseOld-m_YClustPose)) > m_thresEvent) {
-				m_XClustPoseOld = m_XClustPose;
-				m_YClustPoseOld = m_YClustPose;
-				m_XCluster.store(m_XClustPose*m_kx+m_u0);
-				m_YCluster.store(m_YClustPose*m_ky+m_v0);
-				m_lastTimestamp.store(t);
-				m_event.store(true);
-				std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
-			}
-		}
-    }
-
-	return pt;
 }
 
 void DVS::Restart() {

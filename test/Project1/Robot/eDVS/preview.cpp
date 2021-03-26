@@ -58,7 +58,7 @@ bool preview::print() {
 
 	cv::Mat img(m_xlen * m_zoom + m_htxt, m_ylen * m_zoom, CV_8UC1, cv::Scalar(128, 128, 128));
 	
-	std::vector<long int> v = m_eDVS_4337->getPolarities();
+	/*std::vector<long int> v = m_eDVS_4337->getPolarities();
 	for (int i = 0; i < v.size(); i++) {
 		cv::Rect r((i % m_xlen)*m_zoom, (int)(i / m_xlen)*m_zoom+m_htxt, m_zoom, m_zoom);
 		if(v.at(i) != 0) {
@@ -66,7 +66,7 @@ bool preview::print() {
 			last_id = i;
 			cv::rectangle(img, r, cv::Scalar(255*sign(v.at(i)), 255*sign(v.at(i)), 255*sign(v.at(i))), -1);
 		}
-	}
+	}*/
 
 	int xx = m_eDVS_4337->GetXClusterPose()+64;
 	int yy = m_eDVS_4337->GetYClusterPose()+64;
@@ -74,7 +74,7 @@ bool preview::print() {
 	cv::circle(img, ptCluster, m_eDVS_4337->GetRCluster(), cv::Scalar(200, 200, 200), cv::LINE_4, 0);
 	cv::Rect rr(yy*m_zoom, xx*m_zoom + m_htxt, m_zoom, m_zoom);
 	cv::rectangle(img, rr, cv::Scalar(200, 200, 200), -1);
-	//std::vector<long int> v;v.push_back(eDVS_4337->GetLastT());cpt = 0;last_id = 0;
+	std::vector<long int> v;v.push_back(m_eDVS_4337->GetLastT());cpt = 0;last_id = 0;
 
 	cv::Rect re(0, 0, m_ylen*m_zoom, m_htxt);
 	cv::rectangle(img, re, cv::Scalar(200, 200, 200), -1);

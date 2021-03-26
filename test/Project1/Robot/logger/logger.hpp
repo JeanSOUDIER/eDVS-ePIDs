@@ -15,11 +15,16 @@ class logger {
 		logger(const std::string fileName, char delimiter = ';');
 		~logger();
 
-		void Write(std::vector<int> values, bool test = true);
-		void WriteD(std::vector<double> values, bool test = true);
-		void WriteF(std::vector<float> values, bool test = true);
-		void WriteUL(std::vector<unsigned long> values, bool test = true);
-		void WriteLI(std::vector<long int> values, bool test = true);
+		void Write(const std::vector<int>& values);
+		void WriteN(const std::vector<int> &values);
+		void WriteD(const std::vector<double>& values);
+		void WriteDN(const std::vector<double>& values);
+		void WriteF(const std::vector<float> &values);
+		void WriteFN(const std::vector<float>& values);
+		void WriteUL(const std::vector<unsigned long> &values);
+		void WriteULN(const std::vector<unsigned long>& values);
+		void WriteLI(const std::vector<long int>& values);
+		void WriteLIN(const std::vector<long int> &values);
 		void Tic();
 		void Tac();
 		void TacF();

@@ -89,7 +89,7 @@ void ePID::ComputePID() {
 	m_yOld = y;
 	m_lastT = temp;
 
-	m_log->WriteF({ y, ysp, 0 }, false);
+	m_log->WriteFN({ y, ysp, 0 });
 	m_log->TacF();
 	m_logCPU->Tac();
 }

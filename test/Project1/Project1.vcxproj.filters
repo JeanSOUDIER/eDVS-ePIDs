@@ -62,9 +62,6 @@
     <ClInclude Include="Robot\RS232_CPP\rs232.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Robot\eDVS\pointDVS.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Robot\BaseThread\BaseThread.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>

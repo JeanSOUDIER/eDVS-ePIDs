@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 
-Nfile = '2';
+Nfile = '6';
 
 Ttime = table2array(readtable(strcat('files/Time_',Nfile,'.csv')));
 Data = table2array(readtable(strcat('files/ePID_points_',Nfile,'.csv')));

@@ -160,7 +160,6 @@
     <ClInclude Include="Robot\Controller\ePID.hpp" />
     <ClInclude Include="Robot\Controller\HardCommand.hpp" />
     <ClInclude Include="Robot\eDVS\DVS.hpp" />
-    <ClInclude Include="Robot\eDVS\pointDVS.hpp" />
     <ClInclude Include="Robot\eDVS\preview.hpp" />
     <ClInclude Include="Robot\logger\CpuUsage.hpp" />
     <ClInclude Include="Robot\logger\logger.hpp" />
