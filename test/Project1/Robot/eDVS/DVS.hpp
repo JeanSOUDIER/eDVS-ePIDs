@@ -10,7 +10,8 @@
 
 #if OS == OS_WINDOWS
 #include<opencv2/opencv.hpp>
-#define delay(x) cv::waitKey(x)
+//#define delay(x) cv::waitKey(x)
+#define delay(x) Sleep(x)
 #else
 #include <WiringPi.h>
 #endif

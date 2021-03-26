@@ -165,7 +165,7 @@ void* DVS::ThreadRun() {
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
 					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t) });
-					m_logTrack->Tac();
+					m_logTrack->TacF();
 					temp = (m_XClustPoseOld - m_XClustPose) + (m_YClustPoseOld - m_YClustPose);
 					if (temp > m_thresEvent || temp < m_thresEventM) {
 						m_XClustPoseOld = m_XClustPose;
@@ -174,7 +174,7 @@ void* DVS::ThreadRun() {
 						m_YCluster.store(m_YClustPose * m_ky + m_v0);
 						m_lastTimestamp.store(t);
 						m_event.store(true);
-						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
+						std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}
 				}
 			}
