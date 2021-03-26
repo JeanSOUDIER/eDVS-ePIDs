@@ -1,15 +1,15 @@
 #include "ePID.hpp"
 
-ePID::ePID(float Kp, float Ki, float Kd, float hmax, float hnom, unsigned int N, float gamma, float beta, DVS *eDVS_4337)
+ePID::ePID(const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float gamma, const float beta, DVS *eDVS_4337)
 	: BaseThread("ePID") {
-	m_kp = Kp;
-	m_ki = Ki;
-	m_kd = Kd;
-	m_gamma = gamma;
-	m_beta = beta;
-	m_hmax = hmax;
-	m_hnom = hnom;
-	m_N = N;
+	m_kp = &Kp;
+	m_ki = &Ki;
+	m_kd = &Kd;
+	m_gamma = &gamma;
+	m_beta = &beta;
+	m_hmax = &hmax;
+	m_hnom = &hnom;
+	m_N = &N;
 
 	m_eDVS_4337 = eDVS_4337;
 
@@ -60,24 +60,24 @@ void ePID::ComputePID() {
 	//std::cout << "hact = " << hact << " temp = " << temp << " last temp = " << m_lastT << std::endl;
 
 	//Up
-	float up = m_kp * (m_beta * ysp - y);
+	float up = *m_kp * (*m_beta * ysp - y);
 	//std::cout << "up = " << up << std::endl;
 
 	//Ui
 	float he;
-	if (hact >= m_hmax) {
-		float hacti = hact * std::exp(m_hnom - hact);
+	if (hact >= *m_hmax) {
+		float hacti = hact * std::exp(*m_hnom - hact);
 		//std::cout << "hacti = " << hacti << std::endl;
-		he = (hacti - m_hnom) * m_elim + m_hnom * e;
+		he = (hacti - *m_hnom) * m_elim + *m_hnom * e;
 	}
 	else {
 		he = hact * e;
 	}
-	m_ui += m_ki * he;
+	m_ui += *m_ki * he;
 	//std::cout << "he = " << he << " ui = " << m_ui << std::endl;
 
 	//Ud
-	m_ud = m_kd * m_ud / (m_N * hact + m_kd) - m_kd * m_N / (m_N * hact + m_kd) * (y - m_yOld);
+	m_ud = *m_kd * m_ud / (*m_N * hact + *m_kd) - *m_kd * *m_N / ((*m_N) * hact + (*m_kd)) * (y - m_yOld);
 	//std::cout << "Yold = " << m_yOld << " ud = " << m_ud << std::endl;
 
 	float u = up + m_ui + m_ud;
@@ -89,7 +89,7 @@ void ePID::ComputePID() {
 	m_yOld = y;
 	m_lastT = temp;
 
-	m_log->WriteD({ y, ysp, u }, false);
-	m_log->TacD();
+	m_log->WriteF({ y, ysp, 0 }, false);
+	m_log->TacF();
 	m_logCPU->Tac();
 }

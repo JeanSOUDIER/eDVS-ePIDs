@@ -11,7 +11,7 @@
 
 class ePID : public BaseThread {
 	public:
-		ePID(float Kp, float Ki, float Kd, float hmax = 200000, float hnom = 20000, unsigned int N = 100, float gamma = 0, float beta = 1, DVS* eDVS_4337 = NULL);
+		ePID(const float Kp, const float Ki, const float Kd, const float hmax = 200000, const float hnom = 20000, const unsigned int N = 100, const float gamma = 0, const float beta = 1, DVS* eDVS_4337 = NULL);
 		~ePID();
 
 		void SetPoint(float sp);
@@ -19,14 +19,14 @@ class ePID : public BaseThread {
 		void* ThreadRun();
 		void ComputePID();
 
-		float m_kp;
-		float m_ki;
-		float m_kd;
-		float m_gamma;
-		float m_beta;
-		float m_hmax;
-		float m_hnom;
-		unsigned int m_N;
+		const float *m_kp;
+		const float *m_ki;
+		const float *m_kd;
+		const float *m_gamma;
+		const float *m_beta;
+		const float *m_hmax;
+		const float *m_hnom;
+		const unsigned int *m_N;
 
 		float m_yOld = 0;
 		unsigned long m_lastT = 0;

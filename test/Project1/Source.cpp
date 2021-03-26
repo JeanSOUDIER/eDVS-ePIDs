@@ -9,7 +9,7 @@ int main() {
     log.Write({ 0, 0 });
     log.Tic();
 
-    DVS* eDVS_4337 = new DVS("COM4", 12000000, 4, true);
+    DVS* eDVS_4337 = new DVS("COM4", 12000000);
 
     ePID myPID(1, 0, 0, 200000, 20000, 100, 0, 1, eDVS_4337);
     myPID.StartThread();

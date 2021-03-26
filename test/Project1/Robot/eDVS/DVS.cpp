@@ -1,19 +1,18 @@
 #include "DVS.hpp"
 
-DVS::DVS(const std::string nb_usb, const int bdrate, const unsigned char format, const bool prev)
+DVS::DVS(const std::string nb_usb, const int bdrate)
 	: BaseThread("DVS") {
 	m_usb = new Usb(nb_usb, bdrate);
-	Configuration(format, prev);
+	Configuration();
 }
 
-DVS::DVS(const int nb_usb, const int bdrate, const unsigned char format, const bool prev)
+DVS::DVS(const int nb_usb, const int bdrate)
 	: BaseThread("DVS") {
     m_usb = new Usb(nb_usb, bdrate);
-	Configuration(format, prev);
+	Configuration();
 }
 
-void DVS::Configuration(const unsigned char format, const bool prev) {
-	m_prev = prev;
+void DVS::Configuration() {
 	for (auto& item : m_pix) { std::atomic_init(&item, 0); }
 	m_event.store(false);
 	m_XClustPose = 64;
@@ -22,7 +21,7 @@ void DVS::Configuration(const unsigned char format, const bool prev) {
 	m_YClustPoseOld = 64;
 
 	//config
-	m_format = format;
+	m_format = DVS_PACKET_TYPE;
 	if (m_format > 5 || m_format < 0) { m_format = 4; }
 	toLengthRead();
 	char form = m_format + '0';
@@ -75,11 +74,11 @@ void* DVS::ThreadRun() {
 	if(!m_usb->GetActive()) {StopThread();}
 
 	std::vector<unsigned char> buf, buffer;
-    std::vector<pointDVS<unsigned int>> data;
-    pointDVS<unsigned int> d;
-
-    auto begin_timestamp = std::chrono::high_resolution_clock::now();
-    auto current_timestamp = std::chrono::high_resolution_clock::now();
+	int x, y;
+	float temp;
+	long int t;
+	unsigned char c, p, b;
+	bool test = false;
 
 	m_usb->SendBytes("E+\n");           //enable event sending
 	while (GetStartValue()) {
@@ -89,33 +88,105 @@ void* DVS::ThreadRun() {
 
 		if(buf.size() > m_len) {
 			m_logCPU->Tic();
-			d = toDatas(buf);
-			if(!d.getValidTimestamp()) {buf.erase(buf.begin());} //test bug
-			buf.erase(buf.begin(), buf.begin() + m_len);
-			if(m_format == 1) {m_len = 3;}
-			m_logCPU->Tac();
-			//std::cout << d << std::endl;
-			if(d.getValidTimestamp()) {data.push_back(d);}
 
-        	//filter
-
-			current_timestamp = std::chrono::high_resolution_clock::now();
-			if(std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - begin_timestamp).count() >= 20) { // && data.size()
-				begin_timestamp = std::chrono::high_resolution_clock::now();
-				if(m_prev) {
-					for(int i=0;i<16384;i++) { //store(true)
-						m_pix[i].store(0);
-					}
-					for(int i=0;i<data.size();i++) {
-						if(data.at(i).getPolarity()) {
-							m_pix[(unsigned char)(data.at(i).getX()) * 128 + (unsigned char)(data.at(i).getY())].store(data.at(i).getTimestamp());
-						} else {
-							m_pix[(unsigned char)(data.at(i).getX()) * 128 + (unsigned char)(data.at(i).getY())].store(data.at(i).getTimestamp()*-1);
+			//extraction
+			#if DVS_PACKET_TYPE == 0
+				y = buf.at(0) & 0x7F;
+				x = buf.at(1) & 0x7F;
+				c = (buf.at(0) & 0x80) >> 7;
+				p = (buf.at(1) & 0x80) >> 7;
+				t = 0;
+				test = c;
+			#elif DVS_PACKET_TYPE == 1
+				y = buf.at(0) & 0x7F;
+				x = buf.at(1) & 0x7F;
+				t = buf.at(2) & 0x7F;
+				c = (buf.at(0) & 0x80) >> 7;
+				p = (buf.at(1) & 0x80) >> 7;
+				b = (buf.at(2) & 0x80) >> 7;
+				if (!b) {
+					b = (buf.at(3) & 0x80) >> 7;
+					t = (t << 8) + (buf.at(3) & 0x7F);
+					m_len = 4;
+					if (!b) {
+						b = (buf.at(4) & 0x80) >> 7;
+						t = (t << 8) + (buf.at(4) & 0x7F);
+						m_len = 5;
+						if (!b) {
+							b = (buf.at(5) & 0x80) >> 7;
+							t = (t << 8) + (buf.at(5) & 0x7F);
+							m_len = 6;
 						}
 					}
-					data.clear();
+				}
+				c = c & b;
+				test = (c && (t >= m_Told));
+			#elif DVS_PACKET_TYPE == 2
+				y = buf.at(0) & 0x7F;
+				x = buf.at(1) & 0x7F;
+				c = (buf.at(0) & 0x80) >> 7;
+				p = (buf.at(1) & 0x80) >> 7;
+				t = (buf.at(2) << 8) + buf.at(3);
+				test = (c && (t >= m_Told));
+			#elif DVS_PACKET_TYPE == 3
+				y = buf.at(0) & 0x7F;
+				x = buf.at(1) & 0x7F;
+				c = (buf.at(0) & 0x80) >> 7;
+				p = (buf.at(1) & 0x80) >> 7;
+				t = (buf.at(2) << 16) + (buf.at(3) << 8) + buf.at(4);
+				test = (c && (t >= m_Told));
+			#else
+				y = buf.at(0) & 0x7F;
+				x = buf.at(1) & 0x7F;
+				c = (buf.at(0) & 0x80) >> 7;
+				p = (buf.at(1) & 0x80) >> 7;
+				t = (buf.at(2) << 24) + (buf.at(3) << 16) + (buf.at(4) << 8) + buf.at(5);
+				test = (c && (t >= m_Told));
+			#endif
+
+			//tests
+			if (!test) {
+				if (!c) {
+					if (m_format && (t < m_Told)) {
+						std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+						m_Told = 0;
+					}
+					buf.erase(buf.begin());
+					std::cerr << "Error control" << std::endl;
+				} else if (m_format && (t < m_Told)) {
+					std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+					m_Told = 0;
+				}
+			} else {
+				//save
+				m_Told = t;
+				m_log->Write({ x, y, t }, false);
+				m_log->Tac();
+				temp = (m_XClustPose - x) + (m_YClustPose - y);
+				if (temp < m_Rmax && temp > m_RmaxM) {
+					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
+					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
+					m_logTrack->WriteF({ m_XClustPose, m_YClustPose, static_cast<float>(t) }, false);
+					m_logTrack->Tac();
+					temp = (m_XClustPoseOld - m_XClustPose) + (m_YClustPoseOld - m_YClustPose);
+					if (temp > m_thresEvent || temp < m_thresEventM) {
+						m_XClustPoseOld = m_XClustPose;
+						m_YClustPoseOld = m_YClustPose;
+						m_XCluster.store(m_XClustPose * m_kx + m_u0);
+						m_YCluster.store(m_YClustPose * m_ky + m_v0);
+						m_lastTimestamp.store(t);
+						m_event.store(true);
+						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
+					}
 				}
 			}
+
+			//erase buffer
+			buf.erase(buf.begin(), buf.begin() + m_len);
+			#if DVS_PACKET_TYPE == 1
+				m_len = 3;
+			#endif
+			m_logCPU->Tac();
 		}
     }
 	m_usb->SendBytes("E-\n");           //disable event sending

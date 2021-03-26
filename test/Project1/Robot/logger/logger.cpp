@@ -40,6 +40,13 @@ void logger::WriteD(std::vector<double> values, bool test) {
 	if (test) { m_file << '\n'; }
 }
 
+void logger::WriteF(std::vector<float> values, bool test) {
+	for (int i = 0; i < values.size(); i++) {
+		m_file << values.at(i) << m_delimiter;
+	}
+	if (test) { m_file << '\n'; }
+}
+
 void logger::WriteUL(std::vector<unsigned long> values, bool test) {
 	for (int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
@@ -68,8 +75,8 @@ void logger::Tac() {
 	//m_file << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_zero_timer).count() << '\n';
 }
 
-void logger::TacD() {
+void logger::TacF() {
 	auto t0 = std::chrono::high_resolution_clock::now();
 	auto nanosec = t0.time_since_epoch();
-	m_file << static_cast<double>(nanosec.count() / 1000) << '\n';
+	m_file << static_cast<float>(nanosec.count() / 1000) << '\n';
 }

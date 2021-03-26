@@ -17,11 +17,12 @@ class logger {
 
 		void Write(std::vector<int> values, bool test = true);
 		void WriteD(std::vector<double> values, bool test = true);
+		void WriteF(std::vector<float> values, bool test = true);
 		void WriteUL(std::vector<unsigned long> values, bool test = true);
 		void WriteLI(std::vector<long int> values, bool test = true);
 		void Tic();
 		void Tac();
-		void TacD();
+		void TacF();
 	private:
 		bool IsExist(std::string name);
 

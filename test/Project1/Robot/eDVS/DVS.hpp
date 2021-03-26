@@ -22,10 +22,12 @@
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
 
+#define DVS_PACKET_TYPE 4
+
 class DVS : public BaseThread {
     public:
-        DVS(const int nb_usb, const int bdrate = 12000000, const unsigned char format = 4, const bool prev = false);
-        DVS(const std::string nb_usb, const int bdrate = 12000000, const unsigned char format = 4, const bool prev = false);
+        DVS(const int nb_usb, const int bdrate = 12000000);
+        DVS(const std::string nb_usb, const int bdrate = 12000000);
         ~DVS();
 
         std::vector<long int> getPolarities();
@@ -42,9 +44,8 @@ class DVS : public BaseThread {
         void Restart();
     	void toLengthRead();
     	pointDVS<unsigned int> toDatas(std::vector<unsigned char> buf);
-        void Configuration(const unsigned char format, const bool prev);
+        void Configuration();
 
-        bool m_prev = false;
         unsigned char m_format;
         int m_len;
 
@@ -64,9 +65,11 @@ class DVS : public BaseThread {
         const int m_R = 3;
         const int m_safty = 2;
         const int m_Rmax = (m_R*m_safty)*(m_R*m_safty);
+        const int m_RmaxM = -m_Rmax;
         const float m_alpha = 0.99;
         const float m_alpha_m1 = 1-m_alpha;
-        const int m_thresEvent = 20;
+        const int m_thresEvent = 10;
+        const int m_thresEventM = -m_thresEvent;
 
         std::atomic<long int> m_lastTimestamp;
         std::atomic<bool> m_event;
