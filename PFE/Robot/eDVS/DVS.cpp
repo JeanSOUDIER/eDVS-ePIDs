@@ -20,10 +20,8 @@ void DVS::Configuration() {
 	m_YClustPoseOld = 64;
 
 	//config
-	m_format = new const unsigned char(DVS_PACKET_TYPE);
-	if (*m_format > 5 || *m_format < 0) { m_format = new const unsigned char(4); }
 	toLengthRead();
-	char form = *m_format + '0';
+	char form = DVS_PACKET_TYPE + '0';
 	std::vector<char> str = { '!', 'E', form, '\n' };
 
 	if (m_usb->GetActive()) {
@@ -59,6 +57,9 @@ void DVS::Configuration() {
 	m_log = new logger("DVS_points");
 	m_logTrack = new logger("Cluster_points");
 	m_logCPU = new logger("DVS_timing");
+
+    m_logTime = new logger("Time");
+    m_logTime->Write({ 0, 0 });
 }
 
 DVS::~DVS() {
@@ -66,6 +67,7 @@ DVS::~DVS() {
 	delete m_log;
 	delete m_logCPU;
 	delete m_logTrack;
+	delete m_logTime;
 }
 
 void* DVS::ThreadRun() {
@@ -78,13 +80,14 @@ void* DVS::ThreadRun() {
 	unsigned char c, p, b;
 	bool test = false;
 
+	m_logTime->Tic();
 	m_usb->SendBytes("E+\n");           //enable event sending
 	while (GetStartValue()) {
     	//read datas
         buffer = m_usb->ReadBytes(4000);
 		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
 
-		if(buf.size() > *m_len) {
+		if(buf.size() > m_len) {
 			m_logCPU->Tic();
 
 			//extraction
@@ -145,16 +148,22 @@ void* DVS::ThreadRun() {
 			//tests
 			if (!test) {
 				if (!c) {
-					if (*m_format && (t < m_Told)) {
-						std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
-						m_Told = 0;
-					}
+					#if DVS_PACKET_TYPE > 0
+						if (t < m_Told) {
+							std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+							m_Told = 0;
+						}
+					#endif
 					buf.erase(buf.begin());
 					std::cerr << "Error control" << std::endl;
-				} else if (*m_format && (t < m_Told)) {
-					std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
-					m_Told = 0;
-				}
+				} else {
+					#if DVS_PACKET_TYPE > 0
+						if(t < m_Told) {
+							std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+							m_Told = 0;
+						}
+					#endif
+				} 
 			} else {
 				//save
 				m_Told = t;
@@ -174,7 +183,7 @@ void* DVS::ThreadRun() {
 						m_YCluster.store(m_YClustPose * m_ky + m_v0);
 						m_lastTimestamp.store(t);
 						m_event.store(true);
-						std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
+						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}
 				}
 			}
@@ -187,13 +196,14 @@ void* DVS::ThreadRun() {
 			m_logCPU->Tac();
 		}
     }
+    m_logTime->Tac();
 	m_usb->SendBytes("E-\n");           //disable event sending
 
 	return ReturnFunction();
 }
 
 void DVS::toLengthRead() {
-	switch(*m_format) {
+	switch(DVS_PACKET_TYPE) {
     	case 0:
     		m_len = new const int(2);
     		break;

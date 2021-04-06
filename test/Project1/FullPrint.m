@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 
-Nfile = '0';
+Nfile = '2';
 
 Ttime = table2array(readtable(strcat('files/Time_',Nfile,'.csv')));
 Data = table2array(readtable(strcat('files/ePID_points_',Nfile,'.csv')));
@@ -47,8 +47,13 @@ axis([0 axi -0.1 1.1]);
 
 figure(2);
 hold on;
+title('Points cloud');
+xlabel('x piexls');
+ylabel('y piexls');
+zlabel('time [us]');
 plot3(Dtracker(:,1),Dtracker(:,2),Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),'or');
 plot3(Dsensor(:,1),Dsensor(:,2),Dsensor(:,4)-Ttime(:,1)*ones(length(Dsensor),1),'ok');
+legend({'Cluster tracking','Received events'},'Location','northeast');
 view(3);
 hold off;
 

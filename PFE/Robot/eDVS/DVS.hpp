@@ -17,7 +17,6 @@
 #endif
 
 #include "../RS232_CPP/Usb.hpp"
-//#include "../RS232_CPP/rs232.hpp"
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
 
@@ -43,14 +42,11 @@ class DVS : public BaseThread {
     	void toLengthRead();
         void Configuration();
 
-        const unsigned char *m_format;
-        const int *m_len;
+        int m_len;
 
         Usb *m_usb;
 
         unsigned int m_Told = 0;
-
-        std::array<std::atomic<long int>, 16384> m_pix;
 
         std::atomic<float> m_XCluster;
         std::atomic<float> m_YCluster;
@@ -82,6 +78,7 @@ class DVS : public BaseThread {
         logger *m_log;
         logger *m_logTrack;
         logger *m_logCPU;
+        logger *m_logTime;
 };
 
 #endif //DVS_H

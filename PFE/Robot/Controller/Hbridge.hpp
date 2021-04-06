@@ -7,13 +7,15 @@
 
 class Hbridge {
 	public:
-		Hbridge(const int pinL, const int pinR);
+		Hbridge(const int pinL, const int pinR, const int Gain = 1);
 		~Hbridge();
 		
 		void Set(const float cmd);
 	private:
 		HardCommand *m_motR;
 		HardCommand *m_motL;
+
+		const int m_Gain;
 };
 
 #endif //HBRIDGE_H

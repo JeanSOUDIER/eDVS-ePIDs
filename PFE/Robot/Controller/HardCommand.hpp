@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <unistd.h>
+#include <atomic>
 #include <wiringPi.h>
 
 #include "../BaseThread/BaseThread.hpp"
@@ -29,6 +30,8 @@ class HardCommand : public BaseThread {
 		const std::string *m_cmdMode;
 		const std::string *m_cmdWrite0;
 		const std::string *m_cmdWrite1;
+
+		std::atomic<bool> m_pfm;
 };
 
 #endif //HARDCOMMAND_H
