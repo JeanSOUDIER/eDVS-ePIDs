@@ -1,10 +1,10 @@
 #include<iostream>
 #include <conio.h>
-#include <ctime>
 
 #if OS == OS_WINDOWS
 #include<opencv2/opencv.hpp>
 #include <Windows.h>
+#include <ctime>
 #define delay(x) Sleep(x)
 #endif
 

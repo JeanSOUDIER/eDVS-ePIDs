@@ -36,6 +36,7 @@ void BaseThread::StopThread() {
 #endif
 
 void* BaseThread::ReturnFunction() {
+    StopThread();
     #if OS == OS_WINDOWS
         return NULL;
     #else

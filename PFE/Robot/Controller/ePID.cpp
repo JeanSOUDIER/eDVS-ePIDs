@@ -1,7 +1,7 @@
 #include "ePID.hpp"
 
 ePID::ePID(const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float beta, const float thresSetPoint, DVS *eDVS_4337)
-	: BaseThread("ePID"), m_Kp(Kp), m_Ki(Ki), m_Kd(Kd), m_hmax(hmax), m_hnom(hnom), m_N(N), m_beta(beta), m_thresSetPoint(thresSetPoint) {
+	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kd(Kd), m_hmax(hmax), m_hnom(hnom), m_N(N), m_beta(beta), m_thresSetPoint(thresSetPoint) {
 
 	m_eDVS_4337 = eDVS_4337;
 
@@ -10,21 +10,23 @@ ePID::ePID(const float Kp, const float Ki, const float Kd, const float hmax, con
 
 	//m_PWM = new HardCommand(0);
 	//m_Arduino = new MotorWheel(3, 115200);
-	m_Motor = new Hbridge(28, 29);
+	//m_Motor = new Hbridge(28, 29);
 
 	m_log = new logger("ePID_points");
 	m_logCPU = new logger("ePID_timing");
+
+	m_eDVS_4337->StartThread();
 
 	std::cout << "ePID Start" << std::endl;
 }
 
 ePID::~ePID() {
-	//delete m_eDVS_4337;
+	delete m_eDVS_4337;
 	delete m_log;
 	delete m_logCPU;
-	delete m_Arduino;
+	/*delete m_Arduino;
 	delete m_PWM;
-	delete m_Motor;
+	delete m_Motor;*/
 }
 
 void ePID::SetPoint(float sp) {
@@ -36,7 +38,7 @@ void ePID::SetPoint(float sp) {
 }
 
 void* ePID::ThreadRun() {
-	while (GetStartValue()) {
+	while (GetStartValue() && m_eDVS_4337->GetStartValue()) {
 		if (m_eDVS_4337->GetEvent()) {
 			ComputePID();
 		}
@@ -91,5 +93,5 @@ void ePID::ComputePID() {
 
 	//m_PWM->analogWrite(u);
 	//m_Arduino->SetSpeed(u);
-	m_Motor->Set(u);
+	//m_Motor->Set(u);
 }

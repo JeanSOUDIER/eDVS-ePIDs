@@ -7,14 +7,7 @@
 #include <chrono>
 #include <string>
 #include <cmath>
-
-#if OS == OS_WINDOWS
-#include<opencv2/opencv.hpp>
-//#define delay(x) cv::waitKey(x)
-#define delay(x) Sleep(x)
-#else
-#include <WiringPi.h>
-#endif
+#include <wiringPi.h>
 
 #include "../RS232_CPP/Usb.hpp"
 #include "../BaseThread/BaseThread.hpp"

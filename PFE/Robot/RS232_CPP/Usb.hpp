@@ -6,7 +6,7 @@
 #include <iterator>
 #include <string>
 
-#include "rs232.hpp"
+#include "rs232.h"
 
 /**
 

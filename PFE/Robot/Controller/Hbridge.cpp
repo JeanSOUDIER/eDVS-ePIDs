@@ -21,3 +21,8 @@ void Hbridge::Set(const float cmd) {
 		m_motR->frequencyWrite(-cmd);
 	}
 }
+
+void Hbridge::Stop() {
+	m_motR->digitalWrites(false);
+	m_motL->digitalWrites(false);
+}

@@ -22,7 +22,7 @@ bool logger::IsExist(std::string name) {
 	std::ifstream f(name.c_str());
 	bool a = f.good();
 	f.close();
-	std::cout << name.c_str() << " " << a << std::endl;
+	//std::cout << name.c_str() << " " << a << std::endl;
 	return a;
 }
 

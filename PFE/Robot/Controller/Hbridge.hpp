@@ -11,6 +11,7 @@ class Hbridge {
 		~Hbridge();
 		
 		void Set(const float cmd);
+		void Stop();
 	private:
 		HardCommand *m_motR;
 		HardCommand *m_motL;

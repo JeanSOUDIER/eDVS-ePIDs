@@ -63,6 +63,7 @@ void DVS::Configuration() {
 }
 
 DVS::~DVS() {
+	StopThread();
     delete m_usb;
 	delete m_log;
 	delete m_logCPU;
@@ -189,7 +190,7 @@ void* DVS::ThreadRun() {
 			}
 
 			//erase buffer
-			buf.erase(buf.begin(), buf.begin() + *m_len);
+			buf.erase(buf.begin(), buf.begin() + m_len);
 			#if DVS_PACKET_TYPE == 1
 				m_len = 3;
 			#endif
@@ -205,19 +206,19 @@ void* DVS::ThreadRun() {
 void DVS::toLengthRead() {
 	switch(DVS_PACKET_TYPE) {
     	case 0:
-    		m_len = new const int(2);
+    		m_len = 2;
     		break;
     	case 1:
-    		m_len = new const int(6);
+    		m_len = 6;
     		break;
     	case 2:
-    		m_len = new const int(4);
+    		m_len = 4;
     		break;
     	case 3:
-    		m_len = new const int(5);
+    		m_len = 5;
     		break;
     	case 4:
-    		m_len = new const int(6);
+    		m_len = 6;
     		break;
     }
 }
