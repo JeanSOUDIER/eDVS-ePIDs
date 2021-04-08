@@ -1,8 +1,9 @@
 #include "logger.hpp"
 
-logger::logger(const std::string fileName, char delimiter) {
+logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, char delimiter) {
 	m_file_name = "files/" + fileName;
 	int cpt = 0;
+	m_begin_timestamp = begin_timestamp;
 	while(IsExist(m_file_name+"_"+std::to_string(cpt)+".csv")) {cpt++;}
 	m_file_name = m_file_name+"_"+std::to_string(cpt--)+".csv";
 	m_file = std::ofstream(m_file_name);
@@ -92,21 +93,22 @@ void logger::WriteLIN(const std::vector<long int> &values) {
 }
 
 void logger::Tic() {
-	auto t0 = std::chrono::high_resolution_clock::now();
+	/*auto t0 = std::chrono::high_resolution_clock::now();
 	auto nanosec = t0.time_since_epoch();
-	m_file << nanosec.count() / 1000 << m_delimiter;
-	//m_file << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_zero_timer).count() << m_delimiter;
+	m_file << nanosec.count() / 1000 << m_delimiter;*/
+	m_file << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count() << m_delimiter;
 }
 
 void logger::Tac() {
-	auto t0 = std::chrono::high_resolution_clock::now();
+	/*auto t0 = std::chrono::high_resolution_clock::now();
 	auto nanosec = t0.time_since_epoch();
-	m_file << nanosec.count() / 1000 << '\n';
-	//m_file << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_zero_timer).count() << '\n';
+	m_file << nanosec.count() / 1000 << '\n';*/
+	m_file << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count() << '\n';
 }
 
 void logger::TacF() {
-	auto t0 = std::chrono::high_resolution_clock::now();
+	/*auto t0 = std::chrono::high_resolution_clock::now();
 	auto nanosec = t0.time_since_epoch();
-	m_file << static_cast<float>(nanosec.count() / 1000) << '\n';
+	m_file << static_cast<float>(nanosec.count() / 1000) << '\n';*/
+	m_file << static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()) << '\n';
 }

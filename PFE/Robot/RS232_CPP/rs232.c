@@ -209,6 +209,7 @@ http://man7.org/linux/man-pages/man3/termios.3.html
 
   if(custom_bauds)
   {
+    printf("custom bauds mode !\n");
 	  serinfo.reserved_char[0] = 0;
 	  if (ioctl(Cport[comport_number], TIOCGSERIAL, &serinfo) < 0)
 	  {

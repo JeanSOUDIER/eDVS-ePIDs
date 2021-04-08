@@ -1,6 +1,6 @@
 #include "ePID.hpp"
 
-ePID::ePID(const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float beta, const float thresSetPoint, DVS *eDVS_4337)
+ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float beta, const float thresSetPoint, DVS *eDVS_4337)
 	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kd(Kd), m_hmax(hmax), m_hnom(hnom), m_N(N), m_beta(beta), m_thresSetPoint(thresSetPoint) {
 
 	m_eDVS_4337 = eDVS_4337;
@@ -12,8 +12,8 @@ ePID::ePID(const float Kp, const float Ki, const float Kd, const float hmax, con
 	//m_Arduino = new MotorWheel(3, 115200);
 	//m_Motor = new Hbridge(28, 29);
 
-	m_log = new logger("ePID_points");
-	m_logCPU = new logger("ePID_timing");
+	m_log = new logger("ePID_points", begin_timestamp);
+	m_logCPU = new logger("ePID_timing", begin_timestamp);
 
 	m_eDVS_4337->StartThread();
 

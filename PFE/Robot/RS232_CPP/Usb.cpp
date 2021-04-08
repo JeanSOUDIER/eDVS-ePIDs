@@ -45,6 +45,7 @@ void Usb::SendBytes(const std::vector<char> &data) {
 std::vector<unsigned char> Usb::ReadBytes(const int n) {
     unsigned char raw_bytes[n];
     int n_r = RS232_PollComport(m_port_nr, raw_bytes, n);
+    //if(n_r) {std::cout << "n_r = " << n_r << std::endl;}
     std::vector<unsigned char> ret(n_r);
     for(unsigned int i=0;i<ret.size();i++) {
         ret.at(i) = static_cast<unsigned char>(raw_bytes[i]);

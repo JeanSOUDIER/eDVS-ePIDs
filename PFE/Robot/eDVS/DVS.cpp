@@ -1,18 +1,18 @@
 #include "DVS.hpp"
 
-DVS::DVS(const std::string nb_usb, const int bdrate)
+DVS::DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
 	: BaseThread("DVS") {
 	m_usb = new Usb(nb_usb, bdrate);
-	Configuration();
+	Configuration(begin_timestamp);
 }
 
-DVS::DVS(const int nb_usb, const int bdrate)
+DVS::DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
 	: BaseThread("DVS") {
     m_usb = new Usb(nb_usb, bdrate);
-	Configuration();
+	Configuration(begin_timestamp);
 }
 
-void DVS::Configuration() {
+void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp) {
 	m_event.store(false);
 	m_XClustPose = 64;
 	m_YClustPose = 64;
@@ -28,7 +28,7 @@ void DVS::Configuration() {
 		Restart();
 		std::cout << "Config DVS" << std::endl;
 		m_usb->SendBytes("E-\n");           //disable event sending
-		m_usb->SendBytes("!L2\n");          //LED blinking
+		m_usb->SendBytes("!L1\n");          //LED blinking
 		m_usb->SendBytes("!U0\n");          //UART echo mode none
 		m_usb->SendBytes(str);              //select data format 2, 3-6, 4, 5, 6
 		m_usb->SendBytes("!B0=54\n");       //bias cas
@@ -54,11 +54,12 @@ void DVS::Configuration() {
 	} else {
 		std::cout << "DVS not start" << std::endl;
 	}
-	m_log = new logger("DVS_points");
-	m_logTrack = new logger("Cluster_points");
-	m_logCPU = new logger("DVS_timing");
 
-    m_logTime = new logger("Time");
+	m_log = new logger("DVS_points", begin_timestamp);
+	m_logTrack = new logger("Cluster_points", begin_timestamp);
+	m_logCPU = new logger("DVS_timing", begin_timestamp);
+
+    m_logTime = new logger("Time", begin_timestamp);
     m_logTime->Write({ 0, 0 });
 }
 

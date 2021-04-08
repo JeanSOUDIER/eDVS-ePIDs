@@ -1,6 +1,7 @@
 #include <iostream>
 #include <wiringPi.h>
 #include <ncurses.h>
+#include <chrono>
 
 #include "Robot/Controller/Hbridge.hpp"
 #include "Robot/eDVS/DVS.hpp"
@@ -13,7 +14,9 @@ bool kbhit() {
 }
 
 int main() {
-	ePID myPID(1, 0, 0, 200000, 20000, 100, 1, 0.1, new DVS("ttyUSB0", 12000000));
+    std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
+
+	ePID myPID(begin_timestamp, 1, 0, 0, 200000, 20000, 100, 1, 0.1, new DVS("ttyUSB0", 12000000, begin_timestamp));
     Hbridge Motor(28, 29, 1); //38, 40
     myPID.StartThread();
 

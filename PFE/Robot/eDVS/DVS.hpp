@@ -8,6 +8,7 @@
 #include <string>
 #include <cmath>
 #include <wiringPi.h>
+#include <chrono>
 
 #include "../RS232_CPP/Usb.hpp"
 #include "../BaseThread/BaseThread.hpp"
@@ -17,8 +18,8 @@
 
 class DVS : public BaseThread {
     public:
-        DVS(const int nb_usb, const int bdrate = 12000000);
-        DVS(const std::string nb_usb, const int bdrate = 12000000);
+        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
+        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
         ~DVS();
 
         float GetXClusterPose();
@@ -33,7 +34,7 @@ class DVS : public BaseThread {
     private:
         void Restart();
     	void toLengthRead();
-        void Configuration();
+        void Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
 
         int m_len;
 

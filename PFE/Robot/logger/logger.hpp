@@ -12,7 +12,7 @@
 
 class logger {
 	public:
-		logger(const std::string fileName, char delimiter = ';');
+		logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, char delimiter = ';');
 		~logger();
 
 		void Write(const std::vector<int>& values);
@@ -34,7 +34,7 @@ class logger {
 		std::ofstream m_file;
 		char m_delimiter = ';';
 		std::string m_file_name;
-		//std::chrono::time_point<std::chrono::high_resolution_clock> m_zero_timer;
+		std::chrono::time_point<std::chrono::high_resolution_clock> m_begin_timestamp;
 };
 
 #endif //LOGGER_H
