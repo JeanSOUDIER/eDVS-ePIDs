@@ -169,7 +169,7 @@ void* DVS::ThreadRun() {
 			} else {
 				//save
 				m_Told = t;
-				m_log->WriteN({ x, y, 0 });
+				m_log->WriteN({x, y, 0});
 				m_log->Tac();
 				temp = (m_XClustPose - x) + (m_YClustPose - y);
 				if (temp < m_Rmax && temp > m_RmaxM) {

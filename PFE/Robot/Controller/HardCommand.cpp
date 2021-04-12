@@ -42,7 +42,7 @@ void HardCommand::analogWrite(int duty) {
 	strs << m_pin;
 	strs1 << duty;
 	cmd1 = cmd1 + strs.str() + " " + strs1.str();
-	char* cmd = (char*)cmd1.c_str();
+	const char* cmd = (char*)cmd1.c_str();
 	system(cmd);
 }
 

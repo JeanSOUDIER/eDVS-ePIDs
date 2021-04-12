@@ -29,20 +29,30 @@ figure(1);
 tiledlayout(3,1);
 nexttile;
 hold on;
+title('Responses');
+xlabel('time');
+ylabel('position [mm]');
 plot(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
 xlim([0 axi]);
 plot(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
 xlim([0 axi]);
 plot(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
 xlim([0 axi]);
+legend({'Y','Ysp','U'},'Location','northeast');
 hold off;
 
 nexttile;
 plot(Ysensor);
+title('CPU load form object tracker');
+xlabel('time');
+ylabel('CPU used [bool]');
 axis([0 axi -0.1 1.1]);
 
 nexttile;
 plot(Ycontroler);
+title('CPU load form controller');
+xlabel('time');
+ylabel('CPU used [bool]');
 axis([0 axi -0.1 1.1]);
 
 figure(2);
