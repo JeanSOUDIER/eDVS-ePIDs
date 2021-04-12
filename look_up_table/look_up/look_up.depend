@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1618242512 source:d:\école\ge5\pfe\prog\edvs-lqr\look_up_table\look_up\main.cpp
+	<iostream>
+	<fstream>
+	<string>
+	<cmath>
+	<type_traits>
+	<typeinfo>
+
