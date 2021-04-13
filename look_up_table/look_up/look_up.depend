@@ -1,9 +1,19 @@
 # depslib dependency file v1.0
-1618242512 source:d:\école\ge5\pfe\prog\edvs-lqr\look_up_table\look_up\main.cpp
+1618308312 source:d:\école\ge5\pfe\prog\edvs-lqr\look_up_table\look_up\main.cpp
 	<iostream>
 	<fstream>
 	<string>
 	<cmath>
-	<type_traits>
-	<typeinfo>
+	<functional>
+	"look_up.hpp"
+	"look_up_table.hpp"
+
+1618308404 d:\école\ge5\pfe\prog\edvs-lqr\look_up_table\look_up\look_up.hpp
+	<iostream>
+	<string>
+	<fstream>
+	<functional>
+	<cmath>
+
+1618308386 d:\école\ge5\pfe\prog\edvs-lqr\look_up_table\look_up\look_up_table.hpp
 
