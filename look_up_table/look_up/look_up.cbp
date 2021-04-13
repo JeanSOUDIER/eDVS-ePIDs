@@ -23,6 +23,7 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="look_up.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

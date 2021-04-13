@@ -23,6 +23,16 @@ for i = 1:length(Tcontroler)
     Ycontroler(:,Tcontroler(i,1)-Ttime(:,1):Tcontroler(i,1)-Ttime(:,1)+Tdiffconstroler(i,1)) = ones(1,Tdiffconstroler(i,1)+1);
 end
 
+Dused = [];
+Dunused = [];
+for i = 1:length(Dsensor)
+    if Dsensor(i,3) == 1
+        Dused = [Dused; Dsensor(i,:)];
+    else
+        Dunused = [Dunused; Dsensor(i,:)];
+    end
+end
+
 axi = Ttime(:,2)-Ttime(:,1);
 
 figure(1);
@@ -62,8 +72,17 @@ xlabel('x piexls');
 ylabel('y piexls');
 zlabel('time [us]');
 plot3(Dtracker(:,1),Dtracker(:,2),Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),'or');
-plot3(Dsensor(:,1),Dsensor(:,2),Dsensor(:,4)-Ttime(:,1)*ones(length(Dsensor),1),'ok');
-legend({'Cluster tracking','Received events'},'Location','northeast');
+list = "Cluster tracking";
+if length(Dunused) ~= 0
+    plot3(Dunused(:,1),Dunused(:,2),Dunused(:,4)-Ttime(:,1)*ones(length(Dunused),1),'ok');
+    list = [list "Received events"];
+end
+if length(Dused) ~= 0
+    plot3(Dused(:,1),Dused(:,2),Dused(:,4)-Ttime(:,1)*ones(length(Dused),1),'og');
+    list = [list "Used events"];
+end
+%legend({'Cluster tracking','Received events','Used events'},'Location','northeast');
+legend(list,'Location','northeast');
 view(3);
 hold off;
 
