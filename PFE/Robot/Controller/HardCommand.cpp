@@ -1,8 +1,7 @@
 #include "HardCommand.hpp"
 
 HardCommand::HardCommand(int pin)
-	: BaseThread("PFM") {
-	m_pin = pin;
+	: BaseThread("PFM"), m_pin(pin) {
 
 	std::string cmd1 = "gpio mode ", cmd2 = " out";
 	std::stringstream strs;
@@ -32,8 +31,7 @@ HardCommand::~HardCommand() {
 }
 
 void HardCommand::pinMode() {
-	const char* cmd = (char*)(*m_cmdMode).c_str();
-	system(cmd);
+	system((char*)(*m_cmdMode).c_str());
 }
 
 void HardCommand::analogWrite(int duty) {
@@ -48,18 +46,15 @@ void HardCommand::analogWrite(int duty) {
 
 void HardCommand::digitalWrites(bool state) {
 	if(state) {
-		const char* cmd = (char*)(*m_cmdWrite1).c_str();
-		system(cmd);
+		system((char*)(*m_cmdWrite1).c_str());
 	} else {
-		const char* cmd = (char*)(*m_cmdWrite0).c_str();
-		system(cmd);
+		system((char*)(*m_cmdWrite0).c_str());
 	}
 }
 
 void HardCommand::frequencyWrite(int pulse) {
 	m_pulse = pulse;
-	const char* cmd = (char*)(*m_cmdWrite1).c_str();
-	system(cmd);
+	system((char*)(*m_cmdWrite1).c_str());
 	m_pfm.store(true);
 }
 
@@ -76,8 +71,7 @@ void* HardCommand::ThreadRun() {
 			}
 			current_timestamp = std::chrono::high_resolution_clock::now();
 		}
-		const char* cmd = (char*)(*m_cmdWrite0).c_str();
-		system(cmd);
+		system((char*)(*m_cmdWrite0).c_str());
 	}
 	return ReturnFunction();
 }

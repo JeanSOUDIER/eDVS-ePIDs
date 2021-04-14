@@ -12,6 +12,8 @@
 #include "../MotorWheel/MotorWheel.hpp"
 #include "../logger/logger.hpp"
 
+#include "look_up_table.hpp"
+
 class ePID : public BaseThread {
 	public:
 		ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const float Kp, const float Ki, const float Kd, const float hmax = 200000, const float hnom = 20000, const unsigned int N = 100, const float beta = 1, const float thresSetPoint = 0.1, DVS* eDVS_4337 = NULL);
@@ -25,6 +27,7 @@ class ePID : public BaseThread {
 		const float m_kp;
 		const float m_ki;
 		const float m_kd;
+		const float m_kdN;
 		const float m_beta;
 		const float m_hmax;
 		const float m_hnom;
@@ -40,6 +43,7 @@ class ePID : public BaseThread {
 		DVS* eDVS_4337;
 
 		std::atomic<float> m_ysp;
+		std::atomic<bool> m_event;
 
 		DVS* m_eDVS_4337;
 

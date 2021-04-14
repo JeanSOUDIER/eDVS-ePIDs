@@ -26,6 +26,7 @@ class PID : public BaseThread {
 		const float m_kp;
 		const float m_ki;
 		const float m_kd;
+		const float m_kdN;
 		const float m_beta;
 		const unsigned int m_N;
 		
@@ -44,8 +45,5 @@ class PID : public BaseThread {
 		logger *m_log;
 		logger *m_logCPU;
 };
-
-
-
 
 #endif //PID_H

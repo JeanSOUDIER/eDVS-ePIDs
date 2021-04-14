@@ -1,13 +1,12 @@
 #include "logger.hpp"
 
-logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, char delimiter) {
+logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, char delimiter)
+	: m_begin_timestamp(begin_timestamp), m_delimiter(delimiter) {
 	m_file_name = "files/" + fileName;
 	int cpt = 0;
-	m_begin_timestamp = begin_timestamp;
 	while(IsExist(m_file_name+"_"+std::to_string(cpt)+".csv")) {cpt++;}
 	m_file_name = m_file_name+"_"+std::to_string(cpt--)+".csv";
 	m_file = std::ofstream(m_file_name);
-	m_delimiter = delimiter;
 	std::cout << "logger Start on " << m_file_name << std::endl;
 }
 
@@ -27,20 +26,15 @@ bool logger::IsExist(std::string name) {
 	return a;
 }
 
-void logger::Write(const std::vector<int>& values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-	m_file << '\n';
+void logger::Write(const std::vector<int>& values) { //used 2 eDVS(tTime)
+	m_file << values.at(0) << m_delimiter << values.at(1) << m_delimiter << '\n';
 }
 
-void logger::WriteN(const std::vector<int> &values) {
-	for(unsigned int i=0;i<values.size();i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
+void logger::WriteN(const std::vector<int> &values) { //used 2 eDVS(DVS point)
+	m_file << values.at(0) << m_delimiter << values.at(1) << m_delimiter << values.at(2) << m_delimiter;
 }
 
-void logger::WriteD(const std::vector<double>& values) {
+/*void logger::WriteD(const std::vector<double>& values) {
 	for (unsigned int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
@@ -58,15 +52,13 @@ void logger::WriteF(const std::vector<float>& values) {
 		m_file << values.at(i) << m_delimiter;
 	}
 	m_file << '\n';
+}*/
+
+void logger::WriteFN(const std::vector<float> &values) { //used 3 eDVS, 3 ePID
+	m_file << values.at(0) << m_delimiter << values.at(1) << m_delimiter << values.at(2) << m_delimiter;
 }
 
-void logger::WriteFN(const std::vector<float> &values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-}
-
-void logger::WriteUL(const std::vector<unsigned long>& values) {
+/*void logger::WriteUL(const std::vector<unsigned long>& values) {
 	for (unsigned int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
@@ -90,7 +82,7 @@ void logger::WriteLIN(const std::vector<long int> &values) {
 	for (unsigned int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;
 	}
-}
+}*/
 
 void logger::Tic() {
 	/*auto t0 = std::chrono::high_resolution_clock::now();

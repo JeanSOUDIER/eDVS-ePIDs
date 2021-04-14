@@ -51,7 +51,7 @@ class DVS : public BaseThread {
 
         const int m_R = 3;
         const int m_safty = 2;
-        const int m_Rmax = (m_R*m_safty)*(m_R*m_safty);
+        const int m_Rmax = (m_R)*(m_R);
         const int m_RmaxM = -m_Rmax;
         const float m_alpha = 0.99;
         const float m_alpha_m1 = 1-m_alpha;

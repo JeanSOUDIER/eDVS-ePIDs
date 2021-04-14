@@ -75,22 +75,23 @@ DVS::~DVS() {
 void* DVS::ThreadRun() {
 	if(!m_usb->GetActive()) {StopThread();}
 
-	std::vector<unsigned char> buf, buffer;
+	std::vector<unsigned char> buf;
+	unsigned char *buffer;
 	int x, y;
-	float temp;
 	unsigned int t;
 	unsigned char c, p, b;
 	bool test = false;
+	int n;
 
 	m_logTime->Tic();
 	m_usb->SendBytes("E+\n");           //enable event sending
 	while (GetStartValue()) {
+		m_logCPU->Tic();
     	//read datas
-        buffer = m_usb->ReadBytes(4000);
-		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
+        n = m_usb->ReadBytes(4000, buffer);
+        std::copy(&buffer[0], &buffer[n], back_inserter(buf));
 
 		if(buf.size() > m_len) {
-			m_logCPU->Tic();
 
 			//extraction
 			#if DVS_PACKET_TYPE == 0
@@ -123,62 +124,53 @@ void* DVS::ThreadRun() {
 					}
 				}
 				c = c & b;
-				test = (c && (t >= m_Told));
+				test = c || (t < m_Told);
 			#elif DVS_PACKET_TYPE == 2
 				y = buf.at(0) & 0x7F;
 				x = buf.at(1) & 0x7F;
 				c = (buf.at(0) & 0x80) >> 7;
 				p = (buf.at(1) & 0x80) >> 7;
 				t = (buf.at(2) << 8) + buf.at(3);
-				test = (c && (t >= m_Told));
+				test = c || (t < m_Told);
 			#elif DVS_PACKET_TYPE == 3
 				y = buf.at(0) & 0x7F;
 				x = buf.at(1) & 0x7F;
 				c = (buf.at(0) & 0x80) >> 7;
 				p = (buf.at(1) & 0x80) >> 7;
 				t = (buf.at(2) << 16) + (buf.at(3) << 8) + buf.at(4);
-				test = (c && (t >= m_Told));
+				test = c || (t < m_Told);
 			#else
 				y = buf.at(0) & 0x7F;
 				x = buf.at(1) & 0x7F;
-				c = (buf.at(0) & 0x80) >> 7;
+				c = !((buf.at(0) & 0x80) >> 7);
 				p = (buf.at(1) & 0x80) >> 7;
 				t = (buf.at(2) << 24) + (buf.at(3) << 16) + (buf.at(4) << 8) + buf.at(5);
-				test = (c && (t >= m_Told));
+				test = c || (t < m_Told);
 			#endif
 
 			//tests
-			if (!test) {
-				if (!c) {
-					#if DVS_PACKET_TYPE > 0
-						if (t < m_Told) {
-							std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
-							m_Told = 0;
-						}
-					#endif
+			if (test) {
+				if (c) {
 					buf.erase(buf.begin());
 					std::cerr << "Error control" << std::endl;
-				} else {
-					#if DVS_PACKET_TYPE > 0
-						if(t < m_Told) {
-							std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
-							m_Told = 0;
-						}
-					#endif
-				} 
+				}
+				#if DVS_PACKET_TYPE > 0
+					if(t < m_Told) {
+						std::cerr << "Error timestamp " << t << " " << m_Told << std::endl;
+						m_Told = 0;
+					}
+				#endif
 			} else {
 				//save
 				m_Told = t;
-				m_log->WriteN({x, y, 0});
-				m_log->Tac();
-				temp = (m_XClustPose - x) + (m_YClustPose - y);
-				if (temp < m_Rmax && temp > m_RmaxM) {
+				if(std::pow((m_XClustPose - x),2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
+					m_log->WriteN({x, y, 1});
+					m_log->Tac();
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
-					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t) });
+					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
 					m_logTrack->TacF();
-					temp = (m_XClustPoseOld - m_XClustPose) + (m_YClustPoseOld - m_YClustPose);
-					if (temp > m_thresEvent || temp < m_thresEventM) {
+					if(std::pow((m_XClustPoseOld - m_XClustPose),2.0f) + std::pow((m_YClustPoseOld - m_YClustPose), 2.0f) > m_thresEvent) {
 						m_XClustPoseOld = m_XClustPose;
 						m_YClustPoseOld = m_YClustPose;
 						m_XCluster.store(m_XClustPose * m_kx + m_u0);
@@ -187,6 +179,9 @@ void* DVS::ThreadRun() {
 						m_event.store(true);
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}
+				} else {
+					m_log->WriteN({x, y, 0});
+					m_log->Tac();
 				}
 			}
 
@@ -195,8 +190,8 @@ void* DVS::ThreadRun() {
 			#if DVS_PACKET_TYPE == 1
 				m_len = 3;
 			#endif
-			m_logCPU->Tac();
 		}
+		m_logCPU->Tac();
     }
     m_logTime->Tac();
 	m_usb->SendBytes("E-\n");           //disable event sending

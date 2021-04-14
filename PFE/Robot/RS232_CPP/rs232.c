@@ -312,14 +312,10 @@ http://man7.org/linux/man-pages/man3/termios.3.html
 }
 
 
-int RS232_PollComport(int comport_number, unsigned char *buf, int size)
-{
-  int n;
+int RS232_PollComport(int comport_number, unsigned char *buf, int size) {
+  const int n = read(Cport[comport_number], buf, size);
 
-  n = read(Cport[comport_number], buf, size);
-
-  if(n < 0)
-  {
+  if(n < 0) {
     if(errno == EAGAIN)  return 0;
   }
 
@@ -327,17 +323,12 @@ int RS232_PollComport(int comport_number, unsigned char *buf, int size)
 }
 
 
-int RS232_SendByte(int comport_number, unsigned char byte)
-{
-  int n = write(Cport[comport_number], &byte, 1);
-  if(n < 0)
-  {
-    if(errno == EAGAIN)
-    {
+int RS232_SendByte(int comport_number, unsigned char byte) {
+  const int n = write(Cport[comport_number], &byte, 1);
+  if(n < 0) {
+    if(errno == EAGAIN) {
       return 0;
-    }
-    else
-    {
+    } else {
       return 1;
     }
   }
@@ -346,17 +337,12 @@ int RS232_SendByte(int comport_number, unsigned char byte)
 }
 
 
-int RS232_SendBuf(int comport_number, unsigned char *buf, int size)
-{
-  int n = write(Cport[comport_number], buf, size);
-  if(n < 0)
-  {
-    if(errno == EAGAIN)
-    {
+int RS232_SendBuf(int comport_number, unsigned char *buf, int size) {
+  const int n = write(Cport[comport_number], buf, size);
+  if(n < 0) {
+    if(errno == EAGAIN) {
       return 0;
-    }
-    else
-    {
+    } else {
       return -1;
     }
   }

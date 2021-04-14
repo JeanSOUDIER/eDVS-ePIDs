@@ -4,20 +4,21 @@ Camera::Camera(const unsigned int Te)
 	: BaseThread("CamPi"), m_Te(Te) {
 	cap = new raspicam::RaspiCam_Cv();
 
+    m_logTrack = new logger("Region_points");
+    m_logCPU = new logger("Camera_timing");
+
+    m_logTime = new logger("Time");
+    m_logTime->Write({0, 0});
+    m_logTime->Tic();
+
 	if(!cap->open()) {
         std::cout << "Could not initialize capturing...\n";
+        m_logTime->Tac();
     } else {
     	m_x.store(0);
     	m_y.store(0);
     	StartThread();
     }
-
-	m_logTrack = new logger("Region_points");
-	m_logCPU = new logger("Camera_timing");
-
-    m_logTime = new logger("Time");
-    m_logTime->Write({ 0, 0 });
-	m_logTime->Tic();
 
     std::cout << "Camera Pi Start" << std::endl;
 }
@@ -39,12 +40,13 @@ void* Camera::ThreadRun() {
 		}
 	}
     cap.release();
+    m_logTime->Tac();
 	return ReturnFunction();
 }
 
 void Camera::Process() {
 	m_logCPU->Tic();
-	cv::Mat output, gray;
+    cv::Mat output, gray;
 
 	//getImg
 	cap->grab();
@@ -62,15 +64,15 @@ void Camera::Process() {
     cv::Rect rectan;
     cv::findContours(gray, cnt, hier, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
-    for(size_t i=0;i<cnt.size();i++) {
+    for(unsigned int i=0;i<cnt.size();i++) {
         if(cv::contourArea(cnt.at(i)) > 5000 && cv::contourArea(cnt.at(i)) < 90000) {
             rectan = cv::boundingRect(cnt.at(i));
             break;
         }
     }
 
-    m_x.store(rectan.x+rectan.height/2);
-    m_y.store(rectan.y+rectan.width/2);
+    m_x.store((rectan.x+rectan.height/2)* m_kx + m_u0);
+    m_y.store((rectan.y+rectan.width/2)* m_ky + m_v0);
 	
 	m_logTrack->WriteFN({m_x.load(), m_y.load(), 0});
 	m_logTrack->TacF();
@@ -81,4 +83,4 @@ float Camera::GetXClusterPose() {return m_x.load();}
 
 float Camera::GetYClusterPose() {return m_y.load();}
 
-long int Camera::GetLastT() {return m_Te;}
+const long int Camera::GetLastT() {return m_Te;}

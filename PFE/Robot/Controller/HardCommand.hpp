@@ -24,7 +24,7 @@ class HardCommand : public BaseThread {
 	private:
 		void* ThreadRun();
 
-		int m_pin;
+		const int m_pin;
 		int m_pulse;
 
 		const std::string *m_cmdMode;

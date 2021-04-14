@@ -41,8 +41,8 @@ class Usb {
         Usb(const int nb_usb, const int baudrate);
         ~Usb();
 
-        int GetBdRate(void);
-        int GetPortNb(void);
+        const int GetBdRate(void);
+        const int GetPortNb(void);
         void SetActive(bool state);
         bool GetActive(void);
 
@@ -52,8 +52,8 @@ class Usb {
         int ReadBytes(const int n, unsigned char* buf);
     private:
         bool m_active;
-        int m_port_nr;
-        int m_bdrate;
+        const int m_port_nr;
+        const int m_bdrate;
 
 };
 

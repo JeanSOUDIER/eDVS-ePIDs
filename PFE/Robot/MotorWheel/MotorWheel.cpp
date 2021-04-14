@@ -45,10 +45,10 @@ MotorWheel::~MotorWheel() {
 void MotorWheel::SetSpeed(int vel) {
     if(vel > 1023) {vel = 1023;std::cout << "speed sat H" << std::endl;}
     if(vel < 0) {vel = 0;std::cout << "speed sat L" << std::endl;}
-    unsigned char Lc = static_cast<unsigned char>(vel>>8);
-    unsigned char Ld = static_cast<unsigned char>(vel%256);
-    int cc = Lc+Ld;
-    unsigned char c = static_cast<unsigned char>(cc%256);
-    std::vector<char> sending{static_cast<char>(255), static_cast<char>(Lc), static_cast<char>(Ld), static_cast<char>(c)};
+    const unsigned char Lc = static_cast<unsigned char>(vel>>8);
+    const unsigned char Ld = static_cast<unsigned char>(vel%256);
+    const int cc = Lc+Ld;
+    const unsigned char c = static_cast<unsigned char>(cc%256);
+    const std::vector<char> sending{static_cast<char>(255), static_cast<char>(Lc), static_cast<char>(Ld), static_cast<char>(c)};
     m_usb->SendBytes(sending);
 }

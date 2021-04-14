@@ -20,25 +20,25 @@ class Camera : public BaseThread {
 
         float GetXClusterPose();
         float GetYClusterPose();
-        long int GetLastT();
+        const long int GetLastT();
     protected:
         void* ThreadRun();
 
     private:
     	raspicam::RaspiCam_Cv *cap;
 
-    	cosnt unsigned int m_Te;
+    	const unsigned int m_Te;
 
     	std::atomic<float> m_x;
     	std::atomic<float> m_y;
 
-        const float m_z0 = -150;
-        const float m_fx = 151;
+        const float m_z0 = -250;
+        const float m_fx = 112;
         const float m_fy = m_fx;
         const float m_kx = m_fx/m_z0;
         const float m_ky = m_fy/m_z0;
-        const float m_u0 = 64;
-        const float m_v0 = m_u0;
+        const float m_u0 = 960;
+        const float m_v0 = 540;
 
         logger *m_logTrack;
         logger *m_logCPU;
