@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 
-Nfile = '17';
+Nfile = '0';
 
 Ttime = table2array(readtable(strcat('files/Time_',Nfile,'.csv')));
 Data = table2array(readtable(strcat('files/ePID_points_',Nfile,'.csv')));
@@ -42,11 +42,11 @@ hold on;
 title('Responses');
 xlabel('time');
 ylabel('position [mm]');
-plot(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
+stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
 xlim([0 axi]);
-plot(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
+stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
 xlim([0 axi]);
-plot(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
+stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
 xlim([0 axi]);
 legend({'Y','Ysp','U'},'Location','northeast');
 hold off;

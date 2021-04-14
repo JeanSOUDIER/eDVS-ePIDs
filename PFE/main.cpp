@@ -29,7 +29,7 @@ int main() {
 	    Motor.Set(-1000);
         myPID.SetPoint(-5);
     }
-    Motor.Set(-500);
+    Motor.Set(-600);
     delay(1000);
 
     Motor.Stop();
