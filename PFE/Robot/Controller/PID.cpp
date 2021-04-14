@@ -1,7 +1,7 @@
 #include "PID.hpp"
 
-PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, const unsigned int N, const float gamma, const float beta)
-	: BaseThread("PID"), m_Te(Te), m_Kp(Kp), m_Ki(Ki*Te), m_Kd(Kd), m_N(N*Te), m_gamma(gamma), m_beta(beta), m_kdN(Kd*N) {
+PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const unsigned int N, const float beta, DVS *eDVS_4337)
+	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
 
 	m_eDVS_4337 = eDVS_4337;
 
@@ -11,8 +11,8 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 	//m_Arduino = new MotorWheel(3, 115200);
 	//m_Motor = new Hbridge(28, 29);
 
-	m_log = new logger("PID_points");
-	m_logCPU = new logger("PID_timing");
+	m_log = new logger("PID_points", begin_timestamp);
+	m_logCPU = new logger("PID_timing", begin_timestamp);
 
 	std::cout << "PID Start" << std::endl;
 }
@@ -43,7 +43,7 @@ void* PID::ThreadRun() {
 	return ReturnFunction();
 }
 
-void ePID::ComputePID() {
+void PID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
 	const float ysp = m_ysp.load();

@@ -1,13 +1,13 @@
 #include "Camera.hpp"
 
-Camera::Camera(const unsigned int Te)
+Camera::Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
 	: BaseThread("CamPi"), m_Te(Te) {
 	cap = new raspicam::RaspiCam_Cv();
 
-    m_logTrack = new logger("Region_points");
-    m_logCPU = new logger("Camera_timing");
+    m_logTrack = new logger("Region_points", begin_timestamp);
+    m_logCPU = new logger("Camera_timing", begin_timestamp);
 
-    m_logTime = new logger("Time");
+    m_logTime = new logger("Time", begin_timestamp);
     m_logTime->Write({0, 0});
     m_logTime->Tic();
 
@@ -39,7 +39,7 @@ void* Camera::ThreadRun() {
 			current_timestamp = std::chrono::high_resolution_clock::now();
 		}
 	}
-    cap.release();
+    cap->release();
     m_logTime->Tac();
 	return ReturnFunction();
 }
@@ -53,10 +53,10 @@ void Camera::Process() {
     cap->retrieve(output);
 
     //to gray
-    cv::cvtColor(output, gray, cv::CV_BGR2GRAY);
+    cv::cvtColor(output, gray, cv::COLOR_BGR2GRAY);
 
     //to segmentation
-    cv::threshold(gray, gray, 0, 255, cv::CV_THRESH_OTSU);
+    cv::threshold(gray, gray, 0, 255, cv::THRESH_OTSU);
 
     //to regionprops
     std::vector<std::vector<cv::Point>> cnt;

@@ -18,9 +18,9 @@ class HardCommand : public BaseThread {
 		~HardCommand();
 
 		void pinMode();
-		void analogWrite(int duty);
-		void digitalWrites(bool state);
-		void frequencyWrite(int pulse);
+		void analogWrite(const int duty);
+		void digitalWrites(const bool state);
+		void frequencyWrite(const int pulse);
 	private:
 		void* ThreadRun();
 

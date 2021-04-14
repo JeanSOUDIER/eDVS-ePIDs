@@ -1,15 +1,17 @@
 #include "Usb.hpp"
 
-Usb::Usb() {
+Usb::Usb() 
+    : m_port_nr(0), m_bdrate(0) {
     m_active = false;
 }
 
 Usb::Usb(const std::string nb_usb, const int baudrate)
-    : Usb(RS232_GetPortnr(nb_usb.c_str()), baudrate) {}
+    : m_port_nr(RS232_GetPortnr(nb_usb.c_str())), m_bdrate(baudrate) {Config();}
 
 Usb::Usb(const int nb_usb, const int baudrate)
-    : m_port_nr(nb_usb), m_bdrate(baudrate) {
-  
+    : m_port_nr(nb_usb), m_bdrate(baudrate) {Config();}
+
+void Usb::Config() {
     if(RS232_OpenComport(m_port_nr,m_bdrate,"8N1",0)) { // 8 data bits, no parity, 1 stop bit
         std::cout << "Can not open comport\n" << std::endl;
         m_active = false;
@@ -29,7 +31,7 @@ void Usb::SendBytes(const std::string &s) {
 }
 
 void Usb::SendBytes(const std::vector<char> &data) {
-    char msg[data.size()];
+    unsigned char msg[data.size()];
     std::copy(data.begin(), data.end(), msg);
     RS232_SendBuf(m_port_nr, &msg[0], data.size()); //test
     //RS232_SendBuf(m_port_nr, &data[0], data.size());
@@ -44,17 +46,18 @@ std::vector<unsigned char> Usb::ReadBytes(const int n) {
     unsigned char raw_bytes[n];
     const int n_r = RS232_PollComport(m_port_nr, raw_bytes, n);
     //if(n_r) {std::cout << "n_r = " << n_r << std::endl;}
-    std::vector<unsigned char> ret(n_r);
+    /*std::vector<unsigned char> ret(n_r);
     for(unsigned int i=0;i<ret.size();i++) {
         ret.at(i) = static_cast<unsigned char>(raw_bytes[i]);
         //if(ret.at(i)) {std::cout << ret.at(i);} else {std::cout << "\0"; }
-    }
+    }*/
+    std::vector<unsigned char> ret(raw_bytes,raw_bytes+n_r);
     return ret;
 }
 
 int Usb::ReadBytes(const int n, unsigned char *buf) {
-    RS232_PollComport(m_port_nr, buf, n);
-    return n;
+    const int n_r = RS232_PollComport(m_port_nr, buf, n);
+    return n_r;
 }
 
 const int Usb::GetBdRate(void) {return m_bdrate;}

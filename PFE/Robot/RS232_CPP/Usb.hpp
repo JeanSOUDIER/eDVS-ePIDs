@@ -51,6 +51,8 @@ class Usb {
         std::vector<unsigned char> ReadBytes(const int n);
         int ReadBytes(const int n, unsigned char* buf);
     private:
+        void Config();
+
         bool m_active;
         const int m_port_nr;
         const int m_bdrate;

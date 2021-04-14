@@ -14,7 +14,7 @@
 
 class PID : public BaseThread {
 	public:
-		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, const unsigned int N = 100, const float beta = 1);
+		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const unsigned int N = 100, const float beta = 1, DVS *eDVS_4337 = NULL);
 		~PID();
 	
 		void SetPoint(float sp);
@@ -39,7 +39,7 @@ class PID : public BaseThread {
 		std::atomic<float> m_ysp;
 
 		HardCommand *m_PWM;
-		Hbeidge *m_Motor;
+		Hbridge *m_Motor;
 		MotorWheel *m_Arduino;
 
 		logger *m_log;

@@ -34,7 +34,7 @@ void HardCommand::pinMode() {
 	system((char*)(*m_cmdMode).c_str());
 }
 
-void HardCommand::analogWrite(int duty) {
+void HardCommand::analogWrite(const int duty) {
 	std::string cmd1 = "gpio pwm ";
 	std::stringstream strs, strs1;
 	strs << m_pin;
@@ -44,7 +44,7 @@ void HardCommand::analogWrite(int duty) {
 	system(cmd);
 }
 
-void HardCommand::digitalWrites(bool state) {
+void HardCommand::digitalWrites(const bool state) {
 	if(state) {
 		system((char*)(*m_cmdWrite1).c_str());
 	} else {
@@ -52,7 +52,7 @@ void HardCommand::digitalWrites(bool state) {
 	}
 }
 
-void HardCommand::frequencyWrite(int pulse) {
+void HardCommand::frequencyWrite(const int pulse) {
 	m_pulse = pulse;
 	system((char*)(*m_cmdWrite1).c_str());
 	m_pfm.store(true);

@@ -6,7 +6,12 @@
 #include <chrono>
 
 #include <wiringPi.h>
+#include <chrono>
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/core/utility.hpp>
 #include <raspicam/raspicam_cv.h>
 
 #include "../RS232_CPP/Usb.hpp"
@@ -15,7 +20,7 @@
 
 class Camera : public BaseThread {
 	public:
-		Camera(const unsigned int Te);
+		Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
 		~Camera();
 
         float GetXClusterPose();
@@ -25,6 +30,8 @@ class Camera : public BaseThread {
         void* ThreadRun();
 
     private:
+        void Process();
+
     	raspicam::RaspiCam_Cv *cap;
 
     	const unsigned int m_Te;

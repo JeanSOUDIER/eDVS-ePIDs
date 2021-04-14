@@ -75,8 +75,7 @@ DVS::~DVS() {
 void* DVS::ThreadRun() {
 	if(!m_usb->GetActive()) {StopThread();}
 
-	std::vector<unsigned char> buf;
-	unsigned char *buffer;
+	std::vector<unsigned char> buf, buffer;
 	int x, y;
 	unsigned int t;
 	unsigned char c, p, b;
@@ -88,8 +87,8 @@ void* DVS::ThreadRun() {
 	while (GetStartValue()) {
 		m_logCPU->Tic();
     	//read datas
-        n = m_usb->ReadBytes(4000, buffer);
-        std::copy(&buffer[0], &buffer[n], back_inserter(buf));
+        buffer = m_usb->ReadBytes(4000);
+		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
 
 		if(buf.size() > m_len) {
 

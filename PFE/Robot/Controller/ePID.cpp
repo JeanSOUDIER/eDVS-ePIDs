@@ -1,7 +1,7 @@
 #include "ePID.hpp"
 
 ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float beta, const float thresSetPoint, DVS *eDVS_4337)
-	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kd(Kd), m_hmax(hmax), m_hnom(hnom), m_N(N), m_beta(beta), m_thresSetPoint(thresSetPoint), m_kdN(kd*N) {
+	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kd(Kd), m_hmax(hmax), m_hnom(hnom), m_N(N), m_beta(beta), m_thresSetPoint(thresSetPoint), m_kdN(Kd*N) {
 
 	m_eDVS_4337 = eDVS_4337;
 
@@ -67,7 +67,8 @@ void ePID::ComputePID() {
 
 	//Ui
 	if (hact >= m_hmax) {
-		const float hacti = hact * lut::expo[(-hact+lut::lim_min)*lut::epsilon];
+		//const float hacti = hact * lut::expo[(-hact+lut::lim_min)*lut::epsilon];
+		const float hacti = hact * std::exp(-hact);
 		//std::cout << "hacti = " << hacti << std::endl;
 		const float he = (hacti - m_hnom) * m_elim + m_hnom * e;
 		m_ui += m_ki * he;
