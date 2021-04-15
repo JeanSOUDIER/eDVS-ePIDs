@@ -14,12 +14,12 @@
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
 
-#define DVS_PACKET_TYPE 4
+#define DVS_PACKET_TYPE     4
 
 class DVS : public BaseThread {
     public:
-        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
-        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
+        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file);
+        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file);
         ~DVS();
 
         float GetXClusterPose();
@@ -34,7 +34,7 @@ class DVS : public BaseThread {
     private:
         void Restart();
     	void toLengthRead();
-        void Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp);
+        void Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file);
 
         int m_len;
 
@@ -49,7 +49,7 @@ class DVS : public BaseThread {
         float m_XClustPoseOld;
         float m_YClustPoseOld;
 
-        const int m_R = 6;
+        const int m_R = 5;
         const int m_safty = 3;
         const int m_Rmax = std::pow((m_R*m_safty), 2.0f);
         const int m_RmaxM = -m_Rmax;
@@ -71,6 +71,7 @@ class DVS : public BaseThread {
         logger *m_log;
         logger *m_logTrack;
         logger *m_logCPU;
+        logger *m_logCPUread;
         logger *m_logTime;
 };
 

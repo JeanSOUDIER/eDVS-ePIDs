@@ -1,18 +1,18 @@
 #include "DVS.hpp"
 
-DVS::DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
+DVS::DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file)
 	: BaseThread("DVS") {
 	m_usb = new Usb(nb_usb, bdrate);
-	Configuration(begin_timestamp);
+	Configuration(begin_timestamp, num_file);
 }
 
-DVS::DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
+DVS::DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file)
 	: BaseThread("DVS") {
     m_usb = new Usb(nb_usb, bdrate);
-	Configuration(begin_timestamp);
+	Configuration(begin_timestamp, num_file);
 }
 
-void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp) {
+void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file) {
 	m_event.store(false);
 	m_XClustPose = 64;
 	m_YClustPose = 64;
@@ -55,11 +55,12 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 		std::cout << "DVS not start" << std::endl;
 	}
 
-	m_log = new logger("DVS_points", begin_timestamp);
-	m_logTrack = new logger("Cluster_points", begin_timestamp);
-	m_logCPU = new logger("DVS_timing", begin_timestamp);
+	m_log = new logger("DVS_points", begin_timestamp, num_file);
+	m_logTrack = new logger("Cluster_points", begin_timestamp, num_file);
+	m_logCPU = new logger("DVS_timing", begin_timestamp, num_file);
+	m_logCPUread = new logger("Read_timing", begin_timestamp, num_file);
 
-    m_logTime = new logger("Time", begin_timestamp);
+    m_logTime = new logger("Time", begin_timestamp, num_file);
     m_logTime->Write({ 0, 0 });
 }
 
@@ -68,6 +69,7 @@ DVS::~DVS() {
     delete m_usb;
 	delete m_log;
 	delete m_logCPU;
+	delete m_logCPUread;
 	delete m_logTrack;
 	delete m_logTime;
 }
@@ -85,13 +87,14 @@ void* DVS::ThreadRun() {
 	m_logTime->Tic();
 	m_usb->SendBytes("E+\n");           //enable event sending
 	while (GetStartValue()) {
-		m_logCPU->Tic();
     	//read datas
+		m_logCPUread->Tic();
         buffer = m_usb->ReadBytes(4000);
 		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
+		m_logCPUread->Tac();
 
 		if(buf.size() > m_len) {
-
+			m_logCPU->Tic();
 			//extraction
 			#if DVS_PACKET_TYPE == 0
 				y = buf.at(0) & 0x7F;
@@ -162,7 +165,7 @@ void* DVS::ThreadRun() {
 			} else {
 				//save
 				m_Told = t;
-				if(std::pow((m_XClustPose - x),2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
+				if(std::pow((m_XClustPose - x), 2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
 					m_log->WriteN({x, y, 1});
 					m_log->Tac();
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
@@ -189,8 +192,8 @@ void* DVS::ThreadRun() {
 			#if DVS_PACKET_TYPE == 1
 				m_len = 3;
 			#endif
+			m_logCPU->Tac();
 		}
-		m_logCPU->Tac();
     }
     m_logTime->Tac();
 	m_usb->SendBytes("E-\n");           //disable event sending

@@ -10,6 +10,25 @@ Tsensor = table2array(readtable(strcat('files/DVS_timing_',Nfile,'.csv')));
 Tcontroler = table2array(readtable(strcat('files/ePID_timing_',Nfile,'.csv')));
 Dsensor = table2array(readtable(strcat('files/DVS_points_',Nfile,'.csv')));
 Dtracker = table2array(readtable(strcat('files/Cluster_points_',Nfile,'.csv')));
+grapher = 3;
+if isfile(strcat('files/Read_timing_',Nfile,'.csv')) ~= 0
+    Tread = table2array(readtable(strcat('files/Read_timing_',Nfile,'.csv')));
+    grapher = grapher+1;
+    Yread = zeros(1,Ttime(:,2)-Ttime(:,1));
+    TdiffRead = Tread(:,2)-Tread(:,1);
+    for i = 1:length(Tread)
+        Yread(:,Tread(i,1)-Ttime(:,1):Tread(i,1)-Ttime(:,1)+TdiffRead(i,1)) = ones(1,TdiffRead(i,1)+1);
+    end
+end
+if isfile(strcat('files/hard_timing_',Nfile,'.csv')) ~= 0
+    Thard = table2array(readtable(strcat('files/hard_timing_',Nfile,'.csv')));
+    grapher = grapher+1;
+    Yhard = zeros(1,Ttime(:,2)-Ttime(:,1));
+    TdiffHard = Thard(:,2)-Thard(:,1);
+    for i = 1:length(Thard)
+        Yhard(:,Thard(i,1)-Ttime(:,1):Thard(i,1)-Ttime(:,1)+TdiffHard(i,1)) = ones(1,TdiffHard(i,1)+1);
+    end
+end
 
 Ysensor = zeros(1,Ttime(:,2)-Ttime(:,1));
 TdiffSensor = Tsensor(:,2)-Tsensor(:,1);
@@ -36,7 +55,7 @@ end
 axi = Ttime(:,2)-Ttime(:,1);
 
 figure(1);
-tiledlayout(3,1);
+tiledlayout(grapher,1);
 nexttile;
 hold on;
 title('Responses');
@@ -44,12 +63,24 @@ xlabel('time');
 ylabel('position [mm]');
 stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
 xlim([0 axi]);
+ylim([-70 70]);
 stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
 xlim([0 axi]);
+ylim([-70 70]);
 stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
 xlim([0 axi]);
+ylim([-70 70]);
 legend({'Y','Ysp','U'},'Location','northeast');
 hold off;
+
+if isfile(strcat('files/Read_timing_',Nfile,'.csv')) ~= 0
+    nexttile;
+    plot(Yread);
+    title('CPU load form reading USB');
+    xlabel('time');
+    ylabel('CPU used [bool]');
+    axis([0 axi -0.1 1.1]);
+end
 
 nexttile;
 plot(Ysensor);
@@ -64,6 +95,15 @@ title('CPU load form controller');
 xlabel('time');
 ylabel('CPU used [bool]');
 axis([0 axi -0.1 1.1]);
+
+if isfile(strcat('files/hard_timing_',Nfile,'.csv')) ~= 0
+    nexttile;
+    plot(Yhard);
+    title('CPU load form appling command');
+    xlabel('time');
+    ylabel('CPU used [bool]');
+    axis([0 axi -0.1 1.1]);
+end
 
 figure(2);
 hold on;
@@ -92,10 +132,22 @@ loadController = sum(Ycontroler)/(Dtracker(length(Dtracker),4)-Dtracker(1,4));
 fprintf('Tracker load %f %%\n',loadTracker);
 fprintf('Controller load %f %%\n',loadController);
 
-MeanTimeTracker = sum(TdiffSensor)/length(TdiffSensor);
+MeanTimeTracker = sum(TdiffSensor(1:length(TdiffSensor)-1))/(length(TdiffSensor)-1);
 MaxEventRateTracker = 1/(MeanTimeTracker*1e-3);
-MeanTimeController = sum(Tdiffconstroler)/length(Tdiffconstroler);
+MeanTimeController = sum(Tdiffconstroler(1:length(Tdiffconstroler)-1))/(length(Tdiffconstroler)-1);
 MaxEventRateController = 1/(MeanTimeController*1e-3);
 
 fprintf('Mean time tracker %f us, %f Kevts/s\n',MeanTimeTracker,MaxEventRateTracker);
 fprintf('Mean time controller %f us, %f Kevts/s\n',MeanTimeController,MaxEventRateController);
+
+if isfile(strcat('files/Read_timing_',Nfile,'.csv')) ~= 0
+    MeanTimeRead = sum(TdiffRead(1:length(TdiffRead)-1))/(length(TdiffRead)-1);
+    MaxEventRateRead = 1/(MeanTimeRead*1e-3);
+    fprintf('Mean time reading %f us, %f Kevts/s\n',MeanTimeRead,MaxEventRateRead);
+end
+
+if isfile(strcat('files/hard_timing_',Nfile,'.csv')) ~= 0
+    MeanTimeHard = sum(TdiffHard(1:length(TdiffHard)-1))/(length(TdiffHard)-1);
+    MaxEventRateHard = 1/(MeanTimeHard*1e-3);
+    fprintf('Mean time command apply %f us, %f Kevts/s\n',MeanTimeHard,MaxEventRateHard);
+end

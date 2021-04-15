@@ -16,7 +16,7 @@
 
 class ePID : public BaseThread {
 	public:
-		ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const float Kp, const float Ki, const float Kd, const float hmax = 200000, const float hnom = 20000, const unsigned int N = 100, const float beta = 1, const float thresSetPoint = 0.1, DVS* eDVS_4337 = NULL);
+		ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float hmax = 200000, const float hnom = 20000, const unsigned int N = 100, const float beta = 1, const float thresSetPoint = 0.1, DVS* eDVS_4337 = NULL);
 		~ePID();
 
 		void SetPoint(float sp);
@@ -53,6 +53,7 @@ class ePID : public BaseThread {
 
 		logger *m_log;
 		logger *m_logCPU;
+		logger *m_logCPUhard;
 };
 
 #endif //EPID_H

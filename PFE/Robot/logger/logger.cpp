@@ -1,13 +1,20 @@
 #include "logger.hpp"
 
-logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, char delimiter)
-	: m_begin_timestamp(begin_timestamp), m_delimiter(delimiter) {
+logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, char delimiter)
+	: m_begin_timestamp(begin_timestamp), m_delimiter(delimiter), m_num_file(num_file) {
 	m_file_name = "files/" + fileName;
-	int cpt = 0;
-	while(IsExist(m_file_name+"_"+std::to_string(cpt)+".csv")) {cpt++;}
-	m_file_name = m_file_name+"_"+std::to_string(cpt--)+".csv";
+	if(m_num_file < 0) {
+		int cpt = 0;
+		while(IsExist(m_file_name+"_"+std::to_string(cpt)+".csv")) {cpt++;}
+		cpt;
+		m_file_name = m_file_name+"_"+std::to_string(cpt)+".csv";
+		m_num_file = cpt;
+		std::cout << "num file = " << m_num_file << std::endl;
+	} else {
+		m_file_name = m_file_name+"_"+std::to_string(m_num_file)+".csv";
+	}
 	m_file = std::ofstream(m_file_name);
-	std::cout << "logger Start on " << m_file_name << std::endl;
+	std::cout << "logger Start on " << std::endl;
 }
 
 logger::~logger() {
@@ -104,3 +111,5 @@ void logger::TacF() {
 	m_file << static_cast<float>(nanosec.count() / 1000) << '\n';*/
 	m_file << static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()) << '\n';
 }
+
+const int logger::GetNumFile() {return m_num_file;}

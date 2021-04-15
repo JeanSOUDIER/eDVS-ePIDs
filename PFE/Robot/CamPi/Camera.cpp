@@ -2,7 +2,7 @@
 
 Camera::Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
 	: BaseThread("CamPi"), m_Te(Te) {
-	cap = new raspicam::RaspiCam_Cv();
+	//cap = new raspicam::RaspiCam_Cv();
 
     m_logTrack = new logger("Region_points", begin_timestamp);
     m_logCPU = new logger("Camera_timing", begin_timestamp);
@@ -11,20 +11,20 @@ Camera::Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_
     m_logTime->Write({0, 0});
     m_logTime->Tic();
 
-	if(!cap->open()) {
+	/*if(!cap->open()) {
         std::cout << "Could not initialize capturing...\n";
         m_logTime->Tac();
     } else {
     	m_x.store(0);
     	m_y.store(0);
     	StartThread();
-    }
+    }*/
 
     std::cout << "Camera Pi Start" << std::endl;
 }
 
 Camera::~Camera() {
-	delete cap;
+	//delete cap;
 	delete m_logCPU;
 	delete m_logTrack;
 	delete m_logTime;
@@ -39,18 +39,18 @@ void* Camera::ThreadRun() {
 			current_timestamp = std::chrono::high_resolution_clock::now();
 		}
 	}
-    cap->release();
+    //cap->release();
     m_logTime->Tac();
 	return ReturnFunction();
 }
 
 void Camera::Process() {
 	m_logCPU->Tic();
-    cv::Mat output, gray;
+    /*cv::Mat output, gray;
 
 	//getImg
-	cap->grab();
-    cap->retrieve(output);
+	//cap->grab();
+    //cap->retrieve(output);
 
     //to gray
     cv::cvtColor(output, gray, cv::COLOR_BGR2GRAY);
@@ -72,7 +72,7 @@ void Camera::Process() {
     }
 
     m_x.store((rectan.x+rectan.height/2)* m_kx + m_u0);
-    m_y.store((rectan.y+rectan.width/2)* m_ky + m_v0);
+    m_y.store((rectan.y+rectan.width/2)* m_ky + m_v0);*/
 	
 	m_logTrack->WriteFN({m_x.load(), m_y.load(), 0});
 	m_logTrack->TacF();

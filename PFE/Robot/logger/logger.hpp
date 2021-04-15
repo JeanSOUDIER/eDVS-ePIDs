@@ -12,7 +12,7 @@
 
 class logger {
 	public:
-		logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, char delimiter = ';');
+		logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file = -1, char delimiter = ';');
 		~logger();
 
 		void Write(const std::vector<int>& values);
@@ -28,11 +28,13 @@ class logger {
 		void Tic();
 		void Tac();
 		void TacF();
+		const int GetNumFile();
 	private:
 		bool IsExist(std::string name);
 
 		std::ofstream m_file;
 		const char m_delimiter = ';';
+		int m_num_file;
 		std::string m_file_name;
 		const std::chrono::time_point<std::chrono::high_resolution_clock> m_begin_timestamp;
 };

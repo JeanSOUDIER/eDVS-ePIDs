@@ -15,17 +15,19 @@ bool kbhit() {
 
 int main() {
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
+    logger l("Time",begin_timestamp);
+    const int num = l.GetNumFile();
 
-	ePID myPID(begin_timestamp, 1, 0, 0, 200000, 20000, 100, 1, 0.1, new DVS("ttyUSB0", 12000000, begin_timestamp));
+	ePID myPID(begin_timestamp, num, 1, 0, 0, 200000, 20000, 100, 1, 0.1, new DVS("ttyUSB0", 12000000, begin_timestamp, num));
     Hbridge Motor(28, 29); //38, 40
     myPID.StartThread();
 
     Motor.Set(-500);
     while(!kbhit() && myPID.GetStartValue()) {
-        delay(2000);
+        delay(1500);
 	    Motor.Set(1000);
         myPID.SetPoint(5);
-        delay(2000);
+        delay(1500);
 	    Motor.Set(-1000);
         myPID.SetPoint(-5);
     }

@@ -1,6 +1,6 @@
 #include "ePID.hpp"
 
-ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float beta, const float thresSetPoint, DVS *eDVS_4337)
+ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float hmax, const float hnom, const unsigned int N, const float beta, const float thresSetPoint, DVS *eDVS_4337)
 	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kd(Kd), m_hmax(hmax), m_hnom(hnom), m_N(N), m_beta(beta), m_thresSetPoint(thresSetPoint), m_kdN(Kd*N) {
 
 	m_eDVS_4337 = eDVS_4337;
@@ -13,8 +13,9 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 	//m_Arduino = new MotorWheel(3, 115200);
 	//m_Motor = new Hbridge(28, 29);
 
-	m_log = new logger("ePID_points", begin_timestamp);
-	m_logCPU = new logger("ePID_timing", begin_timestamp);
+	m_log = new logger("ePID_points", begin_timestamp, num_file);
+	m_logCPU = new logger("ePID_timing", begin_timestamp, num_file);
+	m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
 	m_eDVS_4337->StartThread();
 
@@ -25,6 +26,7 @@ ePID::~ePID() {
 	delete m_eDVS_4337;
 	delete m_log;
 	delete m_logCPU;
+	delete m_logCPUhard;
 	/*delete m_Arduino;
 	delete m_PWM;
 	delete m_Motor;*/
@@ -67,7 +69,7 @@ void ePID::ComputePID() {
 
 	//Ui
 	if (hact >= m_hmax) {
-		//const float hacti = hact * lut::expo[(-hact+lut::lim_min)*lut::epsilon];
+		//const float hacti = hact * lut::expo[static_cast<int>((-hact+lut::lim_min)*lut::epsilon)];
 		const float hacti = hact * std::exp(-hact);
 		//std::cout << "hacti = " << hacti << std::endl;
 		const float he = (hacti - m_hnom) * m_elim + m_hnom * e;
@@ -89,11 +91,14 @@ void ePID::ComputePID() {
 	m_yOld = y;
 	m_lastT = temp;
 	
-	//m_PWM->analogWrite(u);
-	//m_Arduino->SetSpeed(u);
-	//m_Motor->Set(u);
-
 	m_log->WriteFN({ y, ysp, u});
 	m_log->TacF();
 	m_logCPU->Tac();
+
+	//apply command
+	m_logCPUhard->Tic();
+	//m_PWM->analogWrite(u);
+	//m_Arduino->SetSpeed(u);
+	//m_Motor->Set(u);
+	m_logCPUhard->Tac();
 }
