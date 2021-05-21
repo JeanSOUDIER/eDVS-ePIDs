@@ -1,5 +1,10 @@
 #include "MotorWheel.hpp"
 
+MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate) {
+    m_usb = new Usb(nb_usb, bdrate);
+    std::cout << "MotorWheel start" << std::endl;
+}
+
 MotorWheel::MotorWheel(const int nb_usb, const int bdrate) {
     m_usb = new Usb(nb_usb, bdrate);
     std::cout << "MotorWheel start" << std::endl;
@@ -42,8 +47,16 @@ MotorWheel::~MotorWheel() {
     SetSpeed(speed.at(0), speed.at(1));
 }*/
 
+void MotorWheel::SetHbridge(int vel) {
+    if(vel > 0) {
+        SetSpeed(vel);
+    } else {
+        SetSpeed(-vel << 8);
+    }
+}
+
 void MotorWheel::SetSpeed(int vel) {
-    if(vel > 1023) {vel = 1023;std::cout << "speed sat H" << std::endl;}
+    if(vel > 65535) {vel = 1023;std::cout << "speed sat H" << std::endl;}
     if(vel < 0) {vel = 0;std::cout << "speed sat L" << std::endl;}
     const unsigned char Lc = static_cast<unsigned char>(vel>>8);
     const unsigned char Ld = static_cast<unsigned char>(vel%256);

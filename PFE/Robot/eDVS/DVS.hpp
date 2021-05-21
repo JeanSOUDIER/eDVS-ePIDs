@@ -18,8 +18,8 @@
 
 class DVS : public BaseThread {
     public:
-        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file);
-        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file);
+        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 2);
+        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 2);
         ~DVS();
 
         float GetXClusterPose();
@@ -28,6 +28,9 @@ class DVS : public BaseThread {
         long int GetLastT();
         int GetThreshold();
         bool GetEvent();
+        float GetError();
+
+        void SetSetPoint(float sp);
     protected:
         void* ThreadRun();
 
@@ -51,14 +54,17 @@ class DVS : public BaseThread {
 
         const int m_R = 5;
         const int m_safty = 3;
-        const int m_Rmax = std::pow((m_R*m_safty), 2.0f);
+        const int m_Rmax = std::pow((m_R*m_safty), 1.0f);
         const int m_RmaxM = -m_Rmax;
         const float m_alpha = 0.99;
         const float m_alpha_m1 = 1-m_alpha;
-        const int m_thresEvent = std::pow(10, 2.0f);
+        const int m_thresEvent = std::pow(10, 1.0f);
 
         std::atomic<long int> m_lastTimestamp;
         std::atomic<bool> m_event;
+        std::atomic<float> m_Xsp;
+        std::atomic<float> m_spEvent;
+        std::atomic<float> m_error;
 
         const float m_z0 = -150;
         const float m_fx = 151;
@@ -73,6 +79,8 @@ class DVS : public BaseThread {
         logger *m_logCPU;
         logger *m_logCPUread;
         logger *m_logTime;
+        
+        unsigned int m_cptEvts = 0;
 };
 
 #endif //DVS_H

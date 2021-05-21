@@ -13,12 +13,26 @@ bool kbhit() {
     return byteswaiting > 0;
 }
 
+#include "Robot/MotorWheel/MotorWheel.hpp"
+
 int main() {
-    std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
+	MotorWheel blink("ttyUSB_Teensy", 115200);
+
+    for(int i=0;i<10;i++) {
+        blink.SetHbridge(100);
+        delay(500);
+        std::cout << "change sens" << std::endl;
+        blink.SetHbridge(-100);
+        delay(500);
+    }
+    blink.SetHbridge(0);
+	
+
+    /*std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
     const int num = l.GetNumFile();
 
-	ePID myPID(begin_timestamp, num, 1, 0, 0, 200000, 20000, 100, 1, 0.1, new DVS("ttyUSB0", 12000000, begin_timestamp, num));
+    ePID myPID(begin_timestamp, num, -0.0990/2, -0.0460/10, -0.0252*100, 1749, new DVS("ttyUSB_DVS", 12000000, begin_timestamp, num));
     Hbridge Motor(28, 29); //38, 40
     myPID.StartThread();
 
@@ -35,7 +49,7 @@ int main() {
     delay(1000);
 
     Motor.Stop();
-	myPID.StopThread();
+	myPID.StopThread();*/
 
     return 0;
 }

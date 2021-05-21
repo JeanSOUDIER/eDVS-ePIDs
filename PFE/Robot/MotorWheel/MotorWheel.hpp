@@ -4,16 +4,19 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <string>
 
 #include "../RS232_CPP/Usb.hpp"
 
 class MotorWheel {
     public:
-        explicit MotorWheel(const int nb_usb, const int bdrate);
+        MotorWheel(const int nb_usb, const int bdrate);
+        MotorWheel(const std::string nb_usb, const int bdrate);
         ~MotorWheel();
 
         //void GoPos(const double x, const double y, const double a);
         //void SetSpeed(std::vector<int> speed);
+        void SetHbridge(int vel);
         void SetSpeed(int vel);
     private:
         Usb *m_usb;

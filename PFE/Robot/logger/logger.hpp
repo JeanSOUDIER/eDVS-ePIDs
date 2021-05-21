@@ -34,7 +34,7 @@ class logger {
 
 		std::ofstream m_file;
 		const char m_delimiter = ';';
-		int m_num_file;
+		int m_num_file = -1;
 		std::string m_file_name;
 		const std::chrono::time_point<std::chrono::high_resolution_clock> m_begin_timestamp;
 };
