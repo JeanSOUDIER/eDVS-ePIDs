@@ -17,7 +17,7 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 	m_XClustPose = 64;
 	m_YClustPose = 64;
 	m_XClustPoseOld = 64;
-	m_YClustPoseOld = 64;
+	m_YClustPoseOld = 53;
 
 	//config
 	toLengthRead();
@@ -171,9 +171,9 @@ void* DVS::ThreadRun() {
 				//save
 				m_Told = t;
 				//if(std::pow((m_XClustPose - x), 2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
-				m_log->WriteN({x, y, 1});
-				m_log->Tac();
-				if(std::fabs(m_XClustPose - x) < m_Rmax) {
+				if(std::fabs(m_XClustPose - x) < m_Rmax && std::fabs(y-53) < m_Rmax) {
+					m_log->WriteN({x, y, 1});
+					m_log->Tac();
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
 					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
@@ -189,6 +189,8 @@ void* DVS::ThreadRun() {
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}
 				} else {
+					m_log->WriteN({x, y, 0});
+					m_log->Tac();
 					if(m_spEvent.load()) {
 						m_spEvent.store(false);
 						const float temp = (m_XClustPose*m_kx+m_u0) - m_Xsp.load();

@@ -53,12 +53,11 @@ class DVS : public BaseThread {
         float m_YClustPoseOld;
 
         const int m_R = 5;
-        const int m_safty = 3;
-        const int m_Rmax = std::pow((m_R*m_safty), 1.0f);
-        const int m_RmaxM = -m_Rmax;
+        const int m_safty = 2;
+        const int m_Rmax = m_R*m_safty;
         const float m_alpha = 0.99;
         const float m_alpha_m1 = 1-m_alpha;
-        const int m_thresEvent = std::pow(10, 1.0f);
+        const int m_thresEvent = 10;
 
         std::atomic<long int> m_lastTimestamp;
         std::atomic<bool> m_event;

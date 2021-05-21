@@ -46,7 +46,6 @@ void* ePID::ThreadRun() {
 
 void ePID::ComputePID() {
 	m_logCPU->Tic();
-	m_event.store(false);
 	//Get inputs
 	const float y = m_eDVS_4337->GetXClusterPose();
 	const float e = m_eDVS_4337->GetError();
@@ -81,7 +80,7 @@ void ePID::ComputePID() {
 	m_lastT = temp;
 	
 	m_logCPU->Tac();
-	m_log->WriteFN({ y, ysp, u});
+	m_log->WriteFN({ y, e+y, u});
 	m_log->TacF();
 
 	//apply command

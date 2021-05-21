@@ -2,7 +2,7 @@ clear all;
 close all;
 clc;
 
-Nfile = '0';
+Nfile = '6';
 
 Ttime = table2array(readtable(strcat('files/Time_',Nfile,'.csv')));
 Data = table2array(readtable(strcat('files/ePID_points_',Nfile,'.csv')));
@@ -10,7 +10,7 @@ Tsensor = table2array(readtable(strcat('files/DVS_timing_',Nfile,'.csv')));
 Tcontroler = table2array(readtable(strcat('files/ePID_timing_',Nfile,'.csv')));
 Dsensor = table2array(readtable(strcat('files/DVS_points_',Nfile,'.csv')));
 Dtracker = table2array(readtable(strcat('files/Cluster_points_',Nfile,'.csv')));
-grapher = 3;
+grapher = 4;
 if isfile(strcat('files/Read_timing_',Nfile,'.csv')) ~= 0
     Tread = table2array(readtable(strcat('files/Read_timing_',Nfile,'.csv')));
     grapher = grapher+1;
@@ -67,11 +67,11 @@ ylim([-70 70]);
 stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
 xlim([0 axi]);
 ylim([-70 70]);
-stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
-xlim([0 axi]);
-ylim([-70 70]);
-legend({'Y','Ysp','U'},'Location','northeast');
+legend({'Y','Ysp'},'Location','northeast');
 hold off;
+nexttile;
+stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
+legend({'U'},'Location','northeast');
 
 if isfile(strcat('files/Read_timing_',Nfile,'.csv')) ~= 0
     nexttile;
