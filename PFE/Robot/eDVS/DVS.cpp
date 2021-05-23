@@ -13,9 +13,8 @@ DVS::DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono
 }
 
 void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file) {
-	m_event.store(false);
 	m_XClustPose = 64;
-	m_YClustPose = 64;
+	m_YClustPose = 53;
 	m_XClustPoseOld = 64;
 	m_YClustPoseOld = 53;
 
@@ -53,6 +52,8 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 		std::cout << "DVS start" << std::endl;
 	} else {
 		std::cout << "DVS not start" << std::endl;
+		g_working.store(false);
+		//SetWorking(false);
 	}
 
 	m_log = new logger("DVS_points", begin_timestamp, num_file);
@@ -63,12 +64,22 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
     m_logTime = new logger("Time", begin_timestamp, num_file);
     m_logTime->Write({ 0, 0 });
 
-    m_Xsp.store(0);
-    m_error.store(0);
-	m_spEvent.store(false);
+    g_event[0].store(false);
+    g_setpoint[0].store(0);
+    g_error[0].store(0);
+    g_feedback[0].store(0);
+    g_time[0].store(0);
+
+    /*SetEvent(false, 0);
+    SetSetPoint(0, 0);
+    SetError(0, 0);
+    SetFeedback(0, 0);
+    SetTime(0, 0);*/
 }
 
 DVS::~DVS() {
+	g_working.store(false);
+	//SetWorking(false);
 	StopThread();
 	std::cout << "evts ePID sended : " << m_cptEvts << std::endl;
     delete m_usb;
@@ -91,7 +102,7 @@ void* DVS::ThreadRun() {
 
 	m_logTime->Tic();
 	m_usb->SendBytes("E+\n");           //enable event sending
-	while (GetStartValue()) {
+	while(g_working.load()) {//GetWorking()) {
     	//read datas
 		m_logCPUread->Tic();
         buffer = m_usb->ReadBytes(4000);
@@ -170,7 +181,6 @@ void* DVS::ThreadRun() {
 			} else {
 				//save
 				m_Told = t;
-				//if(std::pow((m_XClustPose - x), 2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
 				if(std::fabs(m_XClustPose - x) < m_Rmax && std::fabs(y-53) < m_Rmax) {
 					m_log->WriteN({x, y, 1});
 					m_log->Tac();
@@ -178,30 +188,31 @@ void* DVS::ThreadRun() {
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
 					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
 					m_logTrack->TacF();
-					//if(std::pow((m_XClustPoseOld - m_XClustPose),2.0f) + std::pow((m_YClustPoseOld - m_YClustPose), 2.0f) > m_thresEvent) {
-					const float temp = (m_XClustPose*m_kx+m_u0) - m_Xsp.load();
+					const float temp2 = m_XClustPose*m_kx + m_u0;
+					const float temp = temp2 - g_setpoint[0].load();//GetSetPoint(0);
 					if(std::fabs(temp) >= m_thresEvent) {
-						m_error.store(temp);
-						m_XCluster.store(m_XClustPose*m_kx+m_u0);
-						m_lastTimestamp.store(t);
-						m_event.store(true);
+					    g_error[0].store(temp);
+					    g_feedback[0].store(temp2);
+					    g_time[0].store(t);
+						g_event[0].store(true);
+						/*SetError(temp, 0);
+						SetFeedback(temp2, 0);
+						SetTime(t, 0);
+						SetEvent(true, 0);*/
 						m_cptEvts++;
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
+					} else {
+						if(!g_event[0].load()) {//GetEvent(0)) {
+					    	g_time[0].store(t);
+							//SetTime(t, 0);
+						}
 					}
 				} else {
 					m_log->WriteN({x, y, 0});
 					m_log->Tac();
-					if(m_spEvent.load()) {
-						m_spEvent.store(false);
-						const float temp = (m_XClustPose*m_kx+m_u0) - m_Xsp.load();
-						if(std::fabs(temp) >= m_thresEvent) {
-							m_error.store(temp);
-							m_XCluster.store(m_XClustPose*m_kx+m_u0);
-							m_lastTimestamp.store(t);
-							m_event.store(true);
-							m_cptEvts++;
-							//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
-						}
+					if(!g_event[0].load()) {//GetEvent(0)) {
+					    g_time[0].store(t);
+						//SetTime(t, 0);
 					}
 				}
 			}
@@ -248,25 +259,6 @@ void DVS::Restart() {
     m_usb->SendBytes("E+\n");           //disable event sending
 }
 
-float DVS::GetXClusterPose() {return m_XCluster.load();}
-
-float DVS::GetYClusterPose() {return m_YCluster.load();}
-
-float DVS::GetError() {return m_error.load();}
-
 int DVS::GetRCluster() {return m_Rmax;}
 
-long int DVS::GetLastT() {return m_lastTimestamp.load();}
-
 int DVS::GetThreshold() {return m_thresEvent;}
-
-bool DVS::GetEvent() {
-	bool a = m_event.load();
-	m_event.store(false);
-	return a;
-}
-
-void DVS::SetSetPoint(float sp) {
-	m_Xsp.store(sp);
-	m_spEvent.store(true);
-}

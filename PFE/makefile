@@ -1,5 +1,8 @@
-MAIN: main.o Robot/RS232_CPP/rs232.o Robot/RS232_CPP/Usb.o Robot/logger/logger.o Robot/BaseThread/BaseThread.o Robot/Controller/HardCommand.o Robot/Controller/Hbridge.o Robot/MotorWheel/MotorWheel.o Robot/eDVS/DVS.o Robot/Controller/ePID.o Robot/Controller/PID.o Robot/CamPi/Camera.o
-	g++ -O3 -o eCHAIN Robot/RS232_CPP/rs232.o Robot/RS232_CPP/Usb.o Robot/logger/logger.o Robot/BaseThread/BaseThread.o Robot/Controller/HardCommand.o Robot/Controller/Hbridge.o Robot/MotorWheel/MotorWheel.o Robot/eDVS/DVS.o Robot/Controller/ePID.o Robot/Controller/PID.o Robot/CamPi/Camera.o main.o -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv
+MAIN: main.o Robot/var.o Robot/RS232_CPP/rs232.o Robot/RS232_CPP/Usb.o Robot/logger/logger.o Robot/BaseThread/BaseThread.o Robot/Controller/HardCommand.o Robot/Controller/Hbridge.o Robot/MotorWheel/MotorWheel.o Robot/eDVS/DVS.o Robot/Controller/ePID.o Robot/Controller/PID.o Robot/CamPi/Camera.o
+	g++ -O3 -o eCHAIN Robot/var.o Robot/RS232_CPP/rs232.o Robot/RS232_CPP/Usb.o Robot/logger/logger.o Robot/BaseThread/BaseThread.o Robot/Controller/HardCommand.o Robot/Controller/Hbridge.o Robot/MotorWheel/MotorWheel.o Robot/eDVS/DVS.o Robot/Controller/ePID.o Robot/Controller/PID.o Robot/CamPi/Camera.o main.o -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv
+
+var.o: Robot/var.cpp
+	g++ -O3 -o Robot/var.o -c Robot/var.cpp -Wall -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard
 
 rs232.o: Robot/RS232_CPP/rs232.c
 	g -O3 -o Robot/RS232_CPP/rs232.o -c Robot/RS232_CPP/rs232.c -Wall -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard
@@ -34,7 +37,7 @@ PID.o: Robot/Controller/PID.cpp
 ePID.o: Robot/Controller/ePID.cpp
 	g++ -O3 -o Robot/Controller/ePID.o -c Robot/Controller/ePID.cpp -Wall -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread
 
-main.o: main.cpp Robot/RS232_CPP/rs232.h Robot/RS232_CPP/Usb.hpp Robot/logger/logger.hpp Robot/BaseThread/BaseThread.hpp Robot/Controller/HardCommand.hpp Robot/Controller/Hbridge.hpp Robot/MotorWheel/MotorWheel.hpp Robot/eDVS/DVS.hpp Robot/Controller/ePID.hpp Robot/Controller/PID.hpp Robot/CamPi/Camera.hpp
+main.o: main.cpp Robot/var.hpp Robot/RS232_CPP/rs232.h Robot/RS232_CPP/Usb.hpp Robot/logger/logger.hpp Robot/BaseThread/BaseThread.hpp Robot/Controller/HardCommand.hpp Robot/Controller/Hbridge.hpp Robot/MotorWheel/MotorWheel.hpp Robot/eDVS/DVS.hpp Robot/Controller/ePID.hpp Robot/Controller/PID.hpp Robot/CamPi/Camera.hpp
 	g++ -O3 -o main.o -c main.cpp -Wall -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv
 
 clean:

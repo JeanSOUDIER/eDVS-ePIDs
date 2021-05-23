@@ -1,21 +1,17 @@
 #include "ePID.hpp"
 
-ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, DVS* eDVS_4337, const float hnom, const float alpha_i, const float alpha_d)
-	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki/2), m_kdN(Kd*N), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d) {
-
-	m_eDVS_4337 = eDVS_4337;
-
-	m_elim = m_eDVS_4337->GetThreshold();
+ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom, const float alpha_i, const float alpha_d)
+	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki/2), m_kdN(Kd*N), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d) {
 
 	//m_PWM = new HardCommand(0);
 	//m_Arduino = new MotorWheel(3, 115200);
 	//m_Motor = new Hbridge(28, 29);
 
-	m_log = new logger("ePID_points", begin_timestamp, num_file);
-	m_logCPU = new logger("ePID_timing", begin_timestamp, num_file);
-	m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
+	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+	m_logCPUhard = new logger("hard_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 
-	m_eDVS_4337->StartThread();
+	g_command[m_nb_corrector].store(0);
 
 	std::cout << "ePID Start" << std::endl;
 }
@@ -31,14 +27,11 @@ ePID::~ePID() {
 	delete m_Motor;*/
 }
 
-void ePID::SetPoint(float sp) {
-	m_eDVS_4337->SetSetPoint(sp);
-}
-
 void* ePID::ThreadRun() {
-	while(GetStartValue() && m_eDVS_4337->GetStartValue()) {
-		if(m_eDVS_4337->GetEvent()) {
+	while(g_working.load()) {
+		if(g_event[m_nb_corrector].load()) {
 			ComputePID();
+			g_event[m_nb_corrector].store(false);
 		}
 	}
 	return ReturnFunction();
@@ -47,12 +40,12 @@ void* ePID::ThreadRun() {
 void ePID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
-	const float y = m_eDVS_4337->GetXClusterPose();
-	const float e = m_eDVS_4337->GetError();
+	const float y = g_feedback[m_nb_corrector].load();
+	const float e = g_error[m_nb_corrector].load();
 	//std::cout << "Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
 	//Compute time
-	const unsigned int temp = m_eDVS_4337->GetLastT();
+	const unsigned int temp = g_time[m_nb_corrector].load();
 	const unsigned int hact = temp - m_lastT;
 	//std::cout << "hact = " << hact << " temp = " << temp << " last temp = " << m_lastT << std::endl;
 
@@ -78,16 +71,19 @@ void ePID::ComputePID() {
 	m_eOld = e;
 	m_yOld = y;
 	m_lastT = temp;
+	g_command[m_nb_corrector].store(u);
 	
 	m_logCPU->Tac();
-	m_log->WriteFN({ y, e+y, u});
+	m_log->WriteFN({y, g_setpoint[m_nb_corrector].load(), u});
 	m_log->TacF();
 
 	//apply command
 	m_logCPUhard->Tic();
-	//m_PWM->analogWrite(u);
-	//m_Arduino->SetSpeed(u);
-	//m_Motor->Set(u);
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		//m_PWM->analogWrite(u);
+		//m_Arduino->SetSpeed(u);
+		//m_Motor->Set(u);
+	}
 	m_logCPUhard->Tac();
 	m_cptEvts++;
 }

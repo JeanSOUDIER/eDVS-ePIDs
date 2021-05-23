@@ -10,6 +10,7 @@
 #include <wiringPi.h>
 #include <chrono>
 
+#include "../var.hpp"
 #include "../RS232_CPP/Usb.hpp"
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
@@ -22,15 +23,8 @@ class DVS : public BaseThread {
         DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 2);
         ~DVS();
 
-        float GetXClusterPose();
-        float GetYClusterPose();
         int GetRCluster();
-        long int GetLastT();
         int GetThreshold();
-        bool GetEvent();
-        float GetError();
-
-        void SetSetPoint(float sp);
     protected:
         void* ThreadRun();
 
@@ -45,8 +39,6 @@ class DVS : public BaseThread {
 
         unsigned int m_Told = 0;
 
-        std::atomic<float> m_XCluster;
-        std::atomic<float> m_YCluster;
         float m_XClustPose;
         float m_YClustPose;
         float m_XClustPoseOld;
@@ -57,13 +49,7 @@ class DVS : public BaseThread {
         const int m_Rmax = m_R*m_safty;
         const float m_alpha = 0.99;
         const float m_alpha_m1 = 1-m_alpha;
-        const int m_thresEvent = 10;
-
-        std::atomic<long int> m_lastTimestamp;
-        std::atomic<bool> m_event;
-        std::atomic<float> m_Xsp;
-        std::atomic<float> m_spEvent;
-        std::atomic<float> m_error;
+        const int m_thresEvent;
 
         const float m_z0 = -150;
         const float m_fx = 151;

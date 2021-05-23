@@ -5,6 +5,7 @@
 #include <atomic>
 #include <chrono>
 
+#include "../var.hpp"
 #include "../BaseThread/BaseThread.hpp"
 #include "../eDVS/DVS.hpp"
 #include "HardCommand.hpp"
@@ -14,10 +15,8 @@
 
 class PID : public BaseThread {
 	public:
-		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const unsigned int N = 100, const float beta = 1, DVS *eDVS_4337 = NULL);
+		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N = 100, const float beta = 1);
 		~PID();
-	
-		void SetPoint(float sp);
 	private:
 		void* ThreadRun();
 		void ComputePID();
@@ -29,14 +28,11 @@ class PID : public BaseThread {
 		const float m_kdN;
 		const float m_beta;
 		const unsigned int m_N;
+		const unsigned int m_nb_corrector;
 		
 		float m_yOld = 0;
 		float m_ui = 0;
 		float m_ud = 0;
-
-		DVS* m_eDVS_4337;
-
-		std::atomic<float> m_ysp;
 
 		HardCommand *m_PWM;
 		Hbridge *m_Motor;
@@ -44,6 +40,7 @@ class PID : public BaseThread {
 
 		logger *m_log;
 		logger *m_logCPU;
+		logger *m_logCPUhard;
 };
 
 #endif //PID_H

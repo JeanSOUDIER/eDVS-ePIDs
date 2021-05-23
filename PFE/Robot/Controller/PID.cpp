@@ -1,38 +1,32 @@
 #include "PID.hpp"
 
-PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const unsigned int N, const float beta, DVS *eDVS_4337)
-	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
-
-	m_eDVS_4337 = eDVS_4337;
-
-	m_ysp.store(0);
+PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta)
+	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
 
 	//m_PWM = new HardCommand(0);
 	//m_Arduino = new MotorWheel(3, 115200);
 	//m_Motor = new Hbridge(28, 29);
 
-	m_log = new logger("PID_points", begin_timestamp);
-	m_logCPU = new logger("PID_timing", begin_timestamp);
+	m_log = new logger("PID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+	m_logCPUhard = new logger("hard_timingTT"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+
+	g_command[m_nb_corrector].store(0);
 
 	std::cout << "PID Start" << std::endl;
 }
 
 PID::~PID() {
-	//delete m_eDVS_4337;
 	delete m_log;
 	delete m_logCPU;
+	delete m_logCPUhard;
 	delete m_Arduino;
 	delete m_PWM;
 	delete m_Motor;
 }
 
-void PID::SetPoint(float sp) {
-	std::cout << "new set point = " << sp << std::endl;
-	m_ysp.store(sp);
-}
-
 void* PID::ThreadRun() {
-	while (GetStartValue()) {
+	while (g_working.load()) {
 		auto begin_timestamp = std::chrono::high_resolution_clock::now();
 		ComputePID();
 		auto current_timestamp = std::chrono::high_resolution_clock::now();
@@ -46,8 +40,8 @@ void* PID::ThreadRun() {
 void PID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
-	const float ysp = m_ysp.load();
-	const float y = m_eDVS_4337->GetXClusterPose();
+	const float ysp = g_setpoint[m_nb_corrector].load();
+	const float y = g_feedback[m_nb_corrector].load();
 	const float e = ysp - y;
 	//std::cout << "Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
@@ -68,12 +62,17 @@ void PID::ComputePID() {
 
 	//Update
 	m_yOld = y;
-
-	//m_PWM->analogWrite(u);
-	//m_Arduino->SetSpeed(u);
-	//m_Motor->Set(u);
+	g_command[m_nb_corrector].store(u);
 	
+	m_logCPU->Tac();
 	m_log->WriteFN({y, ysp, u});
 	m_log->TacF();
-	m_logCPU->Tac();
+
+	m_logCPUhard->Tic();
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		//m_PWM->analogWrite(u);
+		//m_Arduino->SetSpeed(u);
+		//m_Motor->Set(u);
+	}
+	m_logCPUhard->Tac();
 }
