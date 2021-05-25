@@ -41,9 +41,9 @@ class ePID : public BaseThread {
 
 		DVS* m_eDVS_4337;
 
-		/*Hbridge *m_Motor;
-		HardCommand *m_PWM;
-		MotorWheel *m_Arduino;*/
+		//Hbridge *m_Motor;
+		//HardCommand *m_PWM;
+		MotorWheel *m_Arduino;
 
 		logger *m_log;
 		logger *m_logCPU;

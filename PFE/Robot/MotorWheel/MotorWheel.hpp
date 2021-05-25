@@ -16,10 +16,14 @@ class MotorWheel {
 
         //void GoPos(const double x, const double y, const double a);
         //void SetSpeed(std::vector<int> speed);
+        int ReadPose();
         void SetHbridge(int vel);
         void SetSpeed(int vel);
     private:
         Usb *m_usb;
+
+        std::vector<unsigned char> m_buf;
+        int m_temp = 0;
 };
 
 #endif //MOTORWHEEL_H

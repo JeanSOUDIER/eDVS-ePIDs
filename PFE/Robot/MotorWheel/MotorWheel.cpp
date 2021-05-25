@@ -47,16 +47,49 @@ MotorWheel::~MotorWheel() {
     SetSpeed(speed.at(0), speed.at(1));
 }*/
 
+int MotorWheel::ReadPose() {
+    std::vector<unsigned char> buffer;
+    buffer = m_usb->ReadBytes(4000);
+    /*std::copy(buffer.begin(), buffer.end(), back_inserter(m_buf));
+    if(buffer.size() > 3) {
+        if(m_buf.at(0) == 255) {
+            if((m_buf.at(1)+m_buf.at(2))%256 == m_buf.at(3)) {
+                m_temp = m_buf.at(1);
+                m_temp = m_temp << 8;
+                m_temp += m_buf.at(2);
+                //std::cout << m_temp << std::endl;
+            } else {
+                std::cout << "error cc" << std::endl;
+            }
+            m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
+        } else {
+            std::cout << "error sb" << std::endl;
+            m_buf.erase(m_buf.begin());
+        }
+    } else {
+        //std::cout << "error nd" << std::endl;
+    }*/
+    if(buffer.size() > 0) {
+        if(buffer.at(buffer.size()-1) != 10) {
+            //std::cout << (int)(buffer.at(buffer.size()-1)) << std::endl;
+            m_temp = buffer.at(buffer.size()-1)*2+240;
+        } else {
+            std::cout << "error 10" << std::endl;
+        }
+    }
+    return m_temp;
+}
+
 void MotorWheel::SetHbridge(int vel) {
     if(vel > 0) {
-        SetSpeed(vel);
+        SetSpeed(vel+0x1000);
     } else {
-        SetSpeed(-vel << 8);
+        SetSpeed(-vel);
     }
 }
 
 void MotorWheel::SetSpeed(int vel) {
-    if(vel > 65535) {vel = 1023;std::cout << "speed sat H" << std::endl;}
+    if(vel > 65535) {vel = 65535;std::cout << "speed sat H" << std::endl;}
     if(vel < 0) {vel = 0;std::cout << "speed sat L" << std::endl;}
     const unsigned char Lc = static_cast<unsigned char>(vel>>8);
     const unsigned char Ld = static_cast<unsigned char>(vel%256);

@@ -8,7 +8,7 @@
 #include <chrono>
 #include <ctime>
 
-//#define NO_LOG
+#define NO_LOG
 
 class logger {
 	public:

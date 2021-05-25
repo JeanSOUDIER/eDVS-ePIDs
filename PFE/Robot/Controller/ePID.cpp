@@ -4,7 +4,7 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki/2), m_kdN(Kd*N), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d) {
 
 	//m_PWM = new HardCommand(0);
-	//m_Arduino = new MotorWheel(3, 115200);
+	m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
 	//m_Motor = new Hbridge(28, 29);
 
 	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
@@ -22,9 +22,9 @@ ePID::~ePID() {
 	delete m_log;
 	delete m_logCPU;
 	delete m_logCPUhard;
-	/*delete m_Arduino;
-	delete m_PWM;
-	delete m_Motor;*/
+	delete m_Arduino;
+	//delete m_PWM;
+	//delete m_Motor;
 }
 
 void* ePID::ThreadRun() {
@@ -32,6 +32,10 @@ void* ePID::ThreadRun() {
 		if(g_event[m_nb_corrector].load()) {
 			ComputePID();
 			g_event[m_nb_corrector].store(false);
+		}
+		g_feedback[m_nb_corrector].store(m_Arduino->ReadPose());
+		if(std::fabs(g_feedback[m_nb_corrector].load()-m_yOld) > m_elim) {
+			ComputePID();
 		}
 	}
 	return ReturnFunction();
@@ -41,8 +45,9 @@ void ePID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
 	const float y = g_feedback[m_nb_corrector].load();
-	const float e = g_error[m_nb_corrector].load();
-	//std::cout << "Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
+	const float ysp = g_setpoint[m_nb_corrector].load();
+	const float e = ysp-y;
+	std::cout << "Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
 	//Compute time
 	const unsigned int temp = g_time[m_nb_corrector].load();
@@ -65,7 +70,7 @@ void ePID::ComputePID() {
 	//std::cout << "Yold = " << m_yOld << " ud = " << m_ud << std::endl;
 
 	const float u = up + m_ui + m_ud;
-	//std::cout << "u = " << u << std::endl;
+	std::cout << "u = " << u << std::endl;
 
 	//Update
 	m_eOld = e;
@@ -81,7 +86,7 @@ void ePID::ComputePID() {
 	m_logCPUhard->Tic();
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		//m_PWM->analogWrite(u);
-		//m_Arduino->SetSpeed(u);
+		m_Arduino->SetSpeed(-u);
 		//m_Motor->Set(u);
 	}
 	m_logCPUhard->Tac();
