@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <atomic>
 
 #include "../RS232_CPP/Usb.hpp"
 
@@ -24,6 +25,8 @@ class MotorWheel {
 
         std::vector<unsigned char> m_buf;
         int m_temp = 0;
+
+        std::atomic<bool> m_mutexR, m_mutexW;
 };
 
 #endif //MOTORWHEEL_H

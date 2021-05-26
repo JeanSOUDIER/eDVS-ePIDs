@@ -4,7 +4,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
 
 	m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
-	m_Motor = new Hbridge(28, 29);
+	//m_Motor = new Hbridge(28, 29);
 
 	m_log = new logger("PID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
@@ -18,7 +18,7 @@ PID::~PID() {
 	delete m_logCPU;
 	delete m_logCPUhard;
 	delete m_Arduino;
-	delete m_Motor;
+	//delete m_Motor;
 }
 
 void* PID::ThreadRun() {
@@ -71,7 +71,7 @@ void PID::ComputePID() {
 
 	m_logCPUhard->Tic();
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		m_Motor->Set(u);
+		m_Arduino->SetHbridge(u);
 	} else {
 		g_setpoint[m_nb_corrector+1].store(u);
 	}

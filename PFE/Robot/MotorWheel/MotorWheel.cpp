@@ -3,11 +3,17 @@
 MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate) {
     m_usb = new Usb(nb_usb, bdrate);
     std::cout << "MotorWheel start" << std::endl;
+
+    m_mutexR.store(false);
+    m_mutexW.store(false);
 }
 
 MotorWheel::MotorWheel(const int nb_usb, const int bdrate) {
     m_usb = new Usb(nb_usb, bdrate);
     std::cout << "MotorWheel start" << std::endl;
+
+    m_mutexR.store(false);
+    m_mutexW.store(false);
 }
 
 MotorWheel::~MotorWheel() {
@@ -49,42 +55,48 @@ MotorWheel::~MotorWheel() {
 
 int MotorWheel::ReadPose() {
     std::vector<unsigned char> buffer;
+    while(m_mutexW.load()) {}
+    m_mutexR.store(true);
     buffer = m_usb->ReadBytes(4000);
-    /*std::copy(buffer.begin(), buffer.end(), back_inserter(m_buf));
-    if(buffer.size() > 3) {
+    m_mutexR.store(false);
+    std::copy(buffer.begin(), buffer.end(), back_inserter(m_buf));
+    while(m_buf.size() > 3) {
         if(m_buf.at(0) == 255) {
             if((m_buf.at(1)+m_buf.at(2))%256 == m_buf.at(3)) {
                 m_temp = m_buf.at(1);
                 m_temp = m_temp << 8;
                 m_temp += m_buf.at(2);
                 //std::cout << m_temp << std::endl;
+                m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
             } else {
                 std::cout << "error cc" << std::endl;
+                m_buf.erase(m_buf.begin());
             }
-            m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
         } else {
             std::cout << "error sb" << std::endl;
             m_buf.erase(m_buf.begin());
         }
-    } else {
-        //std::cout << "error nd" << std::endl;
-    }*/
-    if(buffer.size() > 0) {
-        if(buffer.at(buffer.size()-1) != 10) {
+    }
+    /*if(buffer.size() > 0) {
+        //if(buffer.at(buffer.size()-1) != 10) {
             //std::cout << (int)(buffer.at(buffer.size()-1)) << std::endl;
             m_temp = buffer.at(buffer.size()-1)*2+240;
-        } else {
+        /*} else {
             std::cout << "error 10" << std::endl;
-        }
-    }
+        }*/
+    //}
     return m_temp;
 }
 
 void MotorWheel::SetHbridge(int vel) {
-    if(vel > 0) {
-        SetSpeed(vel+0x1000);
+    if(std::fabs(vel) > 70) {
+        if(vel > 0) {
+            SetSpeed(vel+0x1000);
+        } else {
+            SetSpeed(-vel);
+        }
     } else {
-        SetSpeed(-vel);
+        SetSpeed(0);
     }
 }
 
@@ -96,5 +108,8 @@ void MotorWheel::SetSpeed(int vel) {
     const int cc = Lc+Ld;
     const unsigned char c = static_cast<unsigned char>(cc%256);
     const std::vector<char> sending{static_cast<char>(255), static_cast<char>(Lc), static_cast<char>(Ld), static_cast<char>(c)};
+    while(m_mutexR.load()) {}
+    m_mutexW.store(true);
     m_usb->SendBytes(sending);
+    m_mutexW.store(false);
 }

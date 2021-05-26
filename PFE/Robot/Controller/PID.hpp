@@ -35,7 +35,7 @@ class PID : public BaseThread {
 		float m_ui = 0;
 		float m_ud = 0;
 
-		Hbridge *m_Motor;
+		//Hbridge *m_Motor;
 		MotorWheel *m_Arduino;
 
 		logger *m_log;
