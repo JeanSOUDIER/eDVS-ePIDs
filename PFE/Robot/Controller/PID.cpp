@@ -8,7 +8,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 
 	m_log = new logger("PID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
-	m_logCPUhard = new logger("hard_timingTT"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+	m_logCPUhard = new logger("hard_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 
 	std::cout << "PID Start" << std::endl;
 }
