@@ -52,8 +52,6 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 		std::cout << "DVS start" << std::endl;
 	} else {
 		std::cout << "DVS not start" << std::endl;
-		g_working.store(false);
-		//SetWorking(false);
 	}
 
 	m_log = new logger("DVS_points", begin_timestamp, num_file);
@@ -66,20 +64,11 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 
     g_event[0].store(false);
     g_setpoint[0].store(0);
-    g_error[0].store(0);
     g_feedback[0].store(0);
     g_time[0].store(0);
-
-    /*SetEvent(false, 0);
-    SetSetPoint(0, 0);
-    SetError(0, 0);
-    SetFeedback(0, 0);
-    SetTime(0, 0);*/
 }
 
 DVS::~DVS() {
-	g_working.store(false);
-	//SetWorking(false);
 	StopThread();
 	std::cout << "evts ePID sended : " << m_cptEvts << std::endl;
     delete m_usb;
@@ -102,7 +91,7 @@ void* DVS::ThreadRun() {
 
 	m_logTime->Tic();
 	m_usb->SendBytes("E+\n");           //enable event sending
-	while(g_working.load()) {//GetWorking()) {
+	while(GetStartValue()) {
     	//read datas
 		m_logCPUread->Tic();
         buffer = m_usb->ReadBytes(4000);
@@ -189,30 +178,23 @@ void* DVS::ThreadRun() {
 					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
 					m_logTrack->TacF();
 					const float temp2 = m_XClustPose*m_kx + m_u0;
-					const float temp = temp2 - g_setpoint[0].load();//GetSetPoint(0);
+					const float temp = temp2 - g_setpoint[0].load();
 					if(std::fabs(temp) >= m_thresEvent) {
-					    g_error[0].store(temp);
 					    g_feedback[0].store(temp2);
 					    g_time[0].store(t);
 						g_event[0].store(true);
-						/*SetError(temp, 0);
-						SetFeedback(temp2, 0);
-						SetTime(t, 0);
-						SetEvent(true, 0);*/
 						m_cptEvts++;
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					} else {
-						if(!g_event[0].load()) {//GetEvent(0)) {
+						if(!g_event[0].load()) {
 					    	g_time[0].store(t);
-							//SetTime(t, 0);
 						}
 					}
 				} else {
 					m_log->WriteN({x, y, 0});
 					m_log->Tac();
-					if(!g_event[0].load()) {//GetEvent(0)) {
+					if(!g_event[0].load()) {
 					    g_time[0].store(t);
-						//SetTime(t, 0);
 					}
 				}
 			}

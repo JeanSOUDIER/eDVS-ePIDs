@@ -11,14 +11,11 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 	m_logCPUhard = new logger("hard_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 
-	g_command[m_nb_corrector].store(0);
-
 	std::cout << "ePID Start" << std::endl;
 }
 
 ePID::~ePID() {
 	std::cout << "evts ePID computed : " << m_cptEvts << std::endl;
-	delete m_eDVS_4337;
 	delete m_log;
 	delete m_logCPU;
 	delete m_logCPUhard;
@@ -28,7 +25,7 @@ ePID::~ePID() {
 }
 
 void* ePID::ThreadRun() {
-	while(g_working.load()) {
+	while(GetStartValue()) {
 		if(g_event[m_nb_corrector].load()) {
 			ComputePID();
 			g_event[m_nb_corrector].store(false);
@@ -44,8 +41,8 @@ void* ePID::ThreadRun() {
 void ePID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
-	const float y = g_feedback[m_nb_corrector].load();
 	const float ysp = g_setpoint[m_nb_corrector].load();
+	const float y = g_feedback[m_nb_corrector].load();
 	const float e = ysp-y;
 	std::cout << "Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
@@ -76,10 +73,9 @@ void ePID::ComputePID() {
 	m_eOld = e;
 	m_yOld = y;
 	m_lastT = temp;
-	g_command[m_nb_corrector].store(u);
 	
 	m_logCPU->Tac();
-	m_log->WriteFN({y, g_setpoint[m_nb_corrector].load(), u});
+	m_log->WriteFN({y, ysp, u});
 	m_log->TacF();
 
 	//apply command
@@ -88,6 +84,8 @@ void ePID::ComputePID() {
 		//m_PWM->analogWrite(u);
 		m_Arduino->SetSpeed(-u);
 		//m_Motor->Set(u);
+	} else {
+		g_setpoint[m_nb_corrector+1].store(u);
 	}
 	m_logCPUhard->Tac();
 	m_cptEvts++;

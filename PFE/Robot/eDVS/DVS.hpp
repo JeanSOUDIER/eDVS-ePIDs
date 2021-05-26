@@ -10,7 +10,6 @@
 #include <wiringPi.h>
 #include <chrono>
 
-#include "../var.hpp"
 #include "../RS232_CPP/Usb.hpp"
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"

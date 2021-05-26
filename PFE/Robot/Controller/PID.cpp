@@ -3,15 +3,12 @@
 PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta)
 	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
 
-	//m_PWM = new HardCommand(0);
 	m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
-	//m_Motor = new Hbridge(28, 29);
+	m_Motor = new Hbridge(28, 29);
 
 	m_log = new logger("PID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
 	m_logCPUhard = new logger("hard_timingTT"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
-
-	g_command[m_nb_corrector].store(0);
 
 	std::cout << "PID Start" << std::endl;
 }
@@ -21,12 +18,11 @@ PID::~PID() {
 	delete m_logCPU;
 	delete m_logCPUhard;
 	delete m_Arduino;
-	//delete m_PWM;
-	//delete m_Motor;
+	delete m_Motor;
 }
 
 void* PID::ThreadRun() {
-	while (g_working.load()) {
+	while (GetStartValue()) {
 		auto begin_timestamp = std::chrono::high_resolution_clock::now();
 		ComputePID();
 		auto current_timestamp = std::chrono::high_resolution_clock::now();
@@ -68,7 +64,6 @@ void PID::ComputePID() {
 
 	//Update
 	m_yOld = y;
-	g_command[m_nb_corrector].store(u);
 	
 	m_logCPU->Tac();
 	m_log->WriteFN({y, ysp, u});
@@ -76,9 +71,9 @@ void PID::ComputePID() {
 
 	m_logCPUhard->Tic();
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		//m_PWM->analogWrite(u);
-		m_Arduino->SetHbridge(-u);
-		//m_Motor->Set(u);
+		m_Motor->Set(u);
+	} else {
+		g_setpoint[m_nb_corrector+1].store(u);
 	}
 	m_logCPUhard->Tac();
 }

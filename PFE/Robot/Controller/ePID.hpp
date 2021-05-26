@@ -6,7 +6,6 @@
 #include <chrono>
 #include <string>
 
-#include "../var.hpp"
 #include "../BaseThread/BaseThread.hpp"
 #include "../eDVS/DVS.hpp"
 #include "HardCommand.hpp"
@@ -38,8 +37,6 @@ class ePID : public BaseThread {
 		unsigned long m_lastT = 0;
 		float m_ui = 0;
 		float m_ud = 0;
-
-		DVS* m_eDVS_4337;
 
 		//Hbridge *m_Motor;
 		//HardCommand *m_PWM;
