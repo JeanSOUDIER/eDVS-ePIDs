@@ -4,9 +4,9 @@ clc;
 
 %serie of files to read
 Nfile = '0';
-Mode = "NONE";
-Mode2 = "ePID";
-SubMode = 2;
+Mode = "DVS";
+Mode2 = "PID";
+SubMode = 3;
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -98,33 +98,36 @@ end
         hold on;
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
         xlim([0 axi]);
-        ylim([200 700]);
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
         xlim([0 axi]);
-        ylim([200 700]);
+            ProperYaxisMulti(Data(:,1), Data(:,2));
         legend({'Y','Ysp'},'Location','northeast');
         hold off;
 
         %plot command
         nexttile;
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
+        xlim([0 axi]);
+        ProperYaxis(Data(:,3));
         legend({'U'},'Location','northeast');
 
         if SubMode > 2
             %plot response
+            nexttile;
             hold on;
             stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,1),'-or');
             xlim([0 axi]);
-            ylim([-70 70]);
             stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,2),'-og');
             xlim([0 axi]);
-            ylim([-70 70]);
+            ProperYaxisMulti(Data2(:,1), Data2(:,2));
             legend({'Y','Ysp'},'Location','northeast');
             hold off;
 
             %plot command
             nexttile;
             stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,3),'-ob');
+            xlim([0 axi]);
+            ProperYaxis(Data2(:,3));
             legend({'U'},'Location','northeast');
         end
     end
