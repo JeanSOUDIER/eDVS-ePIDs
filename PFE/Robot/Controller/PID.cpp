@@ -6,9 +6,13 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 	m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
 	//m_Motor = new Hbridge(28, 29);
 
-	m_log = new logger("PID_points"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
-	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
-	m_logCPUhard = new logger("hard_timing"+std::to_string(m_nb_corrector)+"_", begin_timestamp, num_file);
+	m_log = new logger("PID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
+	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
+	}
+
+	m_Arduino->SetLim(2);
 
 	std::cout << "PID Start" << std::endl;
 }
@@ -16,7 +20,9 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 PID::~PID() {
 	delete m_log;
 	delete m_logCPU;
-	delete m_logCPUhard;
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		delete m_logCPUhard;
+	}
 	delete m_Arduino;
 	//delete m_Motor;
 }
@@ -69,13 +75,13 @@ void PID::ComputePID() {
 	m_log->WriteFN({y, ysp, u});
 	m_log->TacF();
 
-	m_logCPUhard->Tic();
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		m_logCPUhard->Tic();
 		m_Arduino->SetHbridge(u);
+		m_logCPUhard->Tac();
 	} else {
 		g_setpoint[m_nb_corrector+1].store(u);
 	}
-	m_logCPUhard->Tac();
 }
 
 int PID::read() {

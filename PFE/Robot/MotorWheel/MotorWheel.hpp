@@ -20,6 +20,7 @@ class MotorWheel {
         int ReadPose();
         void SetHbridge(int vel);
         void SetSpeed(int vel);
+        void SetLim(int lim);
     private:
         Usb *m_usb;
 

@@ -91,13 +91,22 @@ int MotorWheel::ReadPose() {
 void MotorWheel::SetHbridge(int vel) {
     if(std::fabs(vel) > 70) {
         if(vel > 0) {
-            SetSpeed(vel+0x1000);
+            if(vel > 256) {vel = 256;}
+            SetSpeed(vel + 0x1000);
         } else {
-            SetSpeed(-vel);
+            vel *= -1;
+            if(vel > 256) {vel = 256;}
+            SetSpeed(vel);
         }
     } else {
         SetSpeed(0);
     }
+}
+
+void MotorWheel::SetLim(int lim) {
+    if(lim > 256) {lim = 256;}
+    if(lim < 0) {lim = 0;}
+    SetSpeed(lim + 0x4000);
 }
 
 void MotorWheel::SetSpeed(int vel) {

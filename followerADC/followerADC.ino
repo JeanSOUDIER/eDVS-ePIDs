@@ -2,7 +2,8 @@
 
 int cmd = 0;
 int sens = 0;
-int fb = 0;
+int r_old = 0;
+int lim = 0;
 
 //Serial
 int vel = 0;
@@ -10,13 +11,22 @@ int RcvData = 0;
 int mode = 0;
 int cc = 0;
 
+void Sending(int msg) {
+  Serial.write(255);
+  int temp = (unsigned char)(msg/256);
+  Serial.write(temp);
+  int temp2 = (unsigned char)(msg%256);
+  Serial.write(temp2);
+  Serial.write((unsigned char)((temp+temp2)%256));
+}
+
 void setup() {
   pinMode(13, OUTPUT);
   digitalWrite(13, 0);
   Serial.begin(115200);
   analogWrite(5, 0);
   analogWrite(6, 0);
-  fb = analogRead(A0);
+  r_old = 400;
   digitalWrite(13, 1);
 }
 
@@ -29,15 +39,14 @@ void loop() {
     analogWrite(5, cmd);
   }
   int r = analogRead(A0);
-  //if(abs(fb-r) > lim) {
-    Serial.write(255);
-    int temp = (unsigned char)(r/256);
-    Serial.write(temp);
-    int temp2 = (unsigned char)(r%256);
-    Serial.write(temp2);
-    Serial.write((unsigned char)((temp+temp2)%256));
-  //}
-  delayMicroseconds(100);
+  if(r-r_old >= lim) {
+    r_old += lim;
+    Sending(r_old);
+  } else if(r-r_old <= -lim) {
+    r_old -= lim;
+    Sending(r_old);
+  }
+  delay(1);
 }
 
 void serialEvent() {
@@ -65,8 +74,14 @@ void serialEvent() {
           break;
         case 3: // Checksum char = sum(bits[])%256
           if(cc%256 == c) {
-            cmd = vel & 0xEFFF;
-            sens = vel & 0x1000;
+            if(vel&0x4000) {
+              lim = vel & 0x01FF;
+              int r = analogRead(A0);
+              Sending(r);
+            } else {
+              cmd = vel & 0x01FF;
+              sens = vel & 0x1000;
+            }
           }
           mode = 0;
           break;

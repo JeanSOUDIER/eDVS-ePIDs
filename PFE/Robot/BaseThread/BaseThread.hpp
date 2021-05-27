@@ -10,7 +10,6 @@
 
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_setpoint;
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_feedback;
-extern std::array<std::atomic<long int>, LENGTH_PID_CHAIN> g_time;
 extern std::array<std::atomic<bool>, LENGTH_PID_CHAIN> g_event;
 
 #if OS == OS_WINDOWS

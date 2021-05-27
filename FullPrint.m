@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '1';
-Mode = "DVS";
-Mode2 = "ePID";
-SubMode = 0;
+Nfile = '0';
+Mode = "NONE";
+Mode2 = "PID";
+SubMode = 2;
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -24,16 +24,16 @@ if(Mode2 == "ePID")
             Data = ReadCSVfiles('ePID_points', Nfile);
             Tcontroler = ReadCSVfiles('ePID_timing', Nfile);
         case 1
-            Data = ReadCSVfiles('ePID_points1', Nfile);
-            Tcontroler = ReadCSVfiles('ePID_timing1', Nfile);
+            Data = ReadCSVfiles('ePID_points0', Nfile);
+            Tcontroler = ReadCSVfiles('ePID_timing0', Nfile);
         case 2
-            Data = ReadCSVfiles('ePID_points2', Nfile);
-            Tcontroler = ReadCSVfiles('ePID_timing2', Nfile);
-        otherwise
             Data = ReadCSVfiles('ePID_points1', Nfile);
             Tcontroler = ReadCSVfiles('ePID_timing1', Nfile);
-            Data2 = ReadCSVfiles('ePID_points2', Nfile);
-            Tcontroler2 = ReadCSVfiles('ePID_timing2', Nfile);
+        otherwise
+            Data = ReadCSVfiles('ePID_points0', Nfile);
+            Tcontroler = ReadCSVfiles('ePID_timing0', Nfile);
+            Data2 = ReadCSVfiles('ePID_points1', Nfile);
+            Tcontroler2 = ReadCSVfiles('ePID_timing1', Nfile);
     end
 elseif(Mode2 == "PID")
     switch SubMode
@@ -41,16 +41,16 @@ elseif(Mode2 == "PID")
             Data = ReadCSVfiles('PID_points', Nfile);
             Tcontroler = ReadCSVfiles('PID_timing', Nfile);
         case 1
-            Data = ReadCSVfiles('PID_points1', Nfile);
-            Tcontroler = ReadCSVfiles('PID_timing1', Nfile);
+            Data = ReadCSVfiles('PID_points0', Nfile);
+            Tcontroler = ReadCSVfiles('PID_timing0', Nfile);
         case 2
-            Data = ReadCSVfiles('PID_points2', Nfile);
-            Tcontroler = ReadCSVfiles('PID_timing2', Nfile);
-        otherwise
             Data = ReadCSVfiles('PID_points1', Nfile);
             Tcontroler = ReadCSVfiles('PID_timing1', Nfile);
-            Data2 = ReadCSVfiles('PID_points2', Nfile);
-            Tcontroler2 = ReadCSVfiles('PID_timing2', Nfile);
+        otherwise
+            Data = ReadCSVfiles('PID_points0', Nfile);
+            Tcontroler = ReadCSVfiles('PID_timing0', Nfile);
+            Data2 = ReadCSVfiles('PID_points1', Nfile);
+            Tcontroler2 = ReadCSVfiles('PID_timing1', Nfile);
     end
 end
 
@@ -98,10 +98,10 @@ end
         hold on;
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
         xlim([0 axi]);
-        ylim([-70 70]);
+        ylim([200 700]);
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
         xlim([0 axi]);
-        ylim([-70 70]);
+        ylim([200 700]);
         legend({'Y','Ysp'},'Location','northeast');
         hold off;
 
@@ -142,7 +142,7 @@ end
             plotUsage('CPU load form controller2', Ycontroler2, axi);
         end
         if isfile(strcat('PFE/files/hard_timing_',Nfile,'.csv')) ~= 0
-            plotUsage('CPU load form appling command', Ysensor, axi);
+            plotUsage('CPU load form appling command', Yhard, axi);
         end
     end
 
@@ -174,9 +174,9 @@ if(Mode ~= "NONE")
     PrintExistingUsage('Read_timing', Nfile, TdiffRead, 'reading');
 end
 if(Mode2 ~= "NONE")
-    PrintsUsage(Ycontroler, Dtracker, Tdiffconstroler, 'Controller');
+    PrintsUsage(Ycontroler, Data, Tdiffconstroler, 'Controller');
     if SubMode > 2
-        PrintsUsage(Ycontroler2, Dtracker, Tdiffconstroler2, 'Controller2');
+        PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end

@@ -8,8 +8,6 @@
 #include <chrono>
 #include <ctime>
 
-#define NO_LOG
-
 class logger {
 	public:
 		logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file = -1, char delimiter = ';');

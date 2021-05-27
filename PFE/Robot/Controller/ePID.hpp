@@ -34,7 +34,7 @@ class ePID : public BaseThread {
 
 		float m_eOld = 0;
 		float m_yOld = 0;
-		unsigned long m_lastT = 0;
+		float m_lastT = 0;
 		float m_ui = 0;
 		float m_ud = 0;
 
@@ -47,6 +47,7 @@ class ePID : public BaseThread {
 		logger *m_logCPUhard;
 		
 		unsigned int m_cptEvts = 0;
+		const std::chrono::time_point<std::chrono::high_resolution_clock> m_begin_timestamp;
 };
 
 #endif //EPID_H

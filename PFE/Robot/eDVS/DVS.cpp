@@ -59,13 +59,9 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 	m_logCPU = new logger("DVS_timing", begin_timestamp, num_file);
 	m_logCPUread = new logger("Read_timing", begin_timestamp, num_file);
 
-    m_logTime = new logger("Time", begin_timestamp, num_file);
-    m_logTime->Write({ 0, 0 });
-
     g_event[0].store(false);
     g_setpoint[0].store(0);
     g_feedback[0].store(0);
-    g_time[0].store(0);
 }
 
 DVS::~DVS() {
@@ -76,7 +72,6 @@ DVS::~DVS() {
 	delete m_logCPU;
 	delete m_logCPUread;
 	delete m_logTrack;
-	delete m_logTime;
 }
 
 void* DVS::ThreadRun() {
@@ -89,7 +84,6 @@ void* DVS::ThreadRun() {
 	bool test = false;
 	int n;
 
-	m_logTime->Tic();
 	m_usb->SendBytes("E+\n");           //enable event sending
 	while(GetStartValue()) {
     	//read datas
@@ -181,21 +175,13 @@ void* DVS::ThreadRun() {
 					const float temp = temp2 - g_setpoint[0].load();
 					if(std::fabs(temp) >= m_thresEvent) {
 					    g_feedback[0].store(temp2);
-					    g_time[0].store(t);
 						g_event[0].store(true);
 						m_cptEvts++;
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
-					} else {
-						if(!g_event[0].load()) {
-					    	g_time[0].store(t);
-						}
 					}
 				} else {
 					m_log->WriteN({x, y, 0});
 					m_log->Tac();
-					if(!g_event[0].load()) {
-					    g_time[0].store(t);
-					}
 				}
 			}
 
@@ -207,7 +193,6 @@ void* DVS::ThreadRun() {
 			m_logCPU->Tac();
 		}
     }
-    m_logTime->Tac();
 	m_usb->SendBytes("E-\n");           //disable event sending
 
 	return ReturnFunction();

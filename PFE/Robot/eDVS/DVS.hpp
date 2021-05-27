@@ -62,7 +62,6 @@ class DVS : public BaseThread {
         logger *m_logTrack;
         logger *m_logCPU;
         logger *m_logCPUread;
-        logger *m_logTime;
         
         unsigned int m_cptEvts = 0;
 };

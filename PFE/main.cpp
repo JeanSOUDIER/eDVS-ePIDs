@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <wiringPi.h>
 #include <chrono>
+#include <atomic>
 
 #include "Robot/BaseThread/BaseThread.hpp"
 #include "Robot/Controller/Hbridge.hpp"
@@ -24,6 +25,8 @@ void SetPointRef(const float sp) {
 int main() {
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
+    l.Write({ 0, 0 });
+    l.Tic();
     const int num = l.GetNumFile();
 
 	/*DVS myDVS("ttyUSB_DVS", 12000000, begin_timestamp, num);
@@ -53,7 +56,7 @@ int main() {
     SetPointRef(0);
 	myPID.StopThread();*/
 
-	g_setpoint[1].store(500);
+	g_setpoint[1].store(400);
     g_event[1].store(true);
 	//ePID PIDmot(begin_timestamp, num, 0.1, 0, 0, 100, 1, 2, 0.001, 10, 10);
 	//Te Kp Ki Kd x x x N
@@ -64,19 +67,21 @@ int main() {
     delay(1000);
 	while(!kbhit()) {
 		//std::cout << m_Arduino.ReadPose() << std::endl;
-		g_setpoint[1].store(580);
-    	g_event[1].store(true);
+		g_setpoint[1].store(480);
+    	//g_event[1].store(true);
     	delay(1000);
-		g_setpoint[1].store(420);
-    	g_event[1].store(true);
+		g_setpoint[1].store(320);
+    	//g_event[1].store(true);
     	delay(1000);
 	}
 	g_setpoint[1].store(400);
-    g_event[1].store(true);
-    delay(1000);
+    //g_event[1].store(true);
+    delay(2000);
 
     PIDmot.StopThread();
 	delay(1000);
+
+	l.Tac();
 
     return 0;
 }
