@@ -178,8 +178,10 @@ if(Mode ~= "NONE")
 end
 if(Mode2 ~= "NONE")
     PrintsUsage(Ycontroler, Data, Tdiffconstroler, 'Controller');
+    fprintf('%d evts\n',length(Data));
     if SubMode > 2
         PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
+        fprintf('%d evts\n',length(Data2));
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end
