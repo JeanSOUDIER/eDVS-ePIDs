@@ -32,7 +32,6 @@ class ePID : public BaseThread {
 		const unsigned int m_nb_corrector;
 		const float m_elim;
 
-		float m_eOld = 0;
 		float m_yOld = 0;
 		float m_lastT = 0;
 		float m_ui = 0;

@@ -12,7 +12,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 	}
 
-	m_Arduino->SetLim(2);
+	m_Arduino->SetLim(1);
 
 	std::cout << "PID Start" << std::endl;
 }

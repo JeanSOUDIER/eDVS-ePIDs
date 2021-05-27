@@ -58,24 +58,25 @@ int main() {
 
 	g_setpoint[1].store(400);
     g_event[1].store(true);
-	//ePID PIDmot(begin_timestamp, num, 0.1, 0, 0, 100, 1, 2, 0.001, 10, 10);
+	ePID PIDmot(begin_timestamp, num, 2, 5, 0, 100, 1, 5, 0.001, 10, 10);
 	//Te Kp Ki Kd x x x N
-	PID PIDmot(1, 2, 5, 0, begin_timestamp, num, 1, 100);
+	//PID PIDmot(1, 2, 5, 0, begin_timestamp, num, 1, 100);
     PIDmot.StartThread();
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
 
     delay(1000);
 	while(!kbhit()) {
+    //while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 10000) {
 		//std::cout << m_Arduino.ReadPose() << std::endl;
 		g_setpoint[1].store(480);
-    	//g_event[1].store(true);
+    	g_event[1].store(true);
     	delay(1000);
 		g_setpoint[1].store(320);
-    	//g_event[1].store(true);
+    	g_event[1].store(true);
     	delay(1000);
 	}
 	g_setpoint[1].store(400);
-    //g_event[1].store(true);
+    g_event[1].store(true);
     delay(2000);
 
     PIDmot.StopThread();

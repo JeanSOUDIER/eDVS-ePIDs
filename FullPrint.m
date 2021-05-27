@@ -5,7 +5,7 @@ clc;
 %serie of files to read
 Nfile = '0';
 Mode = "NONE";
-Mode2 = "PID";
+Mode2 = "ePID";
 SubMode = 2;
 
 %reading files

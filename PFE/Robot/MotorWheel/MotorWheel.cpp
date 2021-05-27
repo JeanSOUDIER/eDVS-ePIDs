@@ -66,6 +66,7 @@ int MotorWheel::ReadPose() {
                 m_temp = m_buf.at(1);
                 m_temp = m_temp << 8;
                 m_temp += m_buf.at(2);
+                g_event[1].store(true);
                 //std::cout << m_temp << std::endl;
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
             } else {
@@ -77,14 +78,6 @@ int MotorWheel::ReadPose() {
             m_buf.erase(m_buf.begin());
         }
     }
-    /*if(buffer.size() > 0) {
-        //if(buffer.at(buffer.size()-1) != 10) {
-            //std::cout << (int)(buffer.at(buffer.size()-1)) << std::endl;
-            m_temp = buffer.at(buffer.size()-1)*2+240;
-        /*} else {
-            std::cout << "error 10" << std::endl;
-        }*/
-    //}
     return m_temp;
 }
 
@@ -108,6 +101,8 @@ void MotorWheel::SetLim(int lim) {
     if(lim < 0) {lim = 0;}
     SetSpeed(lim + 0x4000);
 }
+
+void MotorWheel::SetBegin(int val) {m_temp = val;}
 
 void MotorWheel::SetSpeed(int vel) {
     if(vel > 65535) {vel = 65535;std::cout << "speed sat H" << std::endl;}

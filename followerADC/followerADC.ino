@@ -39,12 +39,16 @@ void loop() {
     analogWrite(5, cmd);
   }
   int r = analogRead(A0);
-  if(r-r_old >= lim) {
-    r_old += lim;
-    Sending(r_old);
-  } else if(r-r_old <= -lim) {
-    r_old -= lim;
-    Sending(r_old);
+  if(lim == 1) {
+    Sending(r);
+  } else {
+    if(r-r_old >= lim) {
+      r_old += lim;
+      Sending(r_old);
+    } else if(r-r_old <= -lim) {
+      r_old -= lim;
+      Sending(r_old);
+    }
   }
   delay(1);
 }

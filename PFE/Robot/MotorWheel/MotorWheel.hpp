@@ -7,6 +7,7 @@
 #include <string>
 #include <atomic>
 
+#include "../BaseThread/BaseThread.hpp"
 #include "../RS232_CPP/Usb.hpp"
 
 class MotorWheel {
@@ -21,6 +22,7 @@ class MotorWheel {
         void SetHbridge(int vel);
         void SetSpeed(int vel);
         void SetLim(int lim);
+        void SetBegin(int val);
     private:
         Usb *m_usb;
 
