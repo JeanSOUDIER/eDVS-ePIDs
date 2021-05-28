@@ -12,6 +12,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 	}
 
+	m_Arduino->SetLim(2);
 	m_Arduino->SetLim(1);
 
 	std::cout << "PID Start" << std::endl;
@@ -80,7 +81,7 @@ void PID::ComputePID() {
 		m_Arduino->SetHbridge(u);
 		m_logCPUhard->Tac();
 	} else {
-		u += 400;
+		u = u+400;
 		if(u < 300) {u = 300;}
 		if(u > 500) {u = 500;}
 		g_setpoint[m_nb_corrector+1].store(u);

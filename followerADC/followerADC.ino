@@ -3,7 +3,7 @@
 int cmd = 0;
 int sens = 0;
 int r_old = 0;
-int lim = 0;
+int lim = 1;
 
 //Serial
 int vel = 0;

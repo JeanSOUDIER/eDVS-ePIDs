@@ -14,9 +14,9 @@ DVS::DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono
 
 void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file) {
 	m_XClustPose = 64;
-	m_YClustPose = 53;
+	m_YClustPose = 64;
 	m_XClustPoseOld = 64;
-	m_YClustPoseOld = 53;
+	m_YClustPoseOld = 64;
 
 	//config
 	toLengthRead();
@@ -164,7 +164,8 @@ void* DVS::ThreadRun() {
 			} else {
 				//save
 				m_Told = t;
-				if(std::fabs(m_XClustPose - x) < m_Rmax && std::fabs(y-53) < m_Rmax) {
+				//if(std::fabs(m_XClustPose - x) < m_Rmax && std::fabs(y-53) < m_Rmax) {
+				if(std::pow((m_XClustPose - x), 2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
 					m_log->WriteN({x, y, 1});
 					m_log->Tac();
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
@@ -172,7 +173,7 @@ void* DVS::ThreadRun() {
 					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
 					m_logTrack->TacF();
 					const float temp2 = m_XClustPose*m_kx + m_u0;
-					const float temp = temp2 - g_setpoint[0].load();
+					const float temp = g_setpoint[0].load() - temp2;
 					if(std::fabs(temp) >= m_thresEvent) {
 					    g_feedback[0].store(temp2);
 						g_event[0].store(true);

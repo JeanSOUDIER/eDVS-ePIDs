@@ -44,8 +44,8 @@ class DVS : public BaseThread {
         float m_YClustPoseOld;
 
         const int m_R = 5;
-        const int m_safty = 2;
-        const int m_Rmax = m_R*m_safty;
+        const int m_safty = 3;
+        const int m_Rmax = std::pow(m_R*m_safty, 2);
         const float m_alpha = 0.99;
         const float m_alpha_m1 = 1-m_alpha;
         const int m_thresEvent;
