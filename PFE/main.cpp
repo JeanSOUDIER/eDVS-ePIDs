@@ -29,10 +29,10 @@ int main() {
 
 	g_setpoint[0].store(0);
     g_event[0].store(true);
-	PID PIDbille(1, 1, 0.1, 2, begin_timestamp, num, 0, 1000);
+	PID PIDbille(1, 0.05, 0.01, 0.1, begin_timestamp, num, 0, 5); //0.0197/1 ; 2.21/5
     PIDbille.StartThread();
 
-	//g_setpoint[1].store(400);
+	//g_setpoint[1].store(0);
     //g_event[1].store(true);
 	//ePID PIDmot(begin_timestamp, num, 2, 5, 0, 100, 1, 5, 0.001, 10, 10);
 	//Te Kp Ki Kd x x x N
@@ -43,13 +43,13 @@ int main() {
     delay(1000);
 	while(!kbhit()) {
     //while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 2000) {
-		/*g_setpoint[1].store(480);
+		/*g_setpoint[1].store(3.1415);
     	g_event[1].store(true);
-    	delay(500);
-		g_setpoint[1].store(320);
+    	delay(5000);
+		g_setpoint[1].store(-3.1415);
     	g_event[1].store(true);
-    	delay(500);*/
-    	g_setpoint[0].store(10);
+    	delay(5000);*/
+    	g_setpoint[0].store(-20);
     	g_event[0].store(true);
     	delay(2000);
     	/*delay(5000);
@@ -58,14 +58,16 @@ int main() {
     	delay(5000);*/
 	}
 	l.Tac();
-	//g_setpoint[1].store(400);
+	//g_setpoint[1].store(0);
     //g_event[1].store(true);
     g_setpoint[0].store(0);
     g_event[0].store(true);
     delay(8000);
 
     PIDmot.StopThread();
+    delay(100);
     PIDbille.StopThread();
+    delay(100);
     CamTrack.StopThread();
 	delay(100);
 

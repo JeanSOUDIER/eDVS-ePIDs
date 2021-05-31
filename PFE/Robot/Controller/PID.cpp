@@ -48,6 +48,8 @@ void PID::ComputePID() {
 	float y;
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		y = m_Arduino->ReadPose();
+		std::cout << m_nb_corrector << " mesure = " << y << std::endl;
+		y = (y-400.0f)*0.0614f;
 	} else {
 		y = g_feedback[m_nb_corrector].load();
 	}
@@ -67,7 +69,7 @@ void PID::ComputePID() {
 	//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << std::endl;
 
 	float u = up + m_ui + m_ud;
-	std::cout << m_nb_corrector << " u = " << u << std::endl;
+	//std::cout << m_nb_corrector << " u = " << u << std::endl;
 
 	//Update
 	m_yOld = y;
@@ -78,13 +80,12 @@ void PID::ComputePID() {
 
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_logCPUhard->Tic();
-		m_Arduino->SetHbridge(u);
+		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();
+		std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
-		u = u+400;
-		if(u < 300) {u = 300;}
-		if(u > 500) {u = 500;}
 		g_setpoint[m_nb_corrector+1].store(u);
+		std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 }
 
