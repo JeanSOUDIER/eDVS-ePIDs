@@ -23,53 +23,57 @@ int main() {
     l.Write({ 0, 0 });
     const int num = l.GetNumFile();
 
-	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num);
+	//DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num);
     l.Tic();
-	CamTrack.StartThread();
+	//CamTrack.StartThread();
 
-	g_setpoint[0].store(0);
+	/*g_setpoint[0].store(0);
     g_event[0].store(true);
-	PID PIDbille(1, 0.05, 0.01, 0.1, begin_timestamp, num, 0, 5); //0.0197/1 ; 2.21/5
-    PIDbille.StartThread();
+	PID PIDbille(1, 0.004217*50, 0.0001974*5, 0.02212*10, begin_timestamp, num, 0, 5.454); //0.0197/1 ; 2.21/5
+    PIDbille.StartThread();*/
 
 	//g_setpoint[1].store(0);
     //g_event[1].store(true);
 	//ePID PIDmot(begin_timestamp, num, 2, 5, 0, 100, 1, 5, 0.001, 10, 10);
 	//Te Kp Ki Kd x x x N
-	PID PIDmot(1, 2, 5, 0, begin_timestamp, num, 1, 100);
+	PID PIDmot(1, 5, 10, 0, begin_timestamp, num, 1, 30, 0);
     PIDmot.StartThread();
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
 
     delay(1000);
 	while(!kbhit()) {
     //while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 2000) {
-		/*g_setpoint[1].store(3.1415);
+		g_setpoint[1].store(3.1415*2);
     	g_event[1].store(true);
     	delay(5000);
-		g_setpoint[1].store(-3.1415);
+		g_setpoint[1].store(-3.1415*2);
     	g_event[1].store(true);
-    	delay(5000);*/
-    	g_setpoint[0].store(-20);
+    	delay(5000);
+    	/*g_setpoint[0].store(-20);
     	g_event[0].store(true);
-    	delay(2000);
+    	delay(2000);*/
     	/*delay(5000);
 		g_setpoint[0].store(-10);
     	g_event[0].store(true);
     	delay(5000);*/
 	}
-	l.Tac();
-	//g_setpoint[1].store(0);
-    //g_event[1].store(true);
-    g_setpoint[0].store(0);
+    l.Tac();
+    /*g_setpoint[0].store(0);
     g_event[0].store(true);
-    delay(8000);
+    delay(1000);
+
+    PIDbille.StopThread();
+    delay(100);*/
+
+    g_setpoint[1].store(0);
+    g_event[1].store(true);
+    delay(5000);
+
 
     PIDmot.StopThread();
     delay(100);
-    PIDbille.StopThread();
-    delay(100);
-    CamTrack.StopThread();
-	delay(100);
+    //CamTrack.StopThread();
+	//delay(100);
 
     return 0;
 }

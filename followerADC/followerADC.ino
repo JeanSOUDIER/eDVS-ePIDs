@@ -26,7 +26,7 @@ void setup() {
   Serial.begin(115200);
   analogWrite(5, 0);
   analogWrite(6, 0);
-  r_old = 400;
+  r_old = 265;
   digitalWrite(13, 1);
 }
 
@@ -82,6 +82,8 @@ void serialEvent() {
               lim = vel & 0x01FF;
               int r = analogRead(A0);
               Sending(r);
+            } else if(vel&0x8000) {
+              r_old = vel & 0x03FF;
             } else {
               cmd = vel & 0x01FF;
               sens = vel & 0x1000;

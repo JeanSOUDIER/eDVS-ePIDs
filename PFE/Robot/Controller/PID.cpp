@@ -1,7 +1,9 @@
 #include "PID.hpp"
 
-PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta)
-	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
+#define MIDDLE_POINT 265
+
+PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta, const float Ks)
+	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N), m_Ks(Ks) {
 
 	//m_Motor = new Hbridge(28, 29);
 
@@ -10,10 +12,11 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
+
+		m_Arduino->SetLim(1);
+		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	}
 
-	m_Arduino->SetLim(2);
-	m_Arduino->SetLim(1);
 
 	std::cout << "PID Start" << std::endl;
 }
@@ -37,7 +40,9 @@ void* PID::ThreadRun() {
 			current_timestamp = std::chrono::high_resolution_clock::now();
 		}
 	}
-	m_Arduino->SetHbridge(0);
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		m_Arduino->SetHbridge(0);
+	}
 	return ReturnFunction();
 }
 
@@ -48,8 +53,8 @@ void PID::ComputePID() {
 	float y;
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		y = m_Arduino->ReadPose();
-		std::cout << m_nb_corrector << " mesure = " << y << std::endl;
-		y = (y-400.0f)*0.0614f;
+		//std::cout << m_nb_corrector << " mesure = " << y << std::endl;
+		y = (y-MIDDLE_POINT)*0.065f;//0.0614f;
 	} else {
 		y = g_feedback[m_nb_corrector].load();
 	}
@@ -61,7 +66,14 @@ void PID::ComputePID() {
 	//std::cout << m_nb_corrector << " up = " << up << std::endl;
 
 	//Ui
-	m_ui += m_ki * e * m_Te/1000.0f;
+	if(m_Ks != 0) {
+		float uOldSat = m_uOld;
+		if(uOldSat > 3.1415/2) {uOldSat = 3.1415/2;}
+		if(uOldSat < -3.1415/2) {uOldSat = -3.1415/2;}
+		m_ui += m_ki * (e - m_Ks*(m_uOld-uOldSat)) * m_Te/1000.0f;
+	} else {
+		m_ui += m_ki * e * m_Te/1000.0f;
+	}
 	//std::cout << m_nb_corrector << " ui = " << m_ui << std::endl;
 
 	//Ud
@@ -73,6 +85,7 @@ void PID::ComputePID() {
 
 	//Update
 	m_yOld = y;
+	//m_uOld = u;
 	
 	m_logCPU->Tac();
 	m_log->WriteFN({y, ysp, u});
@@ -82,10 +95,10 @@ void PID::ComputePID() {
 		m_logCPUhard->Tic();
 		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();
-		std::cout << m_nb_corrector << " u = " << u << std::endl;
+		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
 		g_setpoint[m_nb_corrector+1].store(u);
-		std::cout << m_nb_corrector << " u = " << u << std::endl;
+		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 }
 

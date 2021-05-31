@@ -23,6 +23,7 @@ class MotorWheel {
         void SetSpeed(int vel);
         void SetLim(int lim);
         void SetBegin(int val);
+        void SetMiddlePoint(int point);
     private:
         Usb *m_usb;
 

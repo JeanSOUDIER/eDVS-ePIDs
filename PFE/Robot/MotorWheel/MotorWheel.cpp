@@ -102,6 +102,13 @@ void MotorWheel::SetLim(int lim) {
     SetSpeed(lim + 0x4000);
 }
 
+void MotorWheel::SetMiddlePoint(int point) {
+    if(point > 1023) {point = 1023;}
+    if(point < 0) {point = 0;}
+    std::cout << "middle point = " << point + 0x8000 << std::endl;
+    SetSpeed(point + 0x8000);
+}
+
 void MotorWheel::SetBegin(int val) {m_temp = val;}
 
 void MotorWheel::SetSpeed(int vel) {
