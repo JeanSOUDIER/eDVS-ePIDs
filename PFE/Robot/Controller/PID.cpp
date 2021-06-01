@@ -97,7 +97,9 @@ void PID::ComputePID() {
 		m_logCPUhard->Tac();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
+		if(std::fabs(e) < 2.5) {u = 0;}
 		g_setpoint[m_nb_corrector+1].store(u);
+		g_event[m_nb_corrector+1].store(true);
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 }

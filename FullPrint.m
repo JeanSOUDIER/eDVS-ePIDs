@@ -85,22 +85,36 @@ end
 
 
     %first plot
+    axi = Ttime(:,2)-Ttime(:,1);
+    if(Mode2 ~= "NONE")
+        figure(3);
+        hold on;
+        stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
+        stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
+        stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
+        xlim([0 axi]);
+        ProperYaxisMulti(Data(:,1), Data(:,2));
+        legend({'Y','Ysp'},'Location','northeast');
+        hold off;
+    end
+    
+    
     figure(1);
     tiledlayout(grapher,1);
     nexttile;
     title('response');
     xlabel('time');
     ylabel('position [mm]');
-    axi = Ttime(:,2)-Ttime(:,1);
 
     if(Mode2 ~= "NONE")
         %plot response
+        
         hold on;
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
         xlim([0 axi]);
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
         xlim([0 axi]);
-            ProperYaxisMulti(Data(:,1), Data(:,2));
+        ProperYaxisMulti(Data(:,1), Data(:,2));
         legend({'Y','Ysp'},'Location','northeast');
         hold off;
 

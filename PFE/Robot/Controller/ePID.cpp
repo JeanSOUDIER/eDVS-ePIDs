@@ -1,5 +1,7 @@
 #include "ePID.hpp"
 
+#define MIDDLE_POINT 265
+
 ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom, const float alpha_i, const float alpha_d)
 	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kdN(Kd*N), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d), m_begin_timestamp(begin_timestamp) {
 
@@ -8,11 +10,13 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
+
+		m_Arduino->SetLim(m_elim);
+		m_Arduino->SetLim(m_elim);
+		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	}
 
-	m_Arduino->SetBegin(400);
 	std::cout << "e_lim = " << m_elim << std::endl;
-	m_Arduino->SetLim(m_elim);
 
 	std::cout << "ePID Start" << std::endl;
 }
@@ -31,11 +35,15 @@ void* ePID::ThreadRun() {
 	while(GetStartValue()) {
 		if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 			g_feedback[m_nb_corrector].store(m_Arduino->ReadPose());
+			g_event[m_nb_corrector].store(true);
 		}
 		if(g_event[m_nb_corrector].load()) {
 			ComputePID();
 			g_event[m_nb_corrector].store(false);
 		}
+	}
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		m_Arduino->SetHbridge(0);
 	}
 	return ReturnFunction();
 }
@@ -44,8 +52,15 @@ void ePID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
 	const float ysp = g_setpoint[m_nb_corrector].load();
-	const float y = g_feedback[m_nb_corrector].load();
-	const float e = ysp-y;
+	float y;
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		y = m_Arduino->ReadPose();
+		//std::cout << m_nb_corrector << " mesure = " << y << std::endl;
+		y = (y-MIDDLE_POINT)*0.065f;//0.0614f;
+	} else {
+		y = g_feedback[m_nb_corrector].load();
+	}
+	const float e = ysp - y;
 	std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
 	//Compute time
@@ -82,13 +97,13 @@ void ePID::ComputePID() {
 	//apply command
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_logCPUhard->Tic();
-		m_Arduino->SetHbridge(u);
+		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();
+		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
-		u += 400;
-		if(u < 300) {u = 300;}
-		if(u > 500) {u = 500;}
 		g_setpoint[m_nb_corrector+1].store(u);
+		g_event[m_nb_corrector+1].store(true);
+		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 	m_cptEvts++;
 }
