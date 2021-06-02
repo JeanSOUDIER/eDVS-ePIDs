@@ -14,10 +14,8 @@
 
 class PID : public BaseThread {
 	public:
-		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N = 100, const float beta = 1, const float m_Ks = 0);
+		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N = 100, const float beta = 1);
 		~PID();
-
-		int read();
 	private:
 		void* ThreadRun();
 		void ComputePID();
@@ -30,7 +28,6 @@ class PID : public BaseThread {
 		const float m_beta;
 		const unsigned int m_N;
 		const unsigned int m_nb_corrector;
-		const float m_Ks;
 		
 		float m_yOld = 0;
 		float m_ui = 0;
@@ -43,6 +40,8 @@ class PID : public BaseThread {
 		logger *m_log;
 		logger *m_logCPU;
 		logger *m_logCPUhard;
+		
+		unsigned int m_cptEvts = 0;
 };
 
 #endif //PID_H

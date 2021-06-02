@@ -3,7 +3,7 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '0';
+Nfile = '10';
 Mode = "DVS";
 Mode2 = "PID";
 SubMode = 3;

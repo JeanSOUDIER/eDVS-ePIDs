@@ -14,6 +14,9 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 		m_Arduino->SetLim(m_elim);
 		m_Arduino->SetLim(m_elim);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
+	} else {
+		g_setpoint[m_nb_corrector+1].store(0);
+		g_event[m_nb_corrector+1].store(true);
 	}
 
 	std::cout << "e_lim = " << m_elim << std::endl;
@@ -22,7 +25,7 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 }
 
 ePID::~ePID() {
-	std::cout << "evts ePID computed : " << m_cptEvts << std::endl;
+	std::cout << m_nb_corrector << " evts ePID computed : " << m_cptEvts << std::endl;
 	delete m_log;
 	delete m_logCPU;
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
@@ -70,18 +73,18 @@ void ePID::ComputePID() {
 
 	//Up
 	const float up = m_kp*e;
-	//std::cout << "up = " << up << std::endl;
+	//std::cout << m_nb_corrector << " up = " << up << std::endl;
 
 	//Ui
 	const float hacti = hact*std::exp(m_alpha_i*(m_hnom-hact));
 	const float he = (hacti-m_hnom)*m_elim + m_hnom*e;
 	m_ui += m_ki*he;
-	//std::cout << "he = " << he << " ui = " << m_ui << std::endl;
+	//std::cout << m_nb_corrector << " he = " << he << " ui = " << m_ui << std::endl;
 
 	//Ud
 	const float hd = m_hnom + (hact-m_hnom)*std::exp(m_alpha_d*(m_hnom-hact));
 	m_ud = m_ud/(1+m_kdN*m_hnom/hd) - m_kdN/(1+m_kdN*m_hnom/hd)*(y-m_yOld);
-	//std::cout << "Yold = " << m_yOld << " ud = " << m_ud << std::endl;
+	//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << std::endl;
 
 	float u = up + m_ui + m_ud;
 	std::cout << m_nb_corrector << " u = " << u << std::endl;
@@ -101,6 +104,10 @@ void ePID::ComputePID() {
 		m_logCPUhard->Tac();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
+		//if(std::fabs(e) < 2.5) {u = 0;}
+		if(u > 9.4248) {u = 9.4248;}
+		if(u < -9.4248) {u = -9.4248;}
+		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
 		g_event[m_nb_corrector+1].store(true);
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;

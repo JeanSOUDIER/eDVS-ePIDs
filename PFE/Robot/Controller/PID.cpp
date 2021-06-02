@@ -2,8 +2,8 @@
 
 #define MIDDLE_POINT 265
 
-PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta, const float Ks)
-	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N), m_Ks(Ks) {
+PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta)
+	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
 
 	//m_Motor = new Hbridge(28, 29);
 
@@ -15,6 +15,9 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 
 		m_Arduino->SetLim(1);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
+	} else {
+		g_setpoint[m_nb_corrector+1].store(0);
+		g_event[m_nb_corrector+1].store(true);
 	}
 
 
@@ -22,6 +25,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 }
 
 PID::~PID() {
+	std::cout << m_nb_corrector << " evts ePID computed : " << m_cptEvts << std::endl;
 	delete m_log;
 	delete m_logCPU;
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
@@ -59,21 +63,14 @@ void PID::ComputePID() {
 		y = g_feedback[m_nb_corrector].load();
 	}
 	const float e = ysp - y;
-	std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
+	//std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
 	//Up
 	const float up = m_kp * (m_beta * ysp - y);
 	//std::cout << m_nb_corrector << " up = " << up << std::endl;
 
 	//Ui
-	if(m_Ks != 0) {
-		float uOldSat = m_uOld;
-		if(uOldSat > 3.1415/2) {uOldSat = 3.1415/2;}
-		if(uOldSat < -3.1415/2) {uOldSat = -3.1415/2;}
-		m_ui += m_ki * (e - m_Ks*(m_uOld-uOldSat)) * m_Te/1000.0f;
-	} else {
-		m_ui += m_ki * e * m_Te/1000.0f;
-	}
+	m_ui += m_ki * e * m_Te/1000.0f;
 	//std::cout << m_nb_corrector << " ui = " << m_ui << std::endl;
 
 	//Ud
@@ -97,13 +94,12 @@ void PID::ComputePID() {
 		m_logCPUhard->Tac();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
-		if(std::fabs(e) < 2.5) {u = 0;}
+		if(u > 9.4248) {u = 9.4248;}
+		if(u < -9.4248) {u = -9.4248;}
+		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
 		g_event[m_nb_corrector+1].store(true);
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
-}
-
-int PID::read() {
-	return m_Arduino->ReadPose();
+	m_cptEvts++;
 }
