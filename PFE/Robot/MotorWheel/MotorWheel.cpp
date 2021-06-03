@@ -1,6 +1,7 @@
 #include "MotorWheel.hpp"
 
-MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate) {
+MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate, const float e_lim, const int middle_point)
+    : m_elim(e_lim), m_middle(middle_point) {
     m_usb = new Usb(nb_usb, bdrate);
     std::cout << "MotorWheel start" << std::endl;
 
@@ -8,7 +9,8 @@ MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate) {
     m_mutexW.store(false);
 }
 
-MotorWheel::MotorWheel(const int nb_usb, const int bdrate) {
+MotorWheel::MotorWheel(const int nb_usb, const int bdrate, const float e_lim, const int middle_point)
+    : m_elim(e_lim), m_middle(middle_point) {
     m_usb = new Usb(nb_usb, bdrate);
     std::cout << "MotorWheel start" << std::endl;
 
@@ -53,7 +55,7 @@ MotorWheel::~MotorWheel() {
     SetSpeed(speed.at(0), speed.at(1));
 }*/
 
-int MotorWheel::ReadPose() {
+void MotorWheel::ReadPose() {
     std::vector<unsigned char> buffer;
     while(m_mutexW.load()) {}
     m_mutexR.store(true);
@@ -63,10 +65,16 @@ int MotorWheel::ReadPose() {
     while(m_buf.size() > 3) {
         if(m_buf.at(0) == 255) {
             if((m_buf.at(1)+m_buf.at(2))%256 == m_buf.at(3)) {
-                m_temp = m_buf.at(1);
-                m_temp = m_temp << 8;
-                m_temp += m_buf.at(2);
-                g_event[1].store(true);
+                int temp = m_buf.at(1);
+                temp = temp << 8;
+                temp += m_buf.at(2);
+                m_y = temp;
+                m_y = (m_y-m_middle)*0.065f;
+                std::cout << "mesure " << temp << std::endl;
+                const float e = g_setpoint[1].load() - m_y;
+                if(std::fabs(e) > m_elim) {
+                    g_feedback[1].store(m_y);
+                }
                 //std::cout << m_temp << std::endl;
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
             } else {
@@ -78,7 +86,6 @@ int MotorWheel::ReadPose() {
             m_buf.erase(m_buf.begin());
         }
     }
-    return m_temp;
 }
 
 void MotorWheel::SetHbridge(int vel) {
@@ -108,7 +115,7 @@ void MotorWheel::SetMiddlePoint(int point) {
     SetSpeed(point + 0x8000);
 }
 
-void MotorWheel::SetBegin(int val) {m_temp = val;}
+//void MotorWheel::SetBegin(int val) {m_temp = val;}
 
 void MotorWheel::SetSpeed(int vel) {
     if(vel > 65535) {vel = 65535;std::cout << "speed sat H" << std::endl;}

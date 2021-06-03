@@ -14,6 +14,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
 		m_Arduino->SetLim(1);
+		m_Arduino->SetLim(1);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	} else {
 		g_setpoint[m_nb_corrector+1].store(0);
@@ -25,12 +26,14 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 }
 
 PID::~PID() {
-	std::cout << m_nb_corrector << " evts ePID computed : " << m_cptEvts << std::endl;
+	std::cout << m_nb_corrector << " evts PID computed : " << m_cptEvts << std::endl;
 	delete m_log;
 	delete m_logCPU;
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		delete m_Arduino;
 		delete m_logCPUhard;
+	} else {
+		g_setpoint[m_nb_corrector+1].store(0);
 	}
 	//delete m_Motor;
 }
@@ -54,14 +57,15 @@ void PID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
 	const float ysp = g_setpoint[m_nb_corrector].load();
-	float y;
+	/*float y;
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		y = m_Arduino->ReadPose();
 		//std::cout << m_nb_corrector << " mesure = " << y << std::endl;
 		y = (y-MIDDLE_POINT)*0.065f;//0.0614f;
 	} else {
 		y = g_feedback[m_nb_corrector].load();
-	}
+	}*/
+	const float y = g_feedback[m_nb_corrector].load();
 	const float e = ysp - y;
 	//std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
@@ -102,4 +106,8 @@ void PID::ComputePID() {
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 	m_cptEvts++;
+}
+
+void PID::Read() {
+	m_Arduino->ReadPose();
 }

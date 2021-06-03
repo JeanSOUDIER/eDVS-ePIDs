@@ -8,11 +8,11 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
+		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200, m_elim, MIDDLE_POINT);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
-		m_Arduino->SetLim(m_elim);
-		m_Arduino->SetLim(m_elim);
+		m_Arduino->SetLim(1); //m_elim
+		m_Arduino->SetLim(1);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	} else {
 		g_setpoint[m_nb_corrector+1].store(0);
@@ -25,6 +25,9 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 }
 
 ePID::~ePID() {
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		m_Arduino->SetHbridge(0);
+	}
 	std::cout << m_nb_corrector << " evts ePID computed : " << m_cptEvts << std::endl;
 	delete m_log;
 	delete m_logCPU;
@@ -35,11 +38,8 @@ ePID::~ePID() {
 }
 
 void* ePID::ThreadRun() {
-	while(GetStartValue()) {
-		if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-			g_feedback[m_nb_corrector].store(m_Arduino->ReadPose());
-			g_event[m_nb_corrector].store(true);
-		}
+	/*while(GetStartValue()) {
+		//if(LENGTH_PID_CHAIN == m_nb_corrector+1) {m_Arduino->ReadPose();}
 		if(g_event[m_nb_corrector].load()) {
 			ComputePID();
 			g_event[m_nb_corrector].store(false);
@@ -47,29 +47,26 @@ void* ePID::ThreadRun() {
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0);
-	}
+	}*/
+	g_event[m_nb_corrector].store(true);
+	ComputePID();
+	g_event[m_nb_corrector].store(false);
 	return ReturnFunction();
 }
 
 void ePID::ComputePID() {
 	m_logCPU->Tic();
+
 	//Get inputs
 	const float ysp = g_setpoint[m_nb_corrector].load();
-	float y;
-	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		y = m_Arduino->ReadPose();
-		//std::cout << m_nb_corrector << " mesure = " << y << std::endl;
-		y = (y-MIDDLE_POINT)*0.065f;//0.0614f;
-	} else {
-		y = g_feedback[m_nb_corrector].load();
-	}
+	const float y = g_feedback[m_nb_corrector].load();
 	const float e = ysp - y;
 	std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
 	//Compute time
-	const float temp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()/1000000.0f;
+	const float temp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()/1000.0f;
 	const float hact = temp - m_lastT;
-	std::cout << m_nb_corrector << " hact = " << hact << " temp = " << temp << " last temp = " << m_lastT << std::endl;
+	//std::cout << m_nb_corrector << " hact = " << hact << " temp = " << temp << " last temp = " << m_lastT << std::endl;
 
 	//Up
 	const float up = m_kp*e;
@@ -87,7 +84,7 @@ void ePID::ComputePID() {
 	//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << std::endl;
 
 	float u = up + m_ui + m_ud;
-	std::cout << m_nb_corrector << " u = " << u << std::endl;
+	//std::cout << m_nb_corrector << " u = " << u << std::endl;
 
 	//Update
 	m_yOld = y;
@@ -102,9 +99,8 @@ void ePID::ComputePID() {
 		m_logCPUhard->Tic();
 		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();
-		//std::cout << m_nb_corrector << " u = " << u << std::endl;
+		std::cout << m_nb_corrector << " u = " << u*21.33f << std::endl;
 	} else {
-		//if(std::fabs(e) < 2.5) {u = 0;}
 		if(u > 9.4248) {u = 9.4248;}
 		if(u < -9.4248) {u = -9.4248;}
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
@@ -114,3 +110,5 @@ void ePID::ComputePID() {
 	}
 	m_cptEvts++;
 }
+
+void ePID::Read() {m_Arduino->ReadPose();}
