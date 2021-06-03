@@ -5,6 +5,9 @@
 #include <atomic>
 #include <chrono>
 #include <string>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
 
 #include "../BaseThread/BaseThread.hpp"
 #include "../eDVS/DVS.hpp"

@@ -3,6 +3,8 @@
 std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_setpoint;
 std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_feedback;
 std::array<std::atomic<bool>, LENGTH_PID_CHAIN> g_event;
+std::array<std::mutex, LENGTH_PID_CHAIN> g_cv_mutex;
+std::array<std::condition_variable, LENGTH_PID_CHAIN> g_cv;
 
 BaseThread::BaseThread(std::string name, bool start) {
     m_name = name;

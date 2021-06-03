@@ -5,12 +5,17 @@
 #include <string>
 #include <atomic>
 #include <array>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
 
 #define LENGTH_PID_CHAIN 2
 
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_setpoint;
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_feedback;
 extern std::array<std::atomic<bool>, LENGTH_PID_CHAIN> g_event;
+extern std::array<std::mutex, LENGTH_PID_CHAIN> g_cv_mutex;
+extern std::array<std::condition_variable, LENGTH_PID_CHAIN> g_cv;
 
 #if OS == OS_WINDOWS
 #include <thread>

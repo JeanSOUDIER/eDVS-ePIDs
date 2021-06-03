@@ -6,6 +6,9 @@
 #include <vector>
 #include <string>
 #include <atomic>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
 
 #include "../BaseThread/BaseThread.hpp"
 #include "../RS232_CPP/Usb.hpp"

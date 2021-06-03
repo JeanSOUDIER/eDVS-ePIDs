@@ -38,19 +38,19 @@ ePID::~ePID() {
 }
 
 void* ePID::ThreadRun() {
-	/*while(GetStartValue()) {
-		//if(LENGTH_PID_CHAIN == m_nb_corrector+1) {m_Arduino->ReadPose();}
-		if(g_event[m_nb_corrector].load()) {
-			ComputePID();
-			g_event[m_nb_corrector].store(false);
+	std::unique_lock<std::mutex> lk(g_cv_mutex[m_nb_corrector]);
+	while(GetStartValue()) {
+		if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+			g_cv[1].wait(lk, []{return g_event[1].load();});
+		} else {
+			g_cv[0].wait(lk, []{return g_event[0].load();});
 		}
+		ComputePID();
+		g_event[m_nb_corrector].store(false);
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0);
-	}*/
-	g_event[m_nb_corrector].store(true);
-	ComputePID();
-	g_event[m_nb_corrector].store(false);
+	}
 	return ReturnFunction();
 }
 
@@ -61,7 +61,7 @@ void ePID::ComputePID() {
 	const float ysp = g_setpoint[m_nb_corrector].load();
 	const float y = g_feedback[m_nb_corrector].load();
 	const float e = ysp - y;
-	std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
+	//std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
 
 	//Compute time
 	const float temp = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()/1000.0f;
@@ -74,7 +74,7 @@ void ePID::ComputePID() {
 
 	//Ui
 	const float hacti = hact*std::exp(m_alpha_i*(m_hnom-hact));
-	const float he = (hacti-m_hnom)*m_elim + m_hnom*e;
+	const float he = ((hacti-m_hnom)*m_elim + m_hnom*e)/1000.0f;
 	m_ui += m_ki*he;
 	//std::cout << m_nb_corrector << " he = " << he << " ui = " << m_ui << std::endl;
 
@@ -99,7 +99,7 @@ void ePID::ComputePID() {
 		m_logCPUhard->Tic();
 		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();
-		std::cout << m_nb_corrector << " u = " << u*21.33f << std::endl;
+		//std::cout << m_nb_corrector << " u = " << u*21.33f << std::endl;
 	} else {
 		if(u > 9.4248) {u = 9.4248;}
 		if(u < -9.4248) {u = -9.4248;}
