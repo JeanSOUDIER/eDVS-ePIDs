@@ -25,7 +25,6 @@ int main() {
     logger l("Time",begin_timestamp);
     l.Write({ 0, 0 });
     const int num = l.GetNumFile();
-    std::unique_lock<std::mutex> lk(g_cv_mutex[1]);
 
 	//DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 0);
     l.Tic();
@@ -45,7 +44,6 @@ int main() {
 	//PID PIDmot(1, 3, 15, 0.8, begin_timestamp, num, 1, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
-	lk.unlock();
     g_cv[1].notify_one();
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
 

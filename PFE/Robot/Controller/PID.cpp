@@ -13,8 +13,8 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
-		m_Arduino->SetLim(1);
-		m_Arduino->SetLim(1);
+		m_Arduino->SetLim(0);
+		m_Arduino->SetLim(0);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	} else {
 		g_setpoint[m_nb_corrector+1].store(0);
@@ -93,6 +93,7 @@ void PID::ComputePID() {
 	m_log->TacF();
 
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		if(y < -9.4248 || y > 9.4248) {u = 0;std::cout << "Emergency stop" << std::endl;}
 		m_logCPUhard->Tic();
 		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();

@@ -77,7 +77,7 @@ void MotorWheel::ReadPose() {
                     g_event[1].store(true);
                     g_cv[1].notify_one();
                 }
-                //std::cout << m_temp << std::endl;
+                //std::cout << temp << " " << m_y << std::endl;
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
             } else {
                 std::cout << "error cc" << std::endl;

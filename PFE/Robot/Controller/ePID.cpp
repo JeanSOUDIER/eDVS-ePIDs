@@ -39,11 +39,11 @@ ePID::~ePID() {
 
 void* ePID::ThreadRun() {
 	std::unique_lock<std::mutex> lk(g_cv_mutex[m_nb_corrector]);
+	lk.unlock();
 	while(GetStartValue()) {
-		if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-			g_cv[1].wait(lk, []{return g_event[1].load();});
-		} else {
-			g_cv[0].wait(lk, []{return g_event[0].load();});
+		while(!g_event[m_nb_corrector].load()) {
+			g_cv[m_nb_corrector].wait(lk);
+			std::cout << "wake-up" << std::endl;
 		}
 		ComputePID();
 		g_event[m_nb_corrector].store(false);
@@ -96,6 +96,7 @@ void ePID::ComputePID() {
 
 	//apply command
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+		if(y < -9.4248 || y > 9.4248) {u = 0;std::cout << "Emergency stop" << std::endl;}
 		m_logCPUhard->Tic();
 		m_Arduino->SetHbridge(u*21.33f);
 		m_logCPUhard->Tac();

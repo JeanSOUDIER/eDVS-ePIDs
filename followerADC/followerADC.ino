@@ -3,7 +3,7 @@
 int cmd = 0;
 int sens = 0;
 int r_old = 0;
-int lim = 1;
+int lim = 0;
 
 //Serial
 int vel = 0;
@@ -39,7 +39,7 @@ void loop() {
     analogWrite(5, cmd);
   }
   int r = analogRead(A0);
-  if(lim == 1) {
+  if(lim == 0) {
     Sending(r);
   } else {
     if(r-r_old >= lim) {
