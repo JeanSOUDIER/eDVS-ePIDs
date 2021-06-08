@@ -35,7 +35,7 @@ ePID.o: Robot/Controller/ePID.cpp
 	g++ -O3 -o Robot/Controller/ePID.o -c Robot/Controller/ePID.cpp -Wall -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread
 
 main.o: main.cpp Robot/RS232_CPP/rs232.h Robot/RS232_CPP/Usb.hpp Robot/logger/logger.hpp Robot/BaseThread/BaseThread.hpp Robot/Controller/HardCommand.hpp Robot/Controller/Hbridge.hpp Robot/MotorWheel/MotorWheel.hpp Robot/eDVS/DVS.hpp Robot/Controller/ePID.hpp Robot/Controller/PID.hpp Robot/CamPi/Camera.hpp
-	g++ -O3 -o main.o -c main.cpp -Wall -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv
+	g++ -O3 -o main.o -c main.cpp -Wall `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv -lwiringPi -Ofast -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread -std=c++11
 
 clean:
 	@echo "cleaning"

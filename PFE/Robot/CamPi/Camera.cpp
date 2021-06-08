@@ -2,7 +2,7 @@
 
 Camera::Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
 	: BaseThread("CamPi"), m_Te(Te) {
-	//cap = new raspicam::RaspiCam_Cv();
+	cap = new raspicam::RaspiCam_Cv();
 
     m_logTrack = new logger("Region_points", begin_timestamp);
     m_logCPU = new logger("Camera_timing", begin_timestamp);
@@ -11,20 +11,21 @@ Camera::Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_
     m_logTime->Write({0, 0});
     m_logTime->Tic();
 
-	/*if(!cap->open()) {
+	if(!cap->open()) {
         std::cout << "Could not initialize capturing...\n";
         m_logTime->Tac();
     } else {
     	m_x.store(0);
     	m_y.store(0);
-    	StartThread();
-    }*/
+    	//StartThread();
+    }
 
     std::cout << "Camera Pi Start" << std::endl;
 }
 
 Camera::~Camera() {
-	//delete cap;
+    cap->release();
+	delete cap;
 	delete m_logCPU;
 	delete m_logTrack;
 	delete m_logTime;
@@ -39,7 +40,6 @@ void* Camera::ThreadRun() {
 			current_timestamp = std::chrono::high_resolution_clock::now();
 		}
 	}
-    //cap->release();
     m_logTime->Tac();
 	return ReturnFunction();
 }
@@ -84,3 +84,12 @@ float Camera::GetXClusterPose() {return m_x.load();}
 float Camera::GetYClusterPose() {return m_y.load();}
 
 const long int Camera::GetLastT() {return m_Te;}
+
+void Camera::SaveImg() {
+    cv::Mat output;
+
+    cap->grab();
+    cap->retrieve(output);
+
+    imwrite("test.jpg", output);
+}

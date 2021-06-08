@@ -57,14 +57,6 @@ void PID::ComputePID() {
 	m_logCPU->Tic();
 	//Get inputs
 	const float ysp = g_setpoint[m_nb_corrector].load();
-	/*float y;
-	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		y = m_Arduino->ReadPose();
-		//std::cout << m_nb_corrector << " mesure = " << y << std::endl;
-		y = (y-MIDDLE_POINT)*0.065f;//0.0614f;
-	} else {
-		y = g_feedback[m_nb_corrector].load();
-	}*/
 	const float y = g_feedback[m_nb_corrector].load();
 	const float e = ysp - y;
 	//std::cout << m_nb_corrector << " Ysp = " << ysp << " Y = " << y << " e = " << e << std::endl;
@@ -104,11 +96,10 @@ void PID::ComputePID() {
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
 		g_event[m_nb_corrector+1].store(true);
+		g_cv[m_nb_corrector+1].notify_one();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 	m_cptEvts++;
 }
 
-void PID::Read() {
-	m_Arduino->ReadPose();
-}
+void PID::Read() {m_Arduino->ReadPose();}

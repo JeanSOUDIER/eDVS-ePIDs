@@ -7,15 +7,26 @@ MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate, const float e
 
     m_mutexR.store(false);
     m_mutexW.store(false);
+
+    g_event[1].store(false);
+    g_setpoint[1].store(0);
+    g_feedback[1].store(0);
 }
 
 MotorWheel::MotorWheel(const int nb_usb, const int bdrate, const float e_lim, const int middle_point)
     : m_elim(e_lim), m_middle(middle_point) {
     m_usb = new Usb(nb_usb, bdrate);
+
+    std::cout << "e_lim pot = " << m_elim << std::endl;
+
     std::cout << "MotorWheel start" << std::endl;
 
     m_mutexR.store(false);
     m_mutexW.store(false);
+
+    g_event[1].store(false);
+    g_setpoint[1].store(0);
+    g_feedback[1].store(0);
 }
 
 MotorWheel::~MotorWheel() {
@@ -76,6 +87,8 @@ void MotorWheel::ReadPose() {
                     g_feedback[1].store(m_y);
                     g_event[1].store(true);
                     g_cv[1].notify_one();
+                } else {
+                    g_feedback[1].store(m_y);
                 }
                 //std::cout << temp << " " << m_y << std::endl;
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4);

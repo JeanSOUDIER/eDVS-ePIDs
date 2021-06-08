@@ -177,6 +177,7 @@ void* DVS::ThreadRun() {
 					if(std::fabs(temp) >= m_thresEvent) {
 					    g_feedback[0].store(temp2);
 						g_event[0].store(true);
+						g_cv[0].notify_one();
 						m_cptEvts++;
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}

@@ -7,12 +7,12 @@
 
 #include <wiringPi.h>
 #include <chrono>
-//#include <opencv2/opencv.hpp>
-/*#include <opencv2/imgproc.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/core/utility.hpp>*/
-//#include <raspicam/raspicam_cv.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc.hpp>
+//#include <opencv2/imgcodecs.hpp>
+//#include <opencv2/highgui.hpp>
+//#include <opencv2/core/utility.hpp>
+#include <raspicam/raspicam_cv.h>
 
 #include "../RS232_CPP/Usb.hpp"
 #include "../BaseThread/BaseThread.hpp"
@@ -26,13 +26,14 @@ class Camera : public BaseThread {
         float GetXClusterPose();
         float GetYClusterPose();
         const long int GetLastT();
+        void SaveImg();
     protected:
         void* ThreadRun();
 
     private:
         void Process();
 
-    	//raspicam::RaspiCam_Cv *cap;
+    	raspicam::RaspiCam_Cv *cap;
 
     	const unsigned int m_Te;
 

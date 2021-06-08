@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '15';
-Mode = "NONE";
-Mode2 = "ePID";
-SubMode = 2;
+Nfile = '5';
+Mode = "DVS";
+Mode2 = "PID";
+Mode3 = "ePID";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -19,40 +19,41 @@ elseif(Mode == "Cam")
     Dsensor = ReadCSVfiles('Cam_points', Nfile);
 end
 if(Mode2 == "ePID")
-    switch SubMode
-        case 0
-            Data = ReadCSVfiles('ePID_points', Nfile);
-            Tcontroler = ReadCSVfiles('ePID_timing', Nfile);
-        case 1
-            Data = ReadCSVfiles('ePID_points0', Nfile);
-            Tcontroler = ReadCSVfiles('ePID_timing0', Nfile);
-        case 2
-            Data = ReadCSVfiles('ePID_points1', Nfile);
-            Tcontroler = ReadCSVfiles('ePID_timing1', Nfile);
-        otherwise
-            Data = ReadCSVfiles('ePID_points0', Nfile);
-            Tcontroler = ReadCSVfiles('ePID_timing0', Nfile);
-            Data2 = ReadCSVfiles('ePID_points1', Nfile);
-            Tcontroler2 = ReadCSVfiles('ePID_timing1', Nfile);
+    Data = ReadCSVfiles('ePID_points0', Nfile);
+    Tcontroler = ReadCSVfiles('ePID_timing0', Nfile);
+    if(Mode3 == "ePID")
+        Data2 = ReadCSVfiles('ePID_points1', Nfile);
+        Tcontroler2 = ReadCSVfiles('ePID_timing1', Nfile);
+        SubMode = 3;
+    elseif(Mode3 == "PID")
+        Data2 = ReadCSVfiles('PID_points1', Nfile);
+        Tcontroler2 = ReadCSVfiles('PID_timing1', Nfile);
+        SubMode = 3;
     end
 elseif(Mode2 == "PID")
-    switch SubMode
-        case 0
-            Data = ReadCSVfiles('PID_points', Nfile);
-            Tcontroler = ReadCSVfiles('PID_timing', Nfile);
-        case 1
-            Data = ReadCSVfiles('PID_points0', Nfile);
-            Tcontroler = ReadCSVfiles('PID_timing0', Nfile);
-        case 2
-            Data = ReadCSVfiles('PID_points1', Nfile);
-            Tcontroler = ReadCSVfiles('PID_timing1', Nfile);
-        otherwise
-            Data = ReadCSVfiles('PID_points0', Nfile);
-            Tcontroler = ReadCSVfiles('PID_timing0', Nfile);
-            Data2 = ReadCSVfiles('PID_points1', Nfile);
-            Tcontroler2 = ReadCSVfiles('PID_timing1', Nfile);
+    Data = ReadCSVfiles('PID_points0', Nfile);
+    Tcontroler = ReadCSVfiles('PID_timing0', Nfile);
+    if(Mode3 == "ePID")
+        Data2 = ReadCSVfiles('ePID_points1', Nfile);
+        Tcontroler2 = ReadCSVfiles('ePID_timing1', Nfile);
+        SubMode = 3;
+    elseif(Mode3 == "PID")
+        Data2 = ReadCSVfiles('PID_points1', Nfile);
+        Tcontroler2 = ReadCSVfiles('PID_timing1', Nfile);
+        SubMode = 3;
+    end
+else
+    if(Mode3 == "ePID")
+        Data = ReadCSVfiles('ePID_points1', Nfile);
+        Tcontroler = ReadCSVfiles('ePID_timing1', Nfile);
+        SubMode = 1;
+    elseif(Mode3 == "PID")
+        Data = ReadCSVfiles('PID_points1', Nfile);
+        Tcontroler = ReadCSVfiles('PID_timing1', Nfile);
+        SubMode = 1;
     end
 end
+
 
 %CPU usage graph size
 grapher = 0;
@@ -96,8 +97,16 @@ end
         ProperYaxisMulti(Data(:,1), Data(:,2));
         legend({'Y','Ysp'},'Location','northeast');
         hold off;
+        figure(4);
+        hold on;
+        stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,1),'-or');
+        stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,2),'-og');
+        stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,3),'-ob');
+        xlim([0 axi]);
+        ProperYaxisMulti(Data(:,1), Data(:,2));
+        legend({'Y','Ysp'},'Location','northeast');
+        hold off;
     end
-    
     
     figure(1);
     tiledlayout(grapher,1);
@@ -193,9 +202,13 @@ end
 if(Mode2 ~= "NONE")
     PrintsUsage(Ycontroler, Data, Tdiffconstroler, 'Controller');
     fprintf('%d evts\n',length(Data));
+    fprintf('min time %d us\n',min(Tdiffconstroler));
+    fprintf('max time %d us\n',max(Tdiffconstroler));
     if SubMode > 2
         PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
         fprintf('%d evts\n',length(Data2));
+        fprintf('2 min time %d us\n',min(Tdiffconstroler2));
+        fprintf('2 max time %d us\n',max(Tdiffconstroler2));
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end

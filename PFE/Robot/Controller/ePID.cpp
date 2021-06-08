@@ -43,7 +43,6 @@ void* ePID::ThreadRun() {
 	while(GetStartValue()) {
 		while(!g_event[m_nb_corrector].load()) {
 			g_cv[m_nb_corrector].wait(lk);
-			std::cout << "wake-up" << std::endl;
 		}
 		ComputePID();
 		g_event[m_nb_corrector].store(false);
@@ -107,6 +106,7 @@ void ePID::ComputePID() {
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
 		g_event[m_nb_corrector+1].store(true);
+		g_cv[m_nb_corrector+1].notify_one();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 	m_cptEvts++;
