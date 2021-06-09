@@ -39,9 +39,9 @@ void two_loop() {
 	g_cv[0].notify_one();
 
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.1, 1, 10, 10);
+	//ePID PIDmot(begin_timestamp, num, 2, 8, 0.8/1000000.0f, 10, 1, 0.16, 1, 10, 10);
 	//Te Kp Ki Kd x x x N
-	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+	PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
@@ -91,16 +91,16 @@ void one_loop() {
 	g_setpoint[1].store(0);
     g_event[1].store(true);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	//ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.1, 1, 10, 10);
+	ePID PIDmot(begin_timestamp, num, 2, 8, 0.8/1000000.0f, 10, 1, 0.16, 1, 10, 10);
 	//Te Kp Ki Kd x x x N
-	PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
     g_cv[1].notify_one();
 
     delay(1000);
 	//while(!kbhit()) {
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 5000) {
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 35000) {
 		g_setpoint[1].store(3.1415);
     	g_event[1].store(true);
 	    g_cv[1].notify_one();
@@ -127,6 +127,7 @@ void one_loop() {
 
 int main() {
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
+	//one_loop();
     two_loop();
     return 0;
 }

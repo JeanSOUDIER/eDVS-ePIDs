@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '5';
+Nfile = '8';
 Mode = "DVS";
 Mode2 = "PID";
-Mode3 = "ePID";
+Mode3 = "PID";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -29,6 +29,8 @@ if(Mode2 == "ePID")
         Data2 = ReadCSVfiles('PID_points1', Nfile);
         Tcontroler2 = ReadCSVfiles('PID_timing1', Nfile);
         SubMode = 3;
+    else
+        SubMode = 2;
     end
 elseif(Mode2 == "PID")
     Data = ReadCSVfiles('PID_points0', Nfile);
@@ -41,6 +43,8 @@ elseif(Mode2 == "PID")
         Data2 = ReadCSVfiles('PID_points1', Nfile);
         Tcontroler2 = ReadCSVfiles('PID_timing1', Nfile);
         SubMode = 3;
+    else
+        SubMode = 2;
     end
 else
     if(Mode3 == "ePID")
@@ -81,6 +85,9 @@ if(Mode2 ~= "NONE")
         grapher = grapher+3;
         [Ycontroler2, Tdiffconstroler2] = ComputeTimes(Tcontroler2, Ttime);
     end
+elseif(Mode3 ~= "NONE")
+    grapher = grapher+3;
+    [Ycontroler, Tdiffconstroler] = ComputeTimes(Tcontroler, Ttime);
 end
 
 

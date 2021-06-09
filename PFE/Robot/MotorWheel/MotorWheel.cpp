@@ -81,16 +81,17 @@ void MotorWheel::ReadPose() {
                 temp += m_buf.at(2);
                 m_y = temp;
                 m_y = (m_y-m_middle)*0.065f;
-                //std::cout << "mesure " << temp << std::endl;
                 const float e = g_setpoint[1].load() - m_y;
                 if(std::fabs(e) >= m_elim) {
                     g_feedback[1].store(m_y);
-                    g_event[1].store(true);
-                    g_cv[1].notify_one();
+                    if(!g_event[1].load()) {
+                        g_event[1].store(true);
+                        g_cv[1].notify_one();
+                    }
                 } else {
                     g_feedback[1].store(m_y);
                 }
-                //std::cout << temp << " " << m_y << std::endl;
+                //std::cout << "mesure " << temp << " " << m_y << std::endl;
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4);
             } else {
                 std::cout << "error cc" << std::endl;

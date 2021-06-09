@@ -41,11 +41,11 @@ void* ePID::ThreadRun() {
 	std::unique_lock<std::mutex> lk(g_cv_mutex[m_nb_corrector]);
 	lk.unlock();
 	while(GetStartValue()) {
+		g_event[m_nb_corrector].store(false);
 		while(!g_event[m_nb_corrector].load()) {
 			g_cv[m_nb_corrector].wait(lk);
 		}
 		ComputePID();
-		g_event[m_nb_corrector].store(false);
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0);
@@ -73,8 +73,8 @@ void ePID::ComputePID() {
 
 	//Ui
 	const float hacti = hact*std::exp(m_alpha_i*(m_hnom-hact));
-	const float he = ((hacti-m_hnom)*m_elim + m_hnom*e)/1000.0f;
-	m_ui += m_ki*he;
+	const float he = (hacti-m_hnom)*m_elim + m_hnom*e;
+	m_ui += m_ki*he/1000.0f;
 	//std::cout << m_nb_corrector << " he = " << he << " ui = " << m_ui << std::endl;
 
 	//Ud

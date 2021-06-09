@@ -66,7 +66,7 @@ void PID::ComputePID() {
 	//std::cout << m_nb_corrector << " up = " << up << std::endl;
 
 	//Ui
-	m_ui += m_ki * e * m_Te/1000.0f;
+	m_ui += m_ki * e * (m_Te/1000.0f);
 	//std::cout << m_nb_corrector << " ui = " << m_ui << std::endl;
 
 	//Ud
@@ -95,8 +95,10 @@ void PID::ComputePID() {
 		if(u < -9.4248) {u = -9.4248;}
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
-		g_event[m_nb_corrector+1].store(true);
-		g_cv[m_nb_corrector+1].notify_one();
+		if(!g_event[m_nb_corrector+1].load()) {
+			g_event[m_nb_corrector+1].store(true);
+			g_cv[m_nb_corrector+1].notify_one();
+		}
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 	m_cptEvts++;
