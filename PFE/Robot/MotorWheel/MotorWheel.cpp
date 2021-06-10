@@ -88,8 +88,6 @@ void MotorWheel::ReadPose() {
                         g_event[1].store(true);
                         g_cv[1].notify_one();
                     }
-                } else {
-                    g_feedback[1].store(m_y);
                 }
                 //std::cout << "mesure " << temp << " " << m_y << std::endl;
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4);

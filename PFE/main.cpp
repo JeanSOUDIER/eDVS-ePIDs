@@ -32,33 +32,39 @@ void two_loop() {
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
-    g_event[0].store(true);
     PID PIDbille(1, 0.07735, 0.003288*2, 0.4455*50, begin_timestamp, num, 0, 10.43);
 	//ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455, 10.43, 0, 0.1, 1, 10, 10);
     PIDbille.StartThread();
-	g_cv[0].notify_one();
+	if(!g_event[0].load()) {
+		g_event[0].store(true);
+    	g_cv[0].notify_one();
+	}
 
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	//ePID PIDmot(begin_timestamp, num, 2, 8, 0.8/1000000.0f, 10, 1, 0.16, 1, 10, 10);
+	ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
 	//Te Kp Ki Kd x x x N
-	PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
-    delay(1000);
+    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
 	g_setpoint[0].store(-30);
-	g_event[0].store(true);
-	g_cv[0].notify_one();
+	if(!g_event[0].load()) {
+		g_event[0].store(true);
+    	g_cv[0].notify_one();
+	}
+	std::chrono::time_point<std::chrono::high_resolution_clock> start;
 	//while(!kbhit()) {
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 10000) {
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 40000) {
     	PIDmot.Read();
-    	delay(1);
 	}
     PIDmot.Read();
     l.Tac();
     g_setpoint[0].store(0);
-    g_event[0].store(true);
-	g_cv[0].notify_one();
+    if(!g_event[0].load()) {
+		g_event[0].store(true);
+    	g_cv[0].notify_one();
+	}
     for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
 
     PIDbille.StopThread();
@@ -67,8 +73,10 @@ void two_loop() {
     for(int i=0;i<100;i++) {delay(1);PIDmot.Read();}
 
     g_setpoint[1].store(0);
-    g_event[1].store(true);
-    g_cv[1].notify_one();
+    if(!g_event[1].load()) {
+		g_event[1].store(true);
+    	g_cv[1].notify_one();
+	}
     for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
 
 
@@ -89,33 +97,46 @@ void one_loop() {
     l.Tic();
 
 	g_setpoint[1].store(0);
-    g_event[1].store(true);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	ePID PIDmot(begin_timestamp, num, 2, 8, 0.8/1000000.0f, 10, 1, 0.16, 1, 10, 10);
+	ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
 	//Te Kp Ki Kd x x x N
 	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
-    g_cv[1].notify_one();
+	if(!g_event[1].load()) {
+		g_event[1].store(true);
+    	g_cv[1].notify_one();
+	}
 
-    delay(1000);
+    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
 	//while(!kbhit()) {
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 35000) {
-		g_setpoint[1].store(3.1415);
-    	g_event[1].store(true);
-	    g_cv[1].notify_one();
-    	for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
-		g_setpoint[1].store(-3.1415);
-    	g_event[1].store(true);
-	    g_cv[1].notify_one();
-    	for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
+    	start = std::chrono::high_resolution_clock::now();
+    	g_setpoint[1].store(3.1415);
+    	if(!g_event[1].load()) {
+			g_event[1].store(true);
+	    	g_cv[1].notify_one();
+		}
+    	while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 5000) {PIDmot.Read();}
+
+		start = std::chrono::high_resolution_clock::now();
+    	g_setpoint[1].store(-3.1415);
+    	if(!g_event[1].load()) {
+			g_event[1].store(true);
+	    	g_cv[1].notify_one();
+		}
+    	while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 5000) {PIDmot.Read();}
+
 	}
     PIDmot.Read();
     l.Tac();
 
     g_setpoint[1].store(0);
-    g_event[1].store(true);
-    g_cv[1].notify_one();
+    if(!g_event[1].load()) {
+		g_event[1].store(true);
+    	g_cv[1].notify_one();
+	}
     for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
 
 

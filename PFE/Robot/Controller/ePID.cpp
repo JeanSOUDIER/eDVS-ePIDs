@@ -3,7 +3,7 @@
 #define MIDDLE_POINT 265
 
 ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom, const float alpha_i, const float alpha_d)
-	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kdN(Kd*N), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d), m_begin_timestamp(begin_timestamp) {
+	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kdN(Kd*N/1000000.0f), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d), m_begin_timestamp(begin_timestamp) {
 
 	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
@@ -71,16 +71,19 @@ void ePID::ComputePID() {
 	const float up = m_kp*e;
 	//std::cout << m_nb_corrector << " up = " << up << std::endl;
 
-	//Ui
-	const float hacti = hact*std::exp(m_alpha_i*(m_hnom-hact));
-	const float he = (hacti-m_hnom)*m_elim + m_hnom*e;
-	m_ui += m_ki*he/1000.0f;
-	//std::cout << m_nb_corrector << " he = " << he << " ui = " << m_ui << std::endl;
+	
+	if(hact > m_hnom) {
+		//Ui
+		const float hacti = hact*std::exp(m_alpha_i*(m_hnom-hact));
+		const float he = (hacti-m_hnom)*m_elim + m_hnom*e;
+		m_ui += m_ki*he/1000.0f;
+		//std::cout << m_nb_corrector << " he = " << he << " hacti = " << hacti << " ui = " << m_ui << std::endl;
 
-	//Ud
-	const float hd = m_hnom + (hact-m_hnom)*std::exp(m_alpha_d*(m_hnom-hact));
-	m_ud = m_ud/(1+m_kdN*m_hnom/hd) - m_kdN/(1+m_kdN*m_hnom/hd)*(y-m_yOld);
-	//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << std::endl;
+		//Ud
+		const float hd = m_hnom + (hact-m_hnom)*std::exp(m_alpha_d*(m_hnom-hact));
+		m_ud = m_ud/(1+m_kdN*m_hnom/hd) - m_kdN/(1+m_kdN*m_hnom/hd)*(y-m_yOld);
+		//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << " hd = " << hd << std::endl;
+	}
 
 	float u = up + m_ui + m_ud;
 	//std::cout << m_nb_corrector << " u = " << u << std::endl;

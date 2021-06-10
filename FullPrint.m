@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '8';
+Nfile = '0';
 Mode = "DVS";
 Mode2 = "PID";
-Mode3 = "PID";
+Mode3 = "ePID";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
