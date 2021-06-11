@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <thread>
 #include <mutex>
+#include <exception>
 
 #include "Robot/BaseThread/BaseThread.hpp"
 #include "Robot/Controller/Hbridge.hpp"
@@ -13,6 +14,7 @@
 #include "Robot/Controller/ePID.hpp"
 #include "Robot/Controller/PID.hpp"
 #include "Robot/MotorWheel/MotorWheel.hpp"
+#include "Robot/GTsensor/VL53L0X.hpp"
 
 bool kbhit() {
     int byteswaiting;
@@ -22,10 +24,27 @@ bool kbhit() {
 
 
 void two_loop() {
+    /*VL53L0X sensor;
+    try {
+        // Initialize the sensor
+        sensor.initialize();
+        // Set measurement timeout value
+        sensor.setTimeout(200);
+    } catch (const std::exception & error) {
+        std::cerr << "Error initializing sensor with reason:" << std::endl << error.what() << std::endl;
+    }
+    try {
+        // Increase timing budget to 200 ms
+        sensor.setMeasurementTimingBudget(200000);
+    } catch (const std::exception & error) {
+        std::cerr << "Error enabling high accuracy mode with reason:" << std::endl << error.what() << std::endl;
+    }*/
+
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
     l.Write({ 0, 0 });
     const int num = l.GetNumFile();
+    //logger GTsensor("GTsensor", begin_timestamp, num);
 
 	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 0.1);
     l.Tic();
@@ -41,9 +60,9 @@ void two_loop() {
 	}
 
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
+	//ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
 	//Te Kp Ki Kd x x x N
-	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+	PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
@@ -57,6 +76,8 @@ void two_loop() {
 	//while(!kbhit()) {
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 40000) {
     	PIDmot.Read();
+        //GTsensor.WriteUI16N(sensor.readRangeSingleMillimeters());
+        //GTsensor.TacF();
 	}
     PIDmot.Read();
     l.Tac();

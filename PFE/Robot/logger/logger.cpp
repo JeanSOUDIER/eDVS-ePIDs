@@ -75,6 +75,12 @@ void logger::WriteFN(const std::vector<float> &values) { //used 3 eDVS, 3 ePID
 	#endif
 }
 
+void logger::WriteUI16N(const uint16_t &values) { //used 3 eDVS, 3 ePID
+	#ifndef NO_LOG
+		m_file << static_cast<float>(values) << m_delimiter;
+	#endif
+}
+
 /*void logger::WriteUL(const std::vector<unsigned long>& values) {
 	for (unsigned int i = 0; i < values.size(); i++) {
 		m_file << values.at(i) << m_delimiter;

@@ -18,6 +18,7 @@ class logger {
 		//void WriteD(const std::vector<double>& values);
 		//void WriteDN(const std::vector<double>& values);
 		//void WriteF(const std::vector<float> &values);
+		void WriteUI16N(const uint16_t &values);
 		void WriteFN(const std::vector<float>& values);
 		//void WriteUL(const std::vector<unsigned long> &values);
 		//void WriteULN(const std::vector<unsigned long>& values);
