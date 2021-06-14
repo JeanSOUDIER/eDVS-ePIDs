@@ -29,10 +29,10 @@ void two_loop() {
     const int num = l.GetNumFile();
     //logger GTsensor("GTsensor", begin_timestamp, num);
 
-    VL53L0X sensor(begin_timestamp, num);
+    //VL53L0X sensor(begin_timestamp, num);
 	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 0.1);
     l.Tic();
-    sensor.StartThread();
+    //sensor.StartThread();
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
@@ -89,7 +89,7 @@ void two_loop() {
     g_cv[1].notify_one();
     for(int i=0;i<100;i++) {delay(1);PIDmot.Read();}
     CamTrack.StopThread();
-    sensor.StopThread();
+    //sensor.StopThread();
 	delay(100);
 }
 
