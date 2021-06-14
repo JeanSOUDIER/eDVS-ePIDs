@@ -43,9 +43,7 @@ void* PID::ThreadRun() {
 		auto begin_timestamp = std::chrono::high_resolution_clock::now();
 		ComputePID();
 		auto current_timestamp = std::chrono::high_resolution_clock::now();
-		while(std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - begin_timestamp).count() < m_Te) {
-			current_timestamp = std::chrono::high_resolution_clock::now();
-		}
+		std::this_thread::sleep_for(std::chrono::microseconds(m_Te*1000 - std::chrono::duration_cast<std::chrono::microseconds>(current_timestamp - begin_timestamp).count()));
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0);

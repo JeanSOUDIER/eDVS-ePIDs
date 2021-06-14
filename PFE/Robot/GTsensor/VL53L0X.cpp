@@ -30,6 +30,14 @@
 
 /*** Helper functions ***/
 
+void* VL53L0X::ThreadRun() {
+	while(GetStartValue()) {
+		m_log->WriteUI16N(readRangeSingleMillimeters());
+		m_log->TacF();
+	}
+	return ReturnFunction();
+}
+
 uint64_t milliseconds() {
 	timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -38,7 +46,8 @@ uint64_t milliseconds() {
 
 /*** Constructors ***/
 
-VL53L0X::VL53L0X(const int16_t xshutGPIOPin, bool ioMode2v8, const uint8_t address) {
+VL53L0X::VL53L0X(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const int16_t xshutGPIOPin, bool ioMode2v8, const uint8_t address)
+	: BaseThread("GTsensor") {
 	this->xshutGPIOPin = xshutGPIOPin;
 	this->ioMode2v8 = ioMode2v8;
 	this->address = address;
@@ -50,6 +59,20 @@ VL53L0X::VL53L0X(const int16_t xshutGPIOPin, bool ioMode2v8, const uint8_t addre
 	this->measurementTimingBudgetMicroseconds = 33000;
 	this->stopVariable = 0;
 	this->timeoutStartMilliseconds = milliseconds();
+
+	m_log = new logger("GTsensor", begin_timestamp, num_file);
+
+    // Initialize the sensor
+    initialize();
+    // Set measurement timeout value
+    setTimeout(200);
+    
+    // Increase timing budget to 200 ms
+    setMeasurementTimingBudget(200000);
+}
+
+VL53L0X::~VL53L0X() {
+	delete m_log;
 }
 
 /*** Public Methods ***/

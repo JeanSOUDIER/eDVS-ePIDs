@@ -83,6 +83,15 @@ void ePID::ComputePID() {
 		const float hd = m_hnom + (hact-m_hnom)*std::exp(m_alpha_d*(m_hnom-hact));
 		m_ud = m_ud/(1+m_kdN*m_hnom/hd) - m_kdN/(1+m_kdN*m_hnom/hd)*(y-m_yOld);
 		//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << " hd = " << hd << std::endl;
+	} else {
+		//Ui
+		const float he = (hact-m_hnom)*m_elim + m_hnom*e;
+		m_ui += m_ki*he/1000.0f;
+		//std::cout << m_nb_corrector << " he = " << he << " ui = " << m_ui << std::endl;
+
+		//Ud
+		m_ud = m_ud/(1+m_kdN*m_hnom/hact) - m_kdN/(1+m_kdN*m_hnom/hact)*(y-m_yOld);
+		//std::cout << m_nb_corrector << " Yold = " << m_yOld << " ud = " << m_ud << std::endl;
 	}
 
 	float u = up + m_ui + m_ud;

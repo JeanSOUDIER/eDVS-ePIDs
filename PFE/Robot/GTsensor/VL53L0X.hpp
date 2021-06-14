@@ -11,8 +11,10 @@
 #include <mutex>
 
 #include "VL53L0X_defines.hpp"
+#include "../BaseThread/BaseThread.hpp"
+#include "../logger/logger.hpp"
 
-class VL53L0X {
+class VL53L0X : public BaseThread {
 	public:
 		/*** Constructors and destructors ***/
 
@@ -27,8 +29,9 @@ class VL53L0X {
 		 * since the API user manual says that it is performed by ST on the bare modules;
 		 * It seems like that should work well enough unless a cover glass is added.
 		 */
-		VL53L0X(const int16_t xshutGPIOPin = -1, bool ioMode2v8 = true, const uint8_t address = VL53L0X_ADDRESS_DEFAULT);
+		VL53L0X(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const int16_t xshutGPIOPin = -1, bool ioMode2v8 = true, const uint8_t address = VL53L0X_ADDRESS_DEFAULT);
 
+		~VL53L0X();
 		/*** Public methods ***/
 		/**
 		 * \brief Initialize the sensor's hardware and, if needed, GPIO access on the host side.
@@ -145,6 +148,9 @@ class VL53L0X {
 		bool timeoutOccurred();
 	private:
 		/*** Private fields ***/
+		void* ThreadRun();
+
+		logger *m_log;
 
 		uint8_t address;
 		int16_t xshutGPIOPin;

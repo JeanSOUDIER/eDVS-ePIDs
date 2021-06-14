@@ -6,7 +6,7 @@ clc;
 Nfile = '0';
 Mode = "DVS";
 Mode2 = "PID";
-Mode3 = "ePID";
+Mode3 = "PID";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -77,6 +77,7 @@ if(Mode ~= "NONE")
         end
     end
 end
+DataGT = ReadExistingCSVfilesNoTime('GTsensor', Nfile, Ttime);
 if(Mode2 ~= "NONE")
     grapher = grapher+3;
     [Thard, Yhard, TdiffHard, grapher] = ReadExistingCSVfiles('hard_timing', Nfile, Ttime, grapher);
@@ -100,6 +101,9 @@ end
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
+        if(DataGT ~= 0)
+            stairs(DataGT(:,2)-Ttime(:,1)*ones(length(DataGT),1),140*ones(length(DataGT),1)-DataGT(:,1),'-om');
+        end
         xlim([0 axi]);
         ProperYaxisMulti(Data(:,1), Data(:,2));
         legend({'Y','Ysp'},'Location','northeast');

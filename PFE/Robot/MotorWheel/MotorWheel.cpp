@@ -105,11 +105,11 @@ void MotorWheel::ReadPose() {
 void MotorWheel::SetHbridge(int vel) {
     if(std::fabs(vel) > 70) {
         if(vel > 0) {
-            if(vel > 256) {vel = 256;}
+            if(vel > 256) {vel = 256;}//std::cout << "speed sat H" << std::endl;}
             SetSpeed(vel + 0x1000);
         } else {
             vel *= -1;
-            if(vel > 256) {vel = 256;}
+            if(vel > 256) {vel = 256;}//std::cout << "speed sat L" << std::endl;}
             SetSpeed(vel);
         }
     } else {
@@ -118,22 +118,22 @@ void MotorWheel::SetHbridge(int vel) {
 }
 
 void MotorWheel::SetLim(int lim) {
-    if(lim > 256) {lim = 256;}
-    if(lim < 0) {lim = 0;}
+    if(lim > 256) {lim = 256;std::cout << "lim sat H" << std::endl;}
+    if(lim < 0) {lim = 0;std::cout << "lim sat L" << std::endl;}
     SetSpeed(lim + 0x4000);
 }
 
 void MotorWheel::SetMiddlePoint(int point) {
-    if(point > 1023) {point = 1023;}
-    if(point < 0) {point = 0;}
+    if(point > 1023) {point = 1023;std::cout << "middle point sat H" << std::endl;}
+    if(point < 0) {point = 0;std::cout << "middle point sat L" << std::endl;}
     SetSpeed(point + 0x8000);
 }
 
 //void MotorWheel::SetBegin(int val) {m_temp = val;}
 
 void MotorWheel::SetSpeed(int vel) {
-    if(vel > 65535) {vel = 65535;std::cout << "speed sat H" << std::endl;}
-    if(vel < 0) {vel = 0;std::cout << "speed sat L" << std::endl;}
+    if(vel > 65535) {vel = 65535;std::cout << "msg sat H" << std::endl;}
+    if(vel < 0) {vel = 0;std::cout << "msg sat L" << std::endl;}
     const unsigned char Lc = static_cast<unsigned char>(vel>>8);
     const unsigned char Ld = static_cast<unsigned char>(vel%256);
     const int cc = Lc+Ld;
