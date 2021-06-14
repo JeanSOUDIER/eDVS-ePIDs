@@ -213,13 +213,15 @@ end
 if(Mode2 ~= "NONE")
     PrintsUsage(Ycontroler, Data, Tdiffconstroler, 'Controller');
     fprintf('%d evts\n',length(Data));
-    fprintf('min time %d us\n',min(Tdiffconstroler));
-    fprintf('max time %d us\n',max(Tdiffconstroler));
+    [mini maxi] = ComputeTimesSpace(Tcontroler);
+    fprintf('min time %f ms\n',mini/1000);
+    fprintf('max time %f ms\n',maxi/1000);
     if SubMode > 2
         PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
         fprintf('%d evts\n',length(Data2));
-        fprintf('2 min time %d us\n',min(Tdiffconstroler2));
-        fprintf('2 max time %d us\n',max(Tdiffconstroler2));
+        [mini maxi] = ComputeTimesSpace(Tcontroler2);
+        fprintf('2 min time %f ms\n',mini/1000);
+        fprintf('2 max time %f ms\n',maxi/1000);
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end
