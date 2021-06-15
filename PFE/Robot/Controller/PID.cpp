@@ -97,6 +97,7 @@ void PID::ComputePID() {
 			g_event[m_nb_corrector+1].store(true);
 			g_cv[m_nb_corrector+1].notify_one();
 		}
+		g_event[m_nb_corrector+1].store(true);
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
 	m_cptEvts++;

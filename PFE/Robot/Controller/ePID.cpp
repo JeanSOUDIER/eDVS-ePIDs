@@ -42,8 +42,11 @@ void* ePID::ThreadRun() {
 	lk.unlock();
 	while(GetStartValue()) {
 		g_event[m_nb_corrector].store(false);
+		//std::cout << m_nb_corrector << " ePID stop" << std::endl;
 		while(!g_event[m_nb_corrector].load()) {
+			//std::cout << m_nb_corrector << " ePID wait" << std::endl;
 			g_cv[m_nb_corrector].wait(lk);
+			//std::cout << m_nb_corrector << " ePID waited" << std::endl;
 		}
 		ComputePID();
 	}
@@ -117,10 +120,14 @@ void ePID::ComputePID() {
 		if(u < -9.4248) {u = -9.4248;}
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
-		g_event[m_nb_corrector+1].store(true);
-		g_cv[m_nb_corrector+1].notify_one();
+		//if(!g_event[m_nb_corrector+1].load()) {
+			g_event[m_nb_corrector+1].store(true);
+			g_cv[m_nb_corrector+1].notify_one();
+		//}
+		//g_event[m_nb_corrector+1].store(true);
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
+	//std::cout << m_nb_corrector << " end law" << std::endl;
 	m_cptEvts++;
 }
 
