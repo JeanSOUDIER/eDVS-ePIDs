@@ -176,8 +176,11 @@ void* DVS::ThreadRun() {
 					const float temp = g_setpoint[0].load() - temp2;
 					if(std::fabs(temp) >= m_thresEvent) {
 					    g_feedback[0].store(temp2);
-						g_event[0].store(true);
-						g_cv[0].notify_one();
+					    if(!g_event[0].load()) {
+					    	g_event[0].store(true);
+							g_cv[0].notify_one();
+					    }
+					    g_event[0].store(true);
 						m_cptEvts++;
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}

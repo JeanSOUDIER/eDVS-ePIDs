@@ -22,7 +22,7 @@ PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, 
 	}
 
 
-	std::cout << "PID Start" << std::endl;
+	std::cout << "PID Start at " << m_nb_corrector << std::endl;
 }
 
 PID::~PID() {

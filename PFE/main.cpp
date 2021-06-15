@@ -30,14 +30,14 @@ void two_loop() {
     //logger GTsensor("GTsensor", begin_timestamp, num);
 
     //VL53L0X sensor(begin_timestamp, num);
-	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 0.1);
+	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 3);
     l.Tic();
     //sensor.StartThread();
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
-    PID PIDbille(1, 0.07735, 0.003288*2, 0.4455*50, begin_timestamp, num, 0, 10.43);
-	//ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455, 10.43, 0, 0.1, 1, 10, 10);
+    //PID PIDbille(1, 0.07735*2, 0.003288*2, 0.4455*50, begin_timestamp, num, 0, 10.43);
+	ePID PIDbille(begin_timestamp, num, 0.07735*2, 0.003288*2, 0.4455*50, 10.43, 0, 3, 1, 100000, 100000);
     PIDbille.StartThread();
 	if(!g_event[0].load()) {
 		g_event[0].store(true);
@@ -64,17 +64,17 @@ void two_loop() {
 	}
     PIDmot.Read();
     l.Tac();
-    g_setpoint[0].store(0);
+    /*g_setpoint[0].store(0);
     if(!g_event[0].load()) {
 		g_event[0].store(true);
     	g_cv[0].notify_one();
 	}
-    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
+    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}*/
 
     PIDbille.StopThread();
     g_event[0].store(true);
     g_cv[0].notify_one();
-    for(int i=0;i<100;i++) {delay(1);PIDmot.Read();}
+    for(int i=0;i<10;i++) {delay(1);PIDmot.Read();}
 
     g_setpoint[1].store(0);
     if(!g_event[1].load()) {

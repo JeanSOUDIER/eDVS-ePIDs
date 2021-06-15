@@ -17,7 +17,7 @@ logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::
 			m_file_name = m_file_name+"_"+std::to_string(m_num_file)+".csv";
 		}
 		m_file = std::ofstream(m_file_name);
-		std::cout << "logger Start on " << std::endl;
+		std::cout << "logger Start on " << m_file_name << std::endl;
 	#endif
 }
 
