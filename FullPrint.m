@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '3';
-Mode = "DVS";
+Nfile = '4';
+Mode = "NONE";
 Mode2 = "ePID";
-Mode3 = "ePID";
+Mode3 = "NONE";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -213,15 +213,17 @@ end
 if(Mode2 ~= "NONE")
     PrintsUsage(Ycontroler, Data, Tdiffconstroler, 'Controller');
     fprintf('%d evts\n',length(Data));
-    [mini maxi] = ComputeTimesSpace(Tcontroler);
+    [mini maxi means] = ComputeTimesSpace(Tcontroler);
     fprintf('min time %f ms\n',mini/1000);
     fprintf('max time %f ms\n',maxi/1000);
+    fprintf('mean time %f ms\n',means/1000);
     if SubMode > 2
         PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
         fprintf('%d evts\n',length(Data2));
-        [mini maxi] = ComputeTimesSpace(Tcontroler2);
+        [mini maxi means] = ComputeTimesSpace(Tcontroler2);
         fprintf('2 min time %f ms\n',mini/1000);
         fprintf('2 max time %f ms\n',maxi/1000);
+        fprintf('2 mean time %f ms\n',means/1000);
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end

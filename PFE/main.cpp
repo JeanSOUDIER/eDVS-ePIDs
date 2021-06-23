@@ -36,18 +36,18 @@ void two_loop() {
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
-    //PID PIDbille(1, 0.07735*2, 0.003288*2, 0.4455*50, begin_timestamp, num, 0, 10.43);
-	ePID PIDbille(begin_timestamp, num, 0.07735*2, 0.003288*2, 0.4455*50, 10.43, 0, 3, 1, 100000, 100000);
+    //PID PIDbille(1, 0.07735, 0.003288, 0.4455*50, begin_timestamp, num, 0, 10.43);
+	ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455*50, 10.43, 0, 3, 1, 100000, 100000);
     PIDbille.StartThread();
 	if(!g_event[0].load()) {
 		g_event[0].store(true);
     	g_cv[0].notify_one();
 	}
 
-    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
 	//Te Kp Ki Kd x x x N
 	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
+    ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
@@ -57,13 +57,14 @@ void two_loop() {
 		g_event[0].store(true);
     	g_cv[0].notify_one();
 	}
-	std::chrono::time_point<std::chrono::high_resolution_clock> start;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
 	//while(!kbhit()) {
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 40000) {
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 40000) {
     	PIDmot.Read();
 	}
     PIDmot.Read();
     l.Tac();
+    std::cout << "end loop" << std::endl;
     /*g_setpoint[0].store(0);
     if(!g_event[0].load()) {
 		g_event[0].store(true);
@@ -103,9 +104,9 @@ void one_loop() {
 
 	g_setpoint[1].store(0);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	//ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
+	//ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000);
 	//Te Kp Ki Kd x x x N
-	PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+	PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
 	PIDmot.Read();
 	PIDmot.StartThread();
 	if(!g_event[1].load()) {
@@ -114,10 +115,11 @@ void one_loop() {
 	}
 
     for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
-    std::chrono::time_point<std::chrono::high_resolution_clock> start;
-	//while(!kbhit()) {
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - begin_timestamp).count() < 35000) {
-    	start = std::chrono::high_resolution_clock::now();
+    std::chrono::time_point<std::chrono::high_resolution_clock> start1 = std::chrono::high_resolution_clock::now();
+	std::chrono::time_point<std::chrono::high_resolution_clock> start;
+	while(!kbhit()) {
+    //while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 35000) {
+		start = std::chrono::high_resolution_clock::now();
     	g_setpoint[1].store(3.1415);
     	if(!g_event[1].load()) {
 			g_event[1].store(true);
@@ -153,7 +155,7 @@ void one_loop() {
 
 int main() {
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
-	//one_loop();
-    two_loop();
+	one_loop();
+    //two_loop();
     return 0;
 }

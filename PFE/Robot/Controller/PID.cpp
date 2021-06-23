@@ -85,7 +85,7 @@ void PID::ComputePID() {
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		if(y < -9.4248 || y > 9.4248) {u = 0;std::cout << "Emergency stop" << std::endl;}
 		m_logCPUhard->Tic();
-		m_Arduino->SetHbridge(u*21.33f);
+		m_Arduino->SetHbridge(u*21.25f);
 		m_logCPUhard->Tac();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	} else {
