@@ -156,4 +156,6 @@ int main() {
 	//one_loop();
     two_loop();
     return 0;
+    // detection DV1(30,0,105,80,0,122);
+    // Pos=DV1.LirePosBille();
 }

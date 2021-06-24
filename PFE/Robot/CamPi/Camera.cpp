@@ -1,95 +1,47 @@
-#include "Camera.hpp"
+#include "logger.hpp"
+#include "camera.hpp"
+#include <iostream>
+#include <opencv2/aruco.hpp>
+#include <unistd.h>
+#include <ctime>
+#include <wiringPi.h>
+#include <fstream>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <string.h>
+#include <raspicam/raspicam_cv.h>
+#include <raspicam/raspicam.h>
 
-Camera::Camera(const unsigned int Te, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp)
-	: BaseThread("CamPi"), m_Te(Te) {
-	cap = new raspicam::RaspiCam_Cv();
+using namespace cv;
+using namespace std;
 
-    m_logTrack = new logger("Region_points", begin_timestamp);
-    m_logCPU = new logger("Camera_timing", begin_timestamp);
-
-    m_logTime = new logger("Time", begin_timestamp);
-    m_logTime->Write({0, 0});
-    m_logTime->Tic();
-
-	if(!cap->open()) {
-        std::cout << "Could not initialize capturing...\n";
-        m_logTime->Tac();
-    } else {
-    	m_x.store(0);
-    	m_y.store(0);
-    	//StartThread();
-    }
-
-    std::cout << "Camera Pi Start" << std::endl;
+camera::camera() {
+    cap = new raspicam::RaspiCam_Cv();
+    cap->set(CAP_PROP_FPS,71);
+    cap->set(CAP_PROP_FRAME_HEIGHT,720);//720//1080//480
+    cap->set(CAP_PROP_FRAME_WIDTH,1280);//1280//1920//640
+    cap->open();//On ouvre la camera
 }
 
-Camera::~Camera() {
+camera::~camera() {
     cap->release();
-	delete cap;
-	delete m_logCPU;
-	delete m_logTrack;
-	delete m_logTime;
+    delay(100);
+    delete cap;
 }
 
-void* Camera::ThreadRun() {
-	while (GetStartValue()) {
-		auto begin_timestamp = std::chrono::high_resolution_clock::now();
-		Process();
-		auto current_timestamp = std::chrono::high_resolution_clock::now();
-		while(std::chrono::duration_cast<std::chrono::milliseconds>(current_timestamp - begin_timestamp).count() < m_Te) {
-			current_timestamp = std::chrono::high_resolution_clock::now();
-		}
-	}
-    m_logTime->Tac();
-	return ReturnFunction();
+Mat camera::TakePic(void){
+    Mat photo;
+    cap->grab();//On prend une photo
+    cap->retrieve(photo);//on récupère la photo
+    // cap->release();
+    return photo;
 }
 
-void Camera::Process() {
-	m_logCPU->Tic();
-    /*cv::Mat output, gray;
+void camera::OpenCam(void){
+    cap->open();
 
-	//getImg
-	//cap->grab();
-    //cap->retrieve(output);
-
-    //to gray
-    cv::cvtColor(output, gray, cv::COLOR_BGR2GRAY);
-
-    //to segmentation
-    cv::threshold(gray, gray, 0, 255, cv::THRESH_OTSU);
-
-    //to regionprops
-    std::vector<std::vector<cv::Point>> cnt;
-    std::vector<cv::Vec4i> hier;
-    cv::Rect rectan;
-    cv::findContours(gray, cnt, hier, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-
-    for(unsigned int i=0;i<cnt.size();i++) {
-        if(cv::contourArea(cnt.at(i)) > 5000 && cv::contourArea(cnt.at(i)) < 90000) {
-            rectan = cv::boundingRect(cnt.at(i));
-            break;
-        }
-    }
-
-    m_x.store((rectan.x+rectan.height/2)* m_kx + m_u0);
-    m_y.store((rectan.y+rectan.width/2)* m_ky + m_v0);*/
-	
-	m_logTrack->WriteFN({m_x.load(), m_y.load(), 0});
-	m_logTrack->TacF();
-	m_logCPU->Tac();
 }
+void camera::ReleaseCam(void){
+    cap->release();
 
-float Camera::GetXClusterPose() {return m_x.load();}
-
-float Camera::GetYClusterPose() {return m_y.load();}
-
-const long int Camera::GetLastT() {return m_Te;}
-
-void Camera::SaveImg() {
-    cv::Mat output;
-
-    cap->grab();
-    cap->retrieve(output);
-
-    imwrite("test.jpg", output);
 }

@@ -48,6 +48,11 @@ void logger::WriteN(const std::vector<int> &values) { //used 2 eDVS(DVS point)
 		m_file << values.at(0) << m_delimiter << values.at(1) << m_delimiter << values.at(2) << m_delimiter;
 	#endif
 }
+void logger::WriteIN(const std::vector<int> &values) { //used 2 eDVS(DVS point)
+	#ifndef NO_LOG
+		m_file << values.at(0) << m_delimiter << values.at(1) << m_delimiter;
+	#endif
+}
 
 /*void logger::WriteD(const std::vector<double>& values) {
 	for (unsigned int i = 0; i < values.size(); i++) {
@@ -124,5 +129,11 @@ void logger::TacF() {
 		m_file << static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()) << '\n';
 	#endif
 }
+void logger::TacI() {
+	#ifndef NO_LOG
+		m_file << static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()) << '\n';
+	#endif
+}
+
 
 const int logger::GetNumFile() {return m_num_file;}
