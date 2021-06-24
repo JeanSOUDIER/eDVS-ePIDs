@@ -3,7 +3,8 @@
 int cmd = 0;
 int sens = 0;
 int r_old = 0;
-int lim = 0;
+float D_r = 0;
+float lim = 0;
 
 //Serial
 int vel = 0;
@@ -42,15 +43,14 @@ void loop() {
   if(lim == 0) {
     Sending(r);
   } else {
-    if(r-r_old >= lim) {
-      r_old += lim;
-      Sending(r_old);
-    } else if(r-r_old <= -lim) {
-      r_old -= lim;
+    D_r = r-r_old;
+    if(abs(D_r) >= lim) {
+      //r_old += lim;
+      r_old += lim*(int)(D_r/lim);
       Sending(r_old);
     }
   }
-  delay(1);
+  delayMicroseconds(100);
 }
 
 void serialEvent() {

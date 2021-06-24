@@ -8,11 +8,11 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200, m_elim, MIDDLE_POINT);
+		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200, begin_timestamp, num_file, m_elim, MIDDLE_POINT);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
-		m_Arduino->SetLim(1); //m_elim
-		m_Arduino->SetLim(1);
+		m_Arduino->SetLim(2); //m_elim
+		m_Arduino->SetLim(2);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	} else {
 		g_setpoint[m_nb_corrector+1].store(0);
@@ -42,11 +42,8 @@ void* ePID::ThreadRun() {
 	lk.unlock();
 	while(GetStartValue()) {
 		g_event[m_nb_corrector].store(false);
-		//std::cout << m_nb_corrector << " ePID stop" << std::endl;
 		while(!g_event[m_nb_corrector].load()) {
-			//std::cout << m_nb_corrector << " ePID wait" << std::endl;
 			g_cv[m_nb_corrector].wait(lk);
-			//std::cout << m_nb_corrector << " ePID waited" << std::endl;
 		}
 		ComputePID();
 	}
@@ -112,7 +109,7 @@ void ePID::ComputePID() {
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		if(y < -9.4248 || y > 9.4248) {u = 0;std::cout << "Emergency stop" << std::endl;}
 		m_logCPUhard->Tic();
-		m_Arduino->SetHbridge(u*21.33f);
+		m_Arduino->SetHbridge(u*21.25f);
 		m_logCPUhard->Tac();
 		//std::cout << m_nb_corrector << " u = " << u*21.33f << std::endl;
 	} else {
@@ -120,14 +117,10 @@ void ePID::ComputePID() {
 		if(u < -9.4248) {u = -9.4248;}
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
-		//if(!g_event[m_nb_corrector+1].load()) {
-			g_event[m_nb_corrector+1].store(true);
-			g_cv[m_nb_corrector+1].notify_one();
-		//}
-		//g_event[m_nb_corrector+1].store(true);
+		g_event[m_nb_corrector+1].store(true);
+		g_cv[m_nb_corrector+1].notify_one();
 		//std::cout << m_nb_corrector << " u = " << u << std::endl;
 	}
-	//std::cout << m_nb_corrector << " end law" << std::endl;
 	m_cptEvts++;
 }
 

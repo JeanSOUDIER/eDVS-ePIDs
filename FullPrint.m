@@ -3,10 +3,11 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '3';
-Mode = "DVS";
-Mode2 = "ePID";
-Mode3 = "ePID";
+Nfile = '2';
+Mode = "NONE";
+Mode2 = "PID";
+Mode3 = "NONE";
+Mode4 = "sensor";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -58,6 +59,18 @@ else
     end
 end
 
+if(Mode4 == "sensor")
+    axi = Ttime(:,2)-Ttime(:,1);
+    PotData = ReadCSVfiles('Pot_points', Nfile);
+    figure(5);
+    hold on;
+    stairs(PotData(:,4)-Ttime(:,1)*ones(length(PotData),1),PotData(:,1),'-or');
+    stairs(PotData(:,4)-Ttime(:,1)*ones(length(PotData),1),PotData(:,2),'-og');
+    xlim([0 axi]);
+    ProperYaxisMulti(PotData(:,1), PotData(:,2));
+    legend({'Y','Ysp'},'Location','northeast');
+    hold off;
+end
 
 %CPU usage graph size
 grapher = 0;
@@ -213,15 +226,17 @@ end
 if(Mode2 ~= "NONE")
     PrintsUsage(Ycontroler, Data, Tdiffconstroler, 'Controller');
     fprintf('%d evts\n',length(Data));
-    [mini maxi] = ComputeTimesSpace(Tcontroler);
+    [mini maxi means] = ComputeTimesSpace(Tcontroler);
     fprintf('min time %f ms\n',mini/1000);
     fprintf('max time %f ms\n',maxi/1000);
+    fprintf('mean time %f ms\n',means/1000);
     if SubMode > 2
         PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
         fprintf('%d evts\n',length(Data2));
-        [mini maxi] = ComputeTimesSpace(Tcontroler2);
+        [mini maxi means] = ComputeTimesSpace(Tcontroler2);
         fprintf('2 min time %f ms\n',mini/1000);
         fprintf('2 max time %f ms\n',maxi/1000);
+        fprintf('2 mean time %f ms\n',means/1000);
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end
