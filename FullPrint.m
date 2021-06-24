@@ -3,10 +3,11 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '4';
+Nfile = '2';
 Mode = "NONE";
-Mode2 = "ePID";
+Mode2 = "PID";
 Mode3 = "NONE";
+Mode4 = "sensor";
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -58,6 +59,18 @@ else
     end
 end
 
+if(Mode4 == "sensor")
+    axi = Ttime(:,2)-Ttime(:,1);
+    PotData = ReadCSVfiles('Pot_points', Nfile);
+    figure(5);
+    hold on;
+    stairs(PotData(:,4)-Ttime(:,1)*ones(length(PotData),1),PotData(:,1),'-or');
+    stairs(PotData(:,4)-Ttime(:,1)*ones(length(PotData),1),PotData(:,2),'-og');
+    xlim([0 axi]);
+    ProperYaxisMulti(PotData(:,1), PotData(:,2));
+    legend({'Y','Ysp'},'Location','northeast');
+    hold off;
+end
 
 %CPU usage graph size
 grapher = 0;

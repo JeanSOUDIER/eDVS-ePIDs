@@ -36,7 +36,6 @@ class PID : public BaseThread {
 		float m_ud = 0;
 		float m_uOld = 0;
 
-		//Hbridge *m_Motor;
 		MotorWheel *m_Arduino;
 
 		logger *m_log;

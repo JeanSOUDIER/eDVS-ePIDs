@@ -104,9 +104,9 @@ void one_loop() {
 
 	g_setpoint[1].store(0);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	//ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000);
+	ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.3, 1, 1000000, 1000000);
 	//Te Kp Ki Kd x x x N
-	PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
+	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
 	PIDmot.Read();
 	PIDmot.StartThread();
 	if(!g_event[1].load()) {
@@ -117,8 +117,8 @@ void one_loop() {
     for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
     std::chrono::time_point<std::chrono::high_resolution_clock> start1 = std::chrono::high_resolution_clock::now();
 	std::chrono::time_point<std::chrono::high_resolution_clock> start;
-	while(!kbhit()) {
-    //while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 35000) {
+	//while(!kbhit()) {
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 35000) {
 		start = std::chrono::high_resolution_clock::now();
     	g_setpoint[1].store(3.1415);
     	if(!g_event[1].load()) {

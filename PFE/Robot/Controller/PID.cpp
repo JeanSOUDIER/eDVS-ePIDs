@@ -5,12 +5,10 @@
 PID::PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N, const float beta)
 	: BaseThread("PID"), m_Te(Te), m_kp(Kp), m_ki(Ki*Te), m_kd(Kd), m_nb_corrector(nb_corrector), m_N(N*Te), m_beta(beta), m_kdN(Kd*N) {
 
-	//m_Motor = new Hbridge(28, 29);
-
 	m_log = new logger("PID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	m_logCPU = new logger("PID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200);
+		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200, begin_timestamp, num_file);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
 		m_Arduino->SetLim(0);
@@ -35,7 +33,6 @@ PID::~PID() {
 	} else {
 		g_setpoint[m_nb_corrector+1].store(0);
 	}
-	//delete m_Motor;
 }
 
 void* PID::ThreadRun() {

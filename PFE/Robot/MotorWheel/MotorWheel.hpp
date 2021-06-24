@@ -12,11 +12,12 @@
 
 #include "../BaseThread/BaseThread.hpp"
 #include "../RS232_CPP/Usb.hpp"
+#include "../logger/logger.hpp"
 
 class MotorWheel {
     public:
-        MotorWheel(const int nb_usb, const int bdrate, const float e_lim = 0, const int middle_point = 265);
-        MotorWheel(const std::string nb_usb, const int bdrate, const float e_lim = 0, const int middle_point = 265);
+        MotorWheel(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float e_lim = 0, const int middle_point = 265);
+        MotorWheel(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float e_lim = 0, const int middle_point = 265);
         ~MotorWheel();
 
         //void GoPos(const double x, const double y, const double a);
@@ -35,6 +36,8 @@ class MotorWheel {
 
         const float m_elim;
         const int m_middle;
+
+        logger *m_log;
 
         std::atomic<bool> m_mutexR, m_mutexW;
 };

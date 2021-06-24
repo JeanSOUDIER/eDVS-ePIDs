@@ -1,6 +1,6 @@
 #include "MotorWheel.hpp"
 
-MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate, const float e_lim, const int middle_point)
+MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float e_lim, const int middle_point)
     : m_elim(e_lim), m_middle(middle_point) {
     m_usb = new Usb(nb_usb, bdrate);
     std::cout << "MotorWheel start" << std::endl;
@@ -8,12 +8,14 @@ MotorWheel::MotorWheel(const std::string nb_usb, const int bdrate, const float e
     m_mutexR.store(false);
     m_mutexW.store(false);
 
+    m_log = new logger("Pot_points", begin_timestamp, num_file);
+
     g_event[1].store(false);
     g_setpoint[1].store(0);
     g_feedback[1].store(0);
 }
 
-MotorWheel::MotorWheel(const int nb_usb, const int bdrate, const float e_lim, const int middle_point)
+MotorWheel::MotorWheel(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float e_lim, const int middle_point)
     : m_elim(e_lim), m_middle(middle_point) {
     m_usb = new Usb(nb_usb, bdrate);
 
@@ -23,6 +25,8 @@ MotorWheel::MotorWheel(const int nb_usb, const int bdrate, const float e_lim, co
 
     m_mutexR.store(false);
     m_mutexW.store(false);
+
+    m_log = new logger("Pot_points", begin_timestamp, num_file);
 
     g_event[1].store(false);
     g_setpoint[1].store(0);
@@ -82,6 +86,8 @@ void MotorWheel::ReadPose() {
                 m_y = temp;
                 m_y = (m_y-m_middle)*0.065f;
                 const float e = g_setpoint[1].load() - m_y;
+                m_log->WriteFN({m_y, e+m_y, 0});
+                m_log->TacF();
                 if(std::fabs(e) >= m_elim) {
                     g_feedback[1].store(m_y);
                     if(!g_event[1].load()) {

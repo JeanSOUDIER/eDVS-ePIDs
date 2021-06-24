@@ -1,6 +1,6 @@
 #include "logger.hpp"
 
-#define NO_LOG
+//#define NO_LOG
 
 logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, char delimiter)
 	: m_begin_timestamp(begin_timestamp), m_delimiter(delimiter), m_num_file(num_file) {
