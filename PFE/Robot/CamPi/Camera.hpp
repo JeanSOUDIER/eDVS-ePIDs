@@ -1,6 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
-#include "logger.hpp"
+#include "../logger/logger.hpp"
 #include<iostream>
 #include <unistd.h>
 #include <ctime>

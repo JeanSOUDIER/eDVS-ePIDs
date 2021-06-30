@@ -22,8 +22,8 @@ Hbridge.o: Robot/Controller/Hbridge.cpp
 MotorWheel.o: Robot/MotorWheel/MotorWheel.cpp
 	g++ -Ofast -o Robot/MotorWheel/MotorWheel.o -c Robot/MotorWheel/MotorWheel.cpp -Wall -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard
 
-#Camera.o: Robot/CamPi/Camera.cpp
-#	g++ -Ofast -o Robot/CamPi/Camera.o -c Robot/CamPi/Camera.cpp -Wall `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv -lwiringPi -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread -std=c++11
+Camera.o: Robot/CamPi/Camera.cpp
+	g++ -Ofast -o Robot/CamPi/Camera.o -c Robot/CamPi/Camera.cpp -Wall `pkg-config --cflags --libs opencv4` -lwiringPi -lpigpio -I/usr/local/include/ -lraspicam -lraspicam_cv -lwiringPi -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread -std=c++11
 
 DVS.o: Robot/eDVS/DVS.cpp
 	g++ -Ofast -o Robot/eDVS/DVS.o -c Robot/eDVS/DVS.cpp -Wall -lwiringPi -mcpu=cortex-a72 -mfpu=vfp -mfloat-abi=hard -pthread
@@ -47,4 +47,5 @@ clean:
 	@echo "cleaning"
 	find . -name "*.o" | xargs rm
 	rm eCHAIN
+	make Camera.o
 	make

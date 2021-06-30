@@ -85,8 +85,9 @@ void MotorWheel::ReadPose() {
                 temp += m_buf.at(2);
                 m_y = temp;
                 m_y = (m_y-m_middle)*0.065f;
-                const float e = g_setpoint[1].load() - m_y;
-                m_log->WriteFN({m_y, e+m_y, 0});
+                const float ysp = g_setpoint[1].load();
+                const float e = ysp - m_y;
+                m_log->WriteFN({m_y, ysp, 0});
                 m_log->TacF();
                 if(std::fabs(e) >= m_elim) {
                     g_feedback[1].store(m_y);

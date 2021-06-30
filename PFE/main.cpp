@@ -36,7 +36,7 @@ void two_loop() {
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
-    //PID PIDbille(1, 0.07735, 0.003288, 0.4455*50, begin_timestamp, num, 0, 10.43);
+    //PID PIDbille(20, 0.07735, 0.003288, 0.4455*50, begin_timestamp, num, 0, 10.43);
 	ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455*50, 10.43, 0, 3, 1, 100000, 100000);
     PIDbille.StartThread();
 	if(!g_event[0].load()) {
@@ -45,9 +45,9 @@ void two_loop() {
 	}
 
 	//Te Kp Ki Kd x x x N
-	//PID PIDmot(1, 3, 8, 0.8, begin_timestamp, num, 1, 10);
+	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-    ePID PIDmot(begin_timestamp, num, 3, 8, 0.8, 10, 1, 0.16, 1, 100000, 10);
+    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.3, 1, 1000000, 1000000);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
@@ -155,9 +155,10 @@ void one_loop() {
 
 int main() {
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
-	one_loop();
-    //two_loop();
-    return 0;
+	//one_loop();
+    two_loop();
+
     // detection DV1(30,0,105,80,0,122);
     // Pos=DV1.LirePosBille();
+    return 0;
 }

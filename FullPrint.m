@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '2';
-Mode = "NONE";
-Mode2 = "PID";
-Mode3 = "NONE";
+Nfile = '17';
+Mode = "DVS";
+Mode2 = "ePID";
+Mode3 = "ePID";
 Mode4 = "sensor";
 
 %reading files

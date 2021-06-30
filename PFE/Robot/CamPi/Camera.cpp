@@ -1,5 +1,5 @@
-#include "logger.hpp"
-#include "camera.hpp"
+#include "../logger/logger.hpp"
+#include "Camera.hpp"
 #include <iostream>
 #include <opencv2/aruco.hpp>
 #include <unistd.h>
