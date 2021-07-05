@@ -47,7 +47,7 @@ void two_loop() {
 	//Te Kp Ki Kd x x x N
 	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.3, 1, 1000000, 1000000);
+    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
@@ -104,7 +104,7 @@ void one_loop() {
 
 	g_setpoint[1].store(0);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-	ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.3, 1, 1000000, 1000000);
+	ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000);
 	//Te Kp Ki Kd x x x N
 	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
 	PIDmot.Read();
@@ -155,8 +155,8 @@ void one_loop() {
 
 int main() {
 	//MotorWheel m_Arduino("ttyUSB_Teensy", 115200);
-	//one_loop();
-    two_loop();
+	one_loop();
+    //two_loop();
 
     // detection DV1(30,0,105,80,0,122);
     // Pos=DV1.LirePosBille();
