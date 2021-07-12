@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '12';
-Mode = "NONE";
+Nfile = '1';
+Mode = "DVS";
 Mode2 = "ePID";
-Mode3 = "NONE";
+Mode3 = "ePID";
 Mode4 = "sensor";
 
 %reading files
@@ -69,7 +69,16 @@ if(Mode4 == "sensor")
     xlim([0 axi]);
     ProperYaxisMulti(PotData(:,1), PotData(:,2));
     legend({'Y','Ysp'},'Location','northeast');
-    title('sensor');
+    title('sensor 1');
+    hold off;
+    figure(6);
+    hold on;
+    stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
+    stairs(Dsensor(:,4)-Ttime(:,1)*ones(length(Dsensor),1),-151/150*Dsensor(:,1)+64,'-og');
+    xlim([0 axi]);
+    ProperYaxisMulti(Data(:,1), -151/150*Dsensor(:,1)+64);
+    legend({'Y','Ysp'},'Location','northeast');
+    title('sensor 0');
     hold off;
 end
 
