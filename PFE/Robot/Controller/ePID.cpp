@@ -2,8 +2,8 @@
 
 #define MIDDLE_POINT 265
 
-ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom, const float alpha_i, const float alpha_d)
-	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kdN(Kd*N/1000000.0f*7.8f), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d), m_begin_timestamp(begin_timestamp) {
+ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom, const float alpha_i, const float alpha_d, const float h_nom_fact)
+	: BaseThread("ePID"), m_kp(Kp), m_ki(Ki), m_kdN(Kd*N/1000000.0f*7.8f), m_nb_corrector(nb_corrector), m_elim(e_lim), m_hnom(hnom), m_alpha_i(alpha_i), m_alpha_d(alpha_d), m_hnom_fact(h_nom_fact), m_begin_timestamp(begin_timestamp) {
 
 	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
@@ -40,12 +40,15 @@ ePID::~ePID() {
 void* ePID::ThreadRun() {
 	std::unique_lock<std::mutex> lk(g_cv_mutex[m_nb_corrector]);
 	lk.unlock();
+	const int wait_time = static_cast<int>(static_cast<float>((1000.0f*m_hnom)/m_hnom_fact));
+	std::cout << m_nb_corrector << " wait time " << wait_time << " " << m_hnom << " " << m_hnom_fact << std::endl;
 	while(GetStartValue()) {
 		g_event[m_nb_corrector].store(false);
 		while(!g_event[m_nb_corrector].load()) {
 			g_cv[m_nb_corrector].wait(lk);
 		}
 		ComputePID();
+		//std::this_thread::sleep_for(std::chrono::microseconds(wait_time));
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0);

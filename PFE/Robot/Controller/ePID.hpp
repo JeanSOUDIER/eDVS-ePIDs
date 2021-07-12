@@ -20,7 +20,7 @@
 
 class ePID : public BaseThread {
 	public:
-		ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom = 1000, const float alpha_i = 10, const float alpha_d = 10);
+		ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom = 1000, const float alpha_i = 10, const float alpha_d = 10, const float h_nom_fact = 1);
 		~ePID();
 
 		void Read();
@@ -34,6 +34,7 @@ class ePID : public BaseThread {
 		const float m_alpha_i;
 		const float m_alpha_d;
 		const float m_hnom;
+		const float m_hnom_fact;
 		const unsigned int m_nb_corrector;
 		const float m_elim;
 

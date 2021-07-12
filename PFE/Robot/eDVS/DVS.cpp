@@ -22,6 +22,7 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 	toLengthRead();
 	char form = DVS_PACKET_TYPE + '0';
 	std::vector<char> str = { '!', 'E', form, '\n' };
+	std::cout << str.at(2) << std::endl;
 
 	if (m_usb->GetActive()) {
 		Restart();
@@ -96,8 +97,8 @@ void* DVS::ThreadRun() {
 			m_logCPU->Tic();
 			//extraction
 			#if DVS_PACKET_TYPE == 0
-				y = buf.at(0) & 0x7F;
-				x = buf.at(1) & 0x7F;
+				x = buf.at(0) & 0x7F;
+				y = buf.at(1) & 0x7F;
 				c = (buf.at(0) & 0x80) >> 7;
 				p = (buf.at(1) & 0x80) >> 7;
 				t = 0;
@@ -150,8 +151,8 @@ void* DVS::ThreadRun() {
 			#endif
 
 			//tests
-			if (test) {
-				if (c) {
+			if(test) {
+				if(c) {
 					buf.erase(buf.begin());
 					std::cerr << "Error control" << std::endl;
 				}

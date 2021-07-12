@@ -14,7 +14,7 @@
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
 
-#define DVS_PACKET_TYPE     4
+#define DVS_PACKET_TYPE     0//4
 
 class DVS : public BaseThread {
     public:
