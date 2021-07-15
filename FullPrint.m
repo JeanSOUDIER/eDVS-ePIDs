@@ -3,7 +3,7 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '1';
+Nfile = '2';
 Mode = "DVS";
 Mode2 = "ePID";
 Mode3 = "ePID";

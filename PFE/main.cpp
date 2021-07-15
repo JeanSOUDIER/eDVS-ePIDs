@@ -46,8 +46,8 @@ void two_loop() {
 
 	//Te Kp Ki Kd x x x N
 	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
-    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000, 5);
+    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD fact
+    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.7, 1, 1000000, 1000000, 5);
 	PIDmot.Read();
 	PIDmot.StartThread();
 

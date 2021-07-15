@@ -110,7 +110,7 @@ void MotorWheel::ReadPose() {
 }
 
 void MotorWheel::SetHbridge(int vel) {
-    if(std::fabs(vel) > 70) {
+    if(std::fabs(vel) > 0) { //70
         if(vel > 0) {
             if(vel > 256) {vel = 256;}//std::cout << "speed sat H" << std::endl;}
             SetSpeed(vel + 0x1000);
