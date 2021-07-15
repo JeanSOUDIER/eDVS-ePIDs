@@ -28,7 +28,7 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 		Restart();
 		std::cout << "Config DVS" << std::endl;
 		m_usb->SendBytes("E-\n");           //disable event sending
-		m_usb->SendBytes("!L1\n");          //LED blinking
+		m_usb->SendBytes("!L2\n");          //LED blinking
 		m_usb->SendBytes("!U0\n");          //UART echo mode none
 		m_usb->SendBytes(str);              //select data format 2, 3-6, 4, 5, 6
 		m_usb->SendBytes("!B0=54\n");       //bias cas

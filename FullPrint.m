@@ -3,10 +3,10 @@ close all;
 clc;
 
 %serie of files to read
-Nfile = '2';
+Nfile = '1';
 Mode = "DVS";
-Mode2 = "PID";
-Mode3 = "PID";
+Mode2 = "ePID";
+Mode3 = "ePID";
 Mode4 = "sensor";
 
 %reading files
@@ -69,9 +69,11 @@ if(Mode4 == "sensor")
     xlim([0 axi]);
     ProperYaxisMulti(PotData(:,1), PotData(:,2));
     legend({'Y','Ysp'},'Location','northeast');
-    title('sensor 1');
+    title('Sensor motor');
     hold off;
-    saveas(gcf,'fig/SensorPot.pdf');
+    set(gcf, 'PaperSize', [20 20]);
+    print(gcf, 'fig/SensorPot.pdf', '-dpdf', '-fillpage');
+    
 end
 
 %CPU usage graph size
@@ -109,14 +111,15 @@ end
 if(Mode4 == "sensor")
     figure(6);
     hold on;
-    stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
+    stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-or');
     stairs(Dused(:,4)-Ttime(:,1)*ones(length(Dused),1),-151/150*Dused(:,1)+64,'-og');
     xlim([0 axi]);
-    ProperYaxisMulti(Data(:,1), -151/150*Dused(:,1)+64);
+    ProperYaxisMulti(Data(:,2), -151/150*Dused(:,1)+64);
     legend({'Y','Ysp'},'Location','northeast');
-    title('sensor 0');
+    title('Sensor ball');
     hold off;
-    saveas(gcf,'fig/SensorDVS.pdf');
+    set(gcf, 'PaperSize', [20 20]);
+    print(gcf, 'fig/SensorDVS.pdf', '-dpdf', '-fillpage');
 end
 
 
@@ -134,9 +137,10 @@ end
         xlim([0 axi]);
         ProperYaxisMulti(Data(:,1), Data(:,2));
         legend({'Y','Ysp'},'Location','northeast');
-        title('PID0');
+        title('Controller ball');
         hold off;
-        saveas(gcf,'fig/PIDbille.pdf');
+        set(gcf, 'PaperSize', [20 20]);
+        print(gcf, 'fig/PIDbille.pdf', '-dpdf', '-fillpage');
         
         figure(4);
         hold on;
@@ -146,9 +150,10 @@ end
         xlim([0 axi]);
         ProperYaxisMulti(Data(:,1), Data(:,2));
         legend({'Y','Ysp'},'Location','northeast');
-        title('PID1');
+        title('Controller motor');
         hold off;
-        saveas(gcf,'fig/PIDmot.pdf');
+        set(gcf, 'PaperSize', [20 20]);
+        print(gcf, 'fig/PIDmot.pdf', '-dpdf', '-fillpage');
     end
     
     figure(1);
@@ -236,7 +241,8 @@ end
         legend(list,'Location','northeast');
         view(3);
         hold off;
-        saveas(gcf,'fig/Points_cloud.pdf');
+        set(gcf, 'PaperSize', [20 20]);
+        print(gcf, 'fig/Points_cloud.pdf', '-dpdf', '-fillpage');
     end
 
 if(Mode ~= "NONE")
@@ -260,3 +266,5 @@ if(Mode2 ~= "NONE")
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end
+
+WriteEvts('events',[length(Dsensor) length(Dused) length(Data) length(Data2)]);

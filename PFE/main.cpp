@@ -37,7 +37,7 @@ void two_loop() {
 
 	g_setpoint[0].store(0);
     //PID PIDbille(20, 0.07735, 0.003288, 0.4455*50, begin_timestamp, num, 0, 10.43);
-	ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455*50, 10.43, 0, 3, 1, 100000, 100000, 1);
+	ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455*50, 10.43, 0, 3, 20, 100000, 100000, 5);
     PIDbille.StartThread();
 	if(!g_event[0].load()) {
 		g_event[0].store(true);
@@ -47,7 +47,7 @@ void two_loop() {
 	//Te Kp Ki Kd x x x N
 	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
     //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
-    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000, 10);
+    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000, 5);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
@@ -103,7 +103,7 @@ void one_loop() {
     l.Tic();
 
 	g_setpoint[1].store(0);
-    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD
+    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD fact
 	//ePID PIDmot(begin_timestamp, num, 1.31, 3.94, 0.0395, 364.15, 1, 0.5, 1, 1000000, 1000000);
     ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.5, 1, 1000000, 1000000, 10);
 	//Te Kp Ki Kd x x x N

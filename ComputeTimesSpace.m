@@ -1,6 +1,6 @@
 function [mini maxi means] = ComputeTimesSpace(var, Ttime)
     res = [];
-    for i = 1:length(var)-5000
+    for i = 1:length(var)-1
         res = [res ; var(i+1,1)-var(i,1)];
     end
     mini = min(res);

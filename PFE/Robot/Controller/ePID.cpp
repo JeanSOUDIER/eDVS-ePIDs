@@ -48,7 +48,7 @@ void* ePID::ThreadRun() {
 			g_cv[m_nb_corrector].wait(lk);
 		}
 		ComputePID();
-		//std::this_thread::sleep_for(std::chrono::microseconds(wait_time));
+		std::this_thread::sleep_for(std::chrono::microseconds(wait_time));
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0);
