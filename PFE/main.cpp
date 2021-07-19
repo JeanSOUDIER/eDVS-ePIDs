@@ -22,6 +22,15 @@ bool kbhit() {
     return byteswaiting > 0;
 }
 
+void Triggering() {
+	std::cout << "trig start" << std::endl;
+	system("gpio mode 28 out");
+	system("gpio write 28 0");
+	delay(100);
+	system("gpio write 28 1");
+	std::cout << "trig end" << std::endl;
+}
+
 void two_loop() {
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
@@ -32,6 +41,7 @@ void two_loop() {
     //VL53L0X sensor(begin_timestamp, num);
 	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 3);
     l.Tic();
+    Triggering();
     //sensor.StartThread();
 	CamTrack.StartThread();
 
@@ -83,7 +93,6 @@ void two_loop() {
     	g_cv[1].notify_one();
 	}
     for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
-
 
     PIDmot.StopThread();
     g_event[1].store(true);
