@@ -36,6 +36,31 @@ void two_loop() {
     logger l("Time",begin_timestamp);
     l.Write({ 0, 0 });
     const int num = l.GetNumFile();
+
+    const float Kp_ball = 0.07735;
+    const float Ki_ball = 0.003288;
+    const float Kd_ball = 0.4455*50;
+    const float N_ball = 10.43;
+    const float Te_ball = 20;
+    const float ai_ball = 100000;
+    const float ad_ball = 100000;
+    const float elim_ball = 3;
+    const float fact_ball = 5;
+    
+    const float Kp_motor = 6.54;
+    const float Ki_motor = 19.72;
+    const float Kd_motor = 0.20;
+    const float N_motor = 364.15;
+    const float Te_motor = 1;
+    const float ai_motor = 1000000;
+    const float ad_motor = 1000000;
+    const float elim_motor = 0.7;
+    const float fact_motor = 5;
+
+    std::ofstream param_file = std::ofstream("files/param_"+std::to_string(num)+".txt");
+    param_file << "Ball : Kp " << Kp_ball << ",Ki " << Ki_ball << ",Kd " << Kd_ball << ",N " << N_ball << ",Te " << Te_ball << ",ai " << ai_ball << ",ad " << ad_ball << ",elim " << elim_ball << ",fact " << fact_ball << "\n";
+    param_file << "Motor : Kp " << Kp_motor << ",Ki " << Ki_motor << ",Kd " << Kd_motor << ",N " << N_motor << ",Te " << Te_motor << ",ai " << ai_motor << ",ad " << ad_motor << ",elim " << elim_motor << ",fact " << fact_motor << "\n";
+    param_file.close();
     //logger GTsensor("GTsensor", begin_timestamp, num);
 
     //VL53L0X sensor(begin_timestamp, num);
@@ -46,18 +71,16 @@ void two_loop() {
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
-    //PID PIDbille(20, 0.07735, 0.003288, 0.4455*50, begin_timestamp, num, 0, 10.43);
-	ePID PIDbille(begin_timestamp, num, 0.07735, 0.003288, 0.4455*50, 10.43, 0, 3, 20, 100000, 100000, 5);
+    //PID PIDbille(20, Kp_ball, Ki_ball, Kd_ball, begin_timestamp, num, 0, N_ball);
+	ePID PIDbille(begin_timestamp, num, Kp_ball, Ki_ball, Kd_ball, N_ball, 0, elim_ball, Te_ball, ai_ball, ad_ball, fact_ball);
     PIDbille.StartThread();
 	if(!g_event[0].load()) {
 		g_event[0].store(true);
     	g_cv[0].notify_one();
 	}
 
-	//Te Kp Ki Kd x x x N
-	//PID PIDmot(1, 6.54, 19.72, 0.20, begin_timestamp, num, 1, 364.15);
-    //x x Kp Ki Kd N x e_lim h_nom alphaI alphaD fact
-    ePID PIDmot(begin_timestamp, num, 6.54, 19.72, 0.20, 364.15, 1, 0.7, 1, 1000000, 1000000, 5);
+	//PID PIDmot(Te_motor, Kp_motor, Ki_motor, Kd_motor, begin_timestamp, num, 1, N_motor);
+    ePID PIDmot(begin_timestamp, num, Kp_motor, Ki_motor, Kd_motor, N_motor, 1, elim_motor, Te_motor, ai_motor, ad_motor, fact_motor);
 	PIDmot.Read();
 	PIDmot.StartThread();
 
