@@ -16,6 +16,8 @@
 #include "Robot/MotorWheel/MotorWheel.hpp"
 #include "Robot/GTsensor/VL53L0X.hpp"
 
+#define EVENT_BASED
+
 bool kbhit() {
     int byteswaiting;
     ioctl(0, FIONREAD, &byteswaiting);
@@ -31,6 +33,45 @@ void Triggering() {
 	std::cout << "trig end" << std::endl;
 }
 
+std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float time, float Ts, float J_max, float A_max, float V_max) {
+    // float Ts = 0.002;
+    // float J_max = 1;
+    // float A_max = 3;
+    // float V_max = 16;
+
+    float A4 = 35;
+    float A5 = -84;
+    float A6 = 70;
+    float A7 = -20;
+
+    float SP_max = 35/16;
+
+    float SPP_max = 85*std::sqrt(5)/25;
+    //float SPP_min = -SPP_max;
+
+    float delta = std::fabs(std::fabs(start_point)-std::fabs(end_point));
+
+    float T_min_speed = std::fabs(delta)*SP_max/V_max;
+    float T_min_acc = std::sqrt(std::fabs(delta)*SPP_max/A_max);
+
+    float T = std::max(T_min_speed,T_min_acc);
+
+    float sens = 1;
+    if(end_point < start_point) {sens = -1;}
+
+    std::vector<float> t, traj, s;//, sp, spp, sppp, t_dot, ;
+    for(int i=0;i<static_cast<int>(time/Ts);i++) {
+        t.push_back(i*Ts);
+        s.push_back(A4*std::pow(t.at(i)/T,4) + A5*std::pow(t.at(i)/T,5) + A6*std::pow(t.at(i)/T,6) + A7*std::pow(t.at(i)/T,7));
+        //sp.push_back(4*A4*std::pow(t.at(i),3) + 5*A5*std::pow(t.at(i),4) + 6*A6*std::pow(t.at(i),5) + 7*A7*std::pow(t.at(i),6));
+        //spp.push_back(2*A4*std::pow(t.at(i),2) + 20*A5*std::pow(t.at(i),3) + 30*A6*std::pow(t.at(i),4) + 42*A7*std::pow(t.at(i),5));
+        //sppp.push_back(24*A4*t.at(i) + 60*A5*std::pow(t.at(i),2) + 120*A6*std::pow(t.at(i),3) + 210*A7*std::pow(t.at(i),4));
+        traj.push_back(start_point+sens*delta*s.at(i));
+    }
+
+    return traj;
+}
+
 void two_loop() {
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
@@ -44,8 +85,12 @@ void two_loop() {
     const float Te_ball = 20;
     const float ai_ball = 100000;
     const float ad_ball = 100000;
-    const float elim_ball = 3;
     const float fact_ball = 5;
+    #ifdef EVENT_BASED
+        const float elim_ball = 3;
+    #else
+        const float elim_ball = 0;
+    #endif
     
     const float Kp_motor = 6.54;
     const float Ki_motor = 19.72;
@@ -54,47 +99,90 @@ void two_loop() {
     const float Te_motor = 1;
     const float ai_motor = 1000000;
     const float ad_motor = 1000000;
-    const float elim_motor = 0.7;
     const float fact_motor = 5;
+    #ifdef EVENT_BASED
+        const float elim_motor = 0.7;
+    #else
+        const float elim_motor = 0;
+    #endif
 
     std::ofstream param_file = std::ofstream("files/param_"+std::to_string(num)+".txt");
     param_file << "Ball : Kp " << Kp_ball << ",Ki " << Ki_ball << ",Kd " << Kd_ball << ",N " << N_ball << ",Te " << Te_ball << ",ai " << ai_ball << ",ad " << ad_ball << ",elim " << elim_ball << ",fact " << fact_ball << "\n";
     param_file << "Motor : Kp " << Kp_motor << ",Ki " << Ki_motor << ",Kd " << Kd_motor << ",N " << N_motor << ",Te " << Te_motor << ",ai " << ai_motor << ",ad " << ad_motor << ",elim " << elim_motor << ",fact " << fact_motor << "\n";
     param_file.close();
+
+    std::vector<float> risedown = ComputeTrajSmooth(0, -30, 9, 0.002, 1, 3, 16);
+    std::vector<float> riseup = ComputeTrajSmooth(-30, 0, 9, 0.002, 1, 3, 16);
+
     //logger GTsensor("GTsensor", begin_timestamp, num);
 
     //VL53L0X sensor(begin_timestamp, num);
-	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, 3);
+	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, elim_ball);
     l.Tic();
     Triggering();
     //sensor.StartThread();
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
-    //PID PIDbille(20, Kp_ball, Ki_ball, Kd_ball, begin_timestamp, num, 0, N_ball);
-	ePID PIDbille(begin_timestamp, num, Kp_ball, Ki_ball, Kd_ball, N_ball, 0, elim_ball, Te_ball, ai_ball, ad_ball, fact_ball);
-    PIDbille.StartThread();
-	if(!g_event[0].load()) {
-		g_event[0].store(true);
-    	g_cv[0].notify_one();
-	}
+    #ifdef EVENT_BASED
+        ePID PIDbille(begin_timestamp, num, Kp_ball, Ki_ball, Kd_ball, N_ball, 0, elim_ball, Te_ball, ai_ball, ad_ball, fact_ball);
+    #else
+        PID PIDbille(20, Kp_ball, Ki_ball, Kd_ball, begin_timestamp, num, 0, N_ball);
+    #endif
 
-	//PID PIDmot(Te_motor, Kp_motor, Ki_motor, Kd_motor, begin_timestamp, num, 1, N_motor);
-    ePID PIDmot(begin_timestamp, num, Kp_motor, Ki_motor, Kd_motor, N_motor, 1, elim_motor, Te_motor, ai_motor, ad_motor, fact_motor);
+    PIDbille.StartThread();
+
+    #ifdef EVENT_BASED
+    	if(!g_event[0].load()) {
+    		g_event[0].store(true);
+        	g_cv[0].notify_one();
+    	}
+    #endif
+
+    #ifdef EVENT_BASED
+        ePID PIDmot(begin_timestamp, num, Kp_motor, Ki_motor, Kd_motor, N_motor, 1, elim_motor, Te_motor, ai_motor, ad_motor, fact_motor);
+    #else
+        PID PIDmot(Te_motor, Kp_motor, Ki_motor, Kd_motor, begin_timestamp, num, 1, N_motor);
+    #endif
 	PIDmot.Read();
 	PIDmot.StartThread();
 
-    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
+    /*for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
 	g_setpoint[0].store(-30);
 	if(!g_event[0].load()) {
 		g_event[0].store(true);
     	g_cv[0].notify_one();
-	}
+	}*/
 	std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
+    std::chrono::time_point<std::chrono::high_resolution_clock> start1;
 	//while(!kbhit()) {
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 6000) {
+    /*while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 6000) {
     	PIDmot.Read();
-	}
+	}*/
+    unsigned int cpt = 0;
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 17000) {
+        start1 = std::chrono::high_resolution_clock::now();
+
+        #ifdef EVENT_BASED
+            if(std::fabs(risedown.at(cpt)-g_feedback[0].load()) > elim_ball) {
+                g_setpoint[0].store(risedown.at(cpt));
+                if(!g_event[0].load()) {
+                    g_event[0].store(true);
+                    g_cv[0].notify_one();
+                }
+            }
+        #else
+            g_setpoint[0].store(risedown.at(cpt));
+        #endif
+
+        cpt++;
+        if(cpt >= risedown.size()) {cpt--;}
+
+        while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 2) {
+            PIDmot.Read();
+        }
+    }
+
     PIDmot.Read();
     l.Tac();
     std::cout << "end loop" << std::endl;
