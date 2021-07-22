@@ -36,10 +36,11 @@ PID::~PID() {
 }
 
 void* PID::ThreadRun() {
+	std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, current_timestamp;
 	while (GetStartValue()) {
-		auto begin_timestamp = std::chrono::high_resolution_clock::now(); //compute the computing time
+		begin_timestamp = std::chrono::high_resolution_clock::now(); //compute the computing time
 		ComputePID();
-		auto current_timestamp = std::chrono::high_resolution_clock::now();
+		current_timestamp = std::chrono::high_resolution_clock::now();
 		//wait and deduce the computing time of the controller
 		std::this_thread::sleep_for(std::chrono::microseconds(m_Te*1000 - std::chrono::duration_cast<std::chrono::microseconds>(current_timestamp - begin_timestamp).count()));
 	}
