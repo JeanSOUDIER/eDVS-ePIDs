@@ -8,7 +8,7 @@
 
 #include "rs232.h"
 
-/**
+/*
 
                      USB class
 

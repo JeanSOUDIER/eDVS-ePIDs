@@ -33,25 +33,14 @@ void Usb::SendBytes(const std::string &s) {
 void Usb::SendBytes(const std::vector<char> &data) {
     unsigned char msg[data.size()];
     std::copy(data.begin(), data.end(), msg);
-    RS232_SendBuf(m_port_nr, &msg[0], data.size()); //test
-    //RS232_SendBuf(m_port_nr, &data[0], data.size());
+    RS232_SendBuf(m_port_nr, &msg[0], data.size());
     RS232_flushRXTX(m_port_nr);
-    /*std::copy(data.begin(), data.end(), std::ostream_iterator<int>(std::cout, " "));
-    std::cout << std::endl;
-    std::copy(data.begin(), data.end(), std::ostream_iterator<char>(std::cout, ""));
-    std::cout << std::endl;*/
 }
 
 std::vector<unsigned char> Usb::ReadBytes(const int n) {
     unsigned char raw_bytes[n];
     const int n_r = RS232_PollComport(m_port_nr, raw_bytes, n);
-    //if(n_r) {std::cout << "n_r = " << n_r << std::endl;}
-    /*std::vector<unsigned char> ret(n_r);
-    for(unsigned int i=0;i<ret.size();i++) {
-        ret.at(i) = static_cast<unsigned char>(raw_bytes[i]);
-        //if(ret.at(i)) {std::cout << ret.at(i);} else {std::cout << "\0"; }
-    }*/
-    std::vector<unsigned char> ret(raw_bytes,raw_bytes+n_r);
+    std::vector<unsigned char> ret(raw_bytes,raw_bytes+n_r); //create a vector with the length "n_r"
     return ret;
 }
 
