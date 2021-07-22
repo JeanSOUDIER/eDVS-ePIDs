@@ -8,7 +8,31 @@
 #include <chrono>
 #include <ctime>
 
+/*
 
+                     logger class
+
+    SOUDIER Jean  (jean.soudier@insa-strasbourg.fr)
+
+
+    Provides a class to create *.csv data logging
+
+    Features :
+
+    • Create csv files
+
+    Functions :
+
+    • logger                         | Constructor with arguments file name, reference time, the number of the file and the separator
+    • WriteXX()                      | Function to add a line in the csv file
+    • WriteXXN()                     | Function to add a line without new line
+    • Tic()                          | Function to add a start time
+    • Tac()                          | Function to add a stop time
+    • TacX()                         | Function to add a stop time at a WriteXXN()
+    • GetNumFile()                   | Function to return the number of the file
+    • IsExist(name)                  | Function to check if a file exist
+
+*/
 
 class logger {
 	public:

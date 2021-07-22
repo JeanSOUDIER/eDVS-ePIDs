@@ -14,6 +14,28 @@
 #include "../MotorWheel/MotorWheel.hpp"
 #include "../logger/logger.hpp"
 
+/*
+
+                     ePID class
+
+    SOUDIER Jean  (jean.soudier@insa-strasbourg.fr)
+
+
+    Provides a class for an event-based PID controller
+
+    Features :
+
+    • Compute an event-based PID controller
+
+    Functions :
+
+    • ePID                           | Constructor with arguments logger, Kp, Ki, Kd, N, corrector number, event-based threshold, nominale time, forgetting factor (integral and derivative) and waiting factor
+    • Read()                         | Function to read the potentiometer value
+    • ThreadRun()                    | Function to handle the event-based working process
+    • ComputePID()                   | Function to compute the ePID
+
+*/
+
 class ePID : public BaseThread {
 	public:
 		ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float Kp, const float Ki, const float Kd, const float N, const unsigned int nb_corrector, const float e_lim, const float hnom = 1000, const float alpha_i = 10, const float alpha_d = 10, const float h_nom_fact = 1);

@@ -14,7 +14,7 @@
 #include "../RS232_CPP/Usb.hpp"
 #include "../logger/logger.hpp"
 
-/**
+/*
 
                      MotorWheel class
 

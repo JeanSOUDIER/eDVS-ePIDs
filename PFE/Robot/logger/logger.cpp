@@ -1,20 +1,20 @@
 #include "logger.hpp"
 
-//#define NO_LOG
+//#define NO_LOG //uncomment to not create log files
 
 logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, char delimiter)
 	: m_begin_timestamp(begin_timestamp), m_delimiter(delimiter), m_num_file(num_file) {
 	#ifndef NO_LOG
-		m_file_name = "files/" + fileName;
-		if(m_num_file < 0) {
+		m_file_name = "files/" + fileName; //add the repository path
+		if(m_num_file < 0) { //if the number is negative then find the next number
 			int cpt = 0;
-			while(IsExist(m_file_name+"_"+std::to_string(cpt)+".csv")) {cpt++;}
+			while(IsExist(m_file_name+"_"+std::to_string(cpt)+".csv")) {cpt++;} //test the existing files
 			cpt;
-			m_file_name = m_file_name+"_"+std::to_string(cpt)+".csv";
+			m_file_name = m_file_name+"_"+std::to_string(cpt)+".csv"; //create a file with the first unused number
 			m_num_file = cpt;
 			std::cout << "num file = " << m_num_file << std::endl;
 		} else {
-			m_file_name = m_file_name+"_"+std::to_string(m_num_file)+".csv";
+			m_file_name = m_file_name+"_"+std::to_string(m_num_file)+".csv"; //create a file with the number
 		}
 		m_file = std::ofstream(m_file_name);
 		std::cout << "logger Start on " << m_file_name << std::endl;
@@ -22,16 +22,16 @@ logger::logger(const std::string fileName, std::chrono::time_point<std::chrono::
 }
 
 logger::~logger() {
+	m_file.close();
 	#ifdef NO_LOG
-		m_file.close();
 		std::cout << "remove " << m_file_name << std::endl;
 		std::remove(m_file_name.c_str());
 	#endif
 }
 
 bool logger::IsExist(std::string name) {
-	std::ifstream f(name.c_str());
-	bool a = f.good();
+	std::ifstream f(name.c_str());  //open a file in reading
+	bool a = f.good(); 				//test if the file exists
 	f.close();
 	return a;
 }
@@ -53,26 +53,6 @@ void logger::WriteIN(const std::vector<int> &values) { //used 2 eDVS(DVS point)
 	#endif
 }
 
-/*void logger::WriteD(const std::vector<double>& values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-	m_file << '\n';
-}
-
-void logger::WriteDN(const std::vector<double> &values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-}
-
-void logger::WriteF(const std::vector<float>& values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-	m_file << '\n';
-}*/
-
 void logger::WriteFN(const std::vector<float> &values) { //used 3 eDVS, 3 ePID
 	#ifndef NO_LOG
 		m_file << values.at(0) << m_delimiter << values.at(1) << m_delimiter << values.at(2) << m_delimiter;
@@ -84,32 +64,6 @@ void logger::WriteUI16N(const uint16_t &values) { //used 3 eDVS, 3 ePID
 		m_file << static_cast<float>(values) << m_delimiter;
 	#endif
 }
-
-/*void logger::WriteUL(const std::vector<unsigned long>& values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-	m_file << '\n';
-}
-
-void logger::WriteULN(const std::vector<unsigned long> &values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-}
-
-void logger::WriteLI(const std::vector<long int>& values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-	m_file << '\n';
-}
-
-void logger::WriteLIN(const std::vector<long int> &values) {
-	for (unsigned int i = 0; i < values.size(); i++) {
-		m_file << values.at(i) << m_delimiter;
-	}
-}*/
 
 void logger::Tic() {
 	#ifndef NO_LOG
@@ -133,6 +87,5 @@ void logger::TacI() {
 		m_file << static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_begin_timestamp).count()) << '\n';
 	#endif
 }
-
 
 const int logger::GetNumFile() {return m_num_file;}

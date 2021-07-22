@@ -7,11 +7,11 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 
 	m_log = new logger("ePID_points"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
 	m_logCPU = new logger("ePID_timing"+std::to_string(m_nb_corrector), begin_timestamp, num_file);
-	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
+	if(LENGTH_PID_CHAIN == m_nb_corrector+1) { //if the constroller is the last and apply the PWM
 		m_Arduino = new MotorWheel("ttyUSB_Teensy", 115200, begin_timestamp, num_file, m_elim, MIDDLE_POINT);
 		m_logCPUhard = new logger("hard_timing", begin_timestamp, num_file);
 
-		m_Arduino->SetLim(2); //m_elim
+		m_Arduino->SetLim(2); //SOD threshold on the sensor
 		m_Arduino->SetLim(2);
 		m_Arduino->SetMiddlePoint(MIDDLE_POINT);
 	} else {
@@ -25,9 +25,6 @@ ePID::ePID(std::chrono::time_point<std::chrono::high_resolution_clock> begin_tim
 }
 
 ePID::~ePID() {
-	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		m_Arduino->SetHbridge(0);
-	}
 	std::cout << m_nb_corrector << " evts ePID computed : " << m_cptEvts << std::endl;
 	delete m_log;
 	delete m_logCPU;
@@ -38,21 +35,24 @@ ePID::~ePID() {
 }
 
 void* ePID::ThreadRun() {
-	std::unique_lock<std::mutex> lk(g_cv_mutex[m_nb_corrector]);
-	lk.unlock();
-	const int wait_time = static_cast<int>(static_cast<float>((1000.0f*m_hnom)/m_hnom_fact));
+	std::unique_lock<std::mutex> lk(g_cv_mutex[m_nb_corrector]); //create an unique lock for the thread
+	lk.unlock(); //unlock it
+	const int wait_time = static_cast<int>(static_cast<float>((1000.0f*m_hnom)/m_hnom_fact)); //compute the time to wait between events
 	std::cout << m_nb_corrector << " wait time " << wait_time << " " << m_hnom << " " << m_hnom_fact << std::endl;
+	g_event[m_nb_corrector].store(false);
 	while(GetStartValue()) {
-		g_event[m_nb_corrector].store(false);
-		while(!g_event[m_nb_corrector].load()) {
-			g_cv[m_nb_corrector].wait(lk);
+		while(!g_event[m_nb_corrector].load()) { //while no event
+			g_cv[m_nb_corrector].wait(lk);	     //wait
 		}
 		ComputePID();
-		std::this_thread::sleep_for(std::chrono::microseconds(wait_time));
+		g_event[m_nb_corrector].store(false);	 //event done
+		std::this_thread::sleep_for(std::chrono::microseconds(wait_time)); //wait
 	}
+
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
-		m_Arduino->SetHbridge(0);
+		m_Arduino->SetHbridge(0); //stop the motor at the end
 	}
+
 	return ReturnFunction();
 }
 
@@ -112,11 +112,11 @@ void ePID::ComputePID() {
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		if(y < -9.4248 || y > 9.4248) {u = 0;std::cout << "Emergency stop" << std::endl;}
 		m_logCPUhard->Tic();
-		m_Arduino->SetHbridge(u*21.25f);
+		m_Arduino->SetHbridge(u*21.25f); //ratio [U]/PWM
 		m_logCPUhard->Tac();
 		//std::cout << m_nb_corrector << " u = " << u*21.33f << std::endl;
 	} else {
-		if(u > 9.4248) {u = 9.4248;}
+		if(u > 9.4248) {u = 9.4248;} //saturations
 		if(u < -9.4248) {u = -9.4248;}
 		if(std::isnan(u) || std::isinf(u)) {u = 0;std::cout << "error cmd" << std::endl;}
 		g_setpoint[m_nb_corrector+1].store(u);
@@ -127,4 +127,4 @@ void ePID::ComputePID() {
 	m_cptEvts++;
 }
 
-void ePID::Read() {m_Arduino->ReadPose();}
+void ePID::Read() {m_Arduino->ReadPose();} //function to read the potentiometer value

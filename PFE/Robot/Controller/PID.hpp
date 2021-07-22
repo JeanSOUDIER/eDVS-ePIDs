@@ -10,9 +10,31 @@
 #include "../MotorWheel/MotorWheel.hpp"
 #include "../logger/logger.hpp"
 
+/*
+
+                     PID class
+
+    SOUDIER Jean  (jean.soudier@insa-strasbourg.fr)
+
+
+    Provides a class for a PID controller
+
+    Features :
+
+    • Compute a PID controller
+
+    Functions :
+
+    • PID                            | Constructor with arguments sampling time, Kp, Ki, Kd, logger, corrector number, N
+    • Read()                         | Function to read the potentiometer value
+    • ThreadRun()                    | Function to handle the time-based working process
+    • ComputePID()                   | Function to compute the PID
+
+*/
+
 class PID : public BaseThread {
 	public:
-		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N = 100, const float beta = 1);
+		PID(const unsigned int Te, const float Kp, const float Ki, const float Kd, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const unsigned int nb_corrector, const unsigned int N = 100);
 		~PID();
 
 		void Read();
@@ -25,7 +47,6 @@ class PID : public BaseThread {
 		const float m_ki;
 		const float m_kd;
 		const float m_kdN;
-		const float m_beta;
 		const unsigned int m_N;
 		const unsigned int m_nb_corrector;
 		

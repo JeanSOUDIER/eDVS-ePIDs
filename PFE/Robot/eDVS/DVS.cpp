@@ -30,7 +30,7 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 		m_usb->SendBytes("E-\n");           //disable event sending
 		m_usb->SendBytes("!L2\n");          //LED blinking
 		m_usb->SendBytes("!U0\n");          //UART echo mode none
-		m_usb->SendBytes(str);              //select data format 2, 3-6, 4, 5, 6
+		m_usb->SendBytes(str);              //select data format 2, 3-6, 4, 5, 6 bytes
 		m_usb->SendBytes("!B0=54\n");       //bias cas
 		m_usb->SendBytes("!B1=1108364\n");  //bias injGnd
 		m_usb->SendBytes("!B2=16777245\n"); //bias reqPd
@@ -48,7 +48,7 @@ void DVS::Configuration(std::chrono::time_point<std::chrono::high_resolution_clo
 		//clean
 		std::vector<unsigned char> buffer;
 		do {
-			buffer = m_usb->ReadBytes(4000);
+			buffer = m_usb->ReadBytes(4000); //empty the DVS communication buffer
 		} while (buffer.size());
 		std::cout << "DVS start" << std::endl;
 	} else {
@@ -76,7 +76,7 @@ DVS::~DVS() {
 }
 
 void* DVS::ThreadRun() {
-	if(!m_usb->GetActive()) {StopThread();}
+	if(!m_usb->GetActive()) {StopThread();} //if no USB plug, thee stop the thread
 
 	std::vector<unsigned char> buf, buffer;
 	int x, y;
@@ -89,13 +89,13 @@ void* DVS::ThreadRun() {
 	while(GetStartValue()) {
     	//read datas
 		m_logCPUread->Tic();
-        buffer = m_usb->ReadBytes(4000);
+        buffer = m_usb->ReadBytes(4000); //reading 4000 bytes
 		std::copy(buffer.begin(), buffer.end(), back_inserter(buf));
 		m_logCPUread->Tac();
 
 		if(buf.size() > m_len) {
 			m_logCPU->Tic();
-			//extraction
+			//extraction of the event
 			#if DVS_PACKET_TYPE == 0
 				x = buf.at(0) & 0x7F;
 				y = buf.at(1) & 0x7F;
@@ -150,10 +150,10 @@ void* DVS::ThreadRun() {
 				test = c || (t < m_Told);
 			#endif
 
-			//tests
+			//if the message is valid
 			if(test) {
 				if(c) {
-					buf.erase(buf.begin());
+					buf.erase(buf.begin()); //try to find the beggining of the messages
 					std::cerr << "Error control" << std::endl;
 				}
 				#if DVS_PACKET_TYPE > 0
@@ -163,28 +163,23 @@ void* DVS::ThreadRun() {
 					}
 				#endif
 			} else {
-				//save
-				m_Told = t;
-				//if(std::fabs(m_XClustPose - x) < m_Rmax && std::fabs(y-53) < m_Rmax) {
-				if(std::pow((m_XClustPose - x), 2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) {
+				//saving
+				#if DVS_PACKET_TYPE > 0
+					m_Told = t;
+				#endif
+				if(std::pow((m_XClustPose - x), 2.0f) + std::pow((m_YClustPose - y), 2.0f) < m_Rmax) { //test if the event is in the 2 DoF cluster
 					m_log->WriteN({x, y, 1});
 					m_log->Tac();
-					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1;
+					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1; //update the cluster position
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
 					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
 					m_logTrack->TacF();
-					const float temp2 = m_XClustPose*m_kx + m_u0;
+					const float temp2 = m_XClustPose*m_kx + m_u0; //convert the pixel position in [mm]
 					const float temp = g_setpoint[0].load() - temp2;
-					if(std::fabs(temp) >= m_thresEvent) {
+					if(std::fabs(temp) >= m_thresEvent) { //compute the event function
 					    g_feedback[0].store(temp2);
-					    //if(!g_event[0].load()) {
-					    	g_event[0].store(true);
-							g_cv[0].notify_one();
-							//std::cout << "DVS notify" << std::endl;
-					    /*} else {
-					    	std::cout << "DVS not notify" << std::endl;
-					    }*/
-					    //g_event[0].store(true);
+				    	g_event[0].store(true);
+						g_cv[0].notify_one();
 						m_cptEvts++;
 						//std::cout << "(" << m_XClustPose << ":" << m_YClustPose << ")" << std::endl;
 					}
@@ -234,7 +229,3 @@ void DVS::Restart() {
     delay(5000);
     m_usb->SendBytes("E+\n");           //disable event sending
 }
-
-int DVS::GetRCluster() {return m_Rmax;}
-
-int DVS::GetThreshold() {return m_thresEvent;}

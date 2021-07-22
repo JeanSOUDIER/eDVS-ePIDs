@@ -14,16 +14,37 @@
 #include "../BaseThread/BaseThread.hpp"
 #include "../logger/logger.hpp"
 
-#define DVS_PACKET_TYPE     0//4
+#define DVS_PACKET_TYPE     0
+
+/*
+
+                     DVS class
+
+    SOUDIER Jean  (jean.soudier@insa-strasbourg.fr)
+
+
+    Provides a class to manage the eDVS
+
+    Features :
+
+    • Read and clustering points from the DVS
+
+    Functions :
+
+    • DVS                            | Constructor with arguments nb_usb (the number or the name of the USB port) and baudrate (the baudrate), the logger parameters and the event-based threshold
+    • ThreadRun()                    | Function to read the events, compute the cluster algorithm
+    • Restart()                      | Function to restart the DVS
+    • toLengthRead()                 | Function to get the length of the event in bytes
+    • Configuration(logger)          | Function to configure the DVS and loggers
+
+*/
 
 class DVS : public BaseThread {
     public:
-        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 2);
-        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 2);
+        DVS(const int nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 3);
+        DVS(const std::string nb_usb, const int bdrate, std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, const int num_file, const float thresEvent = 3);
         ~DVS();
 
-        int GetRCluster();
-        int GetThreshold();
     protected:
         void* ThreadRun();
 

@@ -54,14 +54,18 @@ void MotorWheel::ReadPose() { //function to read the position of the sensor
                 m_y = (m_y-m_middle)*0.065f;    //adjust it to the sensor [rad]
                 const float ysp = g_setpoint[1].load(); //read the setpoint
                 const float e = ysp - m_y;      //compute the error
-                m_log->WriteFN({m_y, ysp, 0});  //save all to the log
-                m_log->TacF();                  //save the time in the log
+                
                 if(std::fabs(e) >= m_elim) {    //compute the event function
+                    m_log->WriteFN({m_y, ysp, 1});  //save all to the log
+                    m_log->TacF();                  //save the time in the log
                     g_feedback[1].store(m_y);   //store the feedback
                     if(!g_event[1].load()) {    //if no event planned
                         g_event[1].store(true); //planned one
                         g_cv[1].notify_one();   //notify the thread
                     }
+                } else {
+                    m_log->WriteFN({m_y, ysp, 0});  //save all to the log
+                    m_log->TacF();                  //save the time in the log
                 }
                 //std::cout << "mesure " << temp << " " << m_y << std::endl; //usefull to adjust the "middle point"
                 m_buf.erase(m_buf.begin(), m_buf.begin() + 4); //erase 4 bytes to the buffer

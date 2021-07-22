@@ -43,7 +43,7 @@
 
 */
 
-#define LENGTH_PID_CHAIN 2
+#define LENGTH_PID_CHAIN 2 //number of controllers
 
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_setpoint;
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_feedback;

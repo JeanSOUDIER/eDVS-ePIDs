@@ -16,13 +16,13 @@
 
 #define EVENT_BASED
 
-bool kbhit() {
+bool kbhit() { //function to get if a key is pressed without blocking the program
     int byteswaiting;
     ioctl(0, FIONREAD, &byteswaiting);
     return byteswaiting > 0;
 }
 
-void Triggering() {
+void Triggering() { //function to trigger the oscilloscope with an I/O pin
 	std::cout << "trig start" << std::endl;
 	system("gpio mode 28 out");
 	system("gpio write 28 0");
@@ -31,7 +31,7 @@ void Triggering() {
 	std::cout << "trig end" << std::endl;
 }
 
-std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float time, float Ts, float A_max, float V_max) {
+std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float time, float Ts, float A_max, float V_max) { //function to create a vector for a smooth trajectory
     // float Ts = 0.002;
     // float J_max = 1;
     // float A_max = 3;
@@ -66,7 +66,7 @@ std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float t
     return traj;
 }
 
-void two_loop() {
+void two_loop() { //function with the two controllers
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
     l.Write({ 0, 0 });
@@ -201,7 +201,7 @@ void two_loop() {
 	delay(100);
 }
 
-void one_loop() {
+void one_loop() { //function with the motor controller
     std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
     logger l("Time",begin_timestamp);
     l.Write({ 0, 0 });
