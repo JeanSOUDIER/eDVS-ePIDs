@@ -9,6 +9,40 @@
 #include <thread>
 #include <mutex>
 
+#if OS == OS_WINDOWS
+#include <thread>
+#else
+#include <pthread.h>
+#endif
+
+/*
+
+                     BaseThread class
+
+    SOUDIER Jean  (jean.soudier@insa-strasbourg.fr)
+
+
+    Provides a class to manage threads
+
+    Features :
+
+    • Create, start, stop and destroy threads
+    • Provide global variable for the communication between threads
+
+    Functions :
+
+    • BaseThread                     | Constructor with argument the name of the thread
+    • StartThread()                  | Function to start the thread
+    • StopThread()                   | Function to stop the thread
+    • ReturnFunction()               | Function to add at the end for properlly closing the thread
+    • GetStartValue()                | Function to test if the thread stop order is given
+    • ThreadRun()                    | Function to overwrite with our code ThreadRun() {
+                                                                                while(GetStartValue()) {code_to_do();}
+                                                                                ReturnFunction();
+                                                                            }
+
+*/
+
 #define LENGTH_PID_CHAIN 2
 
 extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_setpoint;
@@ -16,12 +50,6 @@ extern std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_feedback;
 extern std::array<std::atomic<bool>, LENGTH_PID_CHAIN> g_event;
 extern std::array<std::mutex, LENGTH_PID_CHAIN> g_cv_mutex;
 extern std::array<std::condition_variable, LENGTH_PID_CHAIN> g_cv;
-
-#if OS == OS_WINDOWS
-#include <thread>
-#else
-#include <pthread.h>
-#endif
 
 class BaseThread {
     public:

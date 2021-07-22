@@ -1,5 +1,6 @@
 #include "BaseThread.hpp"
 
+//event-based variables
 std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_setpoint;
 std::array<std::atomic<float>, LENGTH_PID_CHAIN> g_feedback;
 std::array<std::atomic<bool>, LENGTH_PID_CHAIN> g_event;

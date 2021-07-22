@@ -9,12 +9,10 @@
 #include <exception>
 
 #include "Robot/BaseThread/BaseThread.hpp"
-#include "Robot/Controller/Hbridge.hpp"
 #include "Robot/eDVS/DVS.hpp"
 #include "Robot/Controller/ePID.hpp"
 #include "Robot/Controller/PID.hpp"
 #include "Robot/MotorWheel/MotorWheel.hpp"
-#include "Robot/GTsensor/VL53L0X.hpp"
 
 #define EVENT_BASED
 
@@ -83,7 +81,7 @@ void two_loop() {
     const float ad_ball = 100000;
     const float fact_ball = 1;
     #ifdef EVENT_BASED
-        const float elim_ball = 5;
+        const float elim_ball = 3;
     #else
         const float elim_ball = 0;
     #endif
@@ -110,13 +108,9 @@ void two_loop() {
     std::vector<float> risedown = ComputeTrajSmooth(0, -30, 4, 0.002, 12, 26);
     std::vector<float> riseup = ComputeTrajSmooth(-30, 0, 4, 0.002, 12, 26);
 
-    //logger GTsensor("GTsensor", begin_timestamp, num);
-
-    //VL53L0X sensor(begin_timestamp, num);
 	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, elim_ball);
     l.Tic();
     Triggering();
-    //sensor.StartThread();
 	CamTrack.StartThread();
 
 	g_setpoint[0].store(0);
@@ -204,7 +198,6 @@ void two_loop() {
     g_cv[1].notify_one();
     for(int i=0;i<100;i++) {delay(1);PIDmot.Read();}
     CamTrack.StopThread();
-    //sensor.StopThread();
 	delay(100);
 }
 

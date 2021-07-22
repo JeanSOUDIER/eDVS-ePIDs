@@ -11,12 +11,8 @@
 
 #include "../BaseThread/BaseThread.hpp"
 #include "../eDVS/DVS.hpp"
-#include "HardCommand.hpp"
-#include "Hbridge.hpp"
 #include "../MotorWheel/MotorWheel.hpp"
 #include "../logger/logger.hpp"
-
-#include "look_up_table.hpp"
 
 class ePID : public BaseThread {
 	public:
