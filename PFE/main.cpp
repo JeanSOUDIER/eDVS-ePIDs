@@ -33,7 +33,7 @@ void Triggering() {
 	std::cout << "trig end" << std::endl;
 }
 
-std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float time, float Ts, float J_max, float A_max, float V_max) {
+std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float time, float Ts, float A_max, float V_max) {
     // float Ts = 0.002;
     // float J_max = 1;
     // float A_max = 3;
@@ -47,7 +47,6 @@ std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float t
     float SP_max = 35/16;
 
     float SPP_max = 85*std::sqrt(5)/25;
-    //float SPP_min = -SPP_max;
 
     float delta = std::fabs(std::fabs(start_point)-std::fabs(end_point));
 
@@ -59,13 +58,10 @@ std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float t
     float sens = 1;
     if(end_point < start_point) {sens = -1;}
 
-    std::vector<float> t, traj, s;//, sp, spp, sppp, t_dot, ;
+    std::vector<float> t, traj, s;
     for(int i=0;i<static_cast<int>(time/Ts);i++) {
         t.push_back(i*Ts);
         s.push_back(A4*std::pow(t.at(i)/T,4) + A5*std::pow(t.at(i)/T,5) + A6*std::pow(t.at(i)/T,6) + A7*std::pow(t.at(i)/T,7));
-        //sp.push_back(4*A4*std::pow(t.at(i),3) + 5*A5*std::pow(t.at(i),4) + 6*A6*std::pow(t.at(i),5) + 7*A7*std::pow(t.at(i),6));
-        //spp.push_back(2*A4*std::pow(t.at(i),2) + 20*A5*std::pow(t.at(i),3) + 30*A6*std::pow(t.at(i),4) + 42*A7*std::pow(t.at(i),5));
-        //sppp.push_back(24*A4*t.at(i) + 60*A5*std::pow(t.at(i),2) + 120*A6*std::pow(t.at(i),3) + 210*A7*std::pow(t.at(i),4));
         traj.push_back(start_point+sens*delta*s.at(i));
     }
 
@@ -85,9 +81,9 @@ void two_loop() {
     const float Te_ball = 20;
     const float ai_ball = 100000;
     const float ad_ball = 100000;
-    const float fact_ball = 5;
+    const float fact_ball = 1;
     #ifdef EVENT_BASED
-        const float elim_ball = 3;
+        const float elim_ball = 5;
     #else
         const float elim_ball = 0;
     #endif
@@ -111,8 +107,8 @@ void two_loop() {
     param_file << "Motor : Kp " << Kp_motor << ",Ki " << Ki_motor << ",Kd " << Kd_motor << ",N " << N_motor << ",Te " << Te_motor << ",ai " << ai_motor << ",ad " << ad_motor << ",elim " << elim_motor << ",fact " << fact_motor << "\n";
     param_file.close();
 
-    std::vector<float> risedown = ComputeTrajSmooth(0, -30, 9, 0.002, 1, 3, 16);
-    std::vector<float> riseup = ComputeTrajSmooth(-30, 0, 9, 0.002, 1, 3, 16);
+    std::vector<float> risedown = ComputeTrajSmooth(0, -30, 4, 0.002, 12, 26);
+    std::vector<float> riseup = ComputeTrajSmooth(-30, 0, 4, 0.002, 12, 26);
 
     //logger GTsensor("GTsensor", begin_timestamp, num);
 
@@ -163,16 +159,14 @@ void two_loop() {
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 17000) {
         start1 = std::chrono::high_resolution_clock::now();
 
+        g_setpoint[0].store(risedown.at(cpt));
         #ifdef EVENT_BASED
             if(std::fabs(risedown.at(cpt)-g_feedback[0].load()) > elim_ball) {
-                g_setpoint[0].store(risedown.at(cpt));
                 if(!g_event[0].load()) {
                     g_event[0].store(true);
                     g_cv[0].notify_one();
                 }
             }
-        #else
-            g_setpoint[0].store(risedown.at(cpt));
         #endif
 
         cpt++;
