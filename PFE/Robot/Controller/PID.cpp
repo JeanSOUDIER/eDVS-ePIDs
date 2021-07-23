@@ -36,13 +36,10 @@ PID::~PID() {
 }
 
 void* PID::ThreadRun() {
-	std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, current_timestamp;
+	const int wait_time = m_Te*1000;
 	while (GetStartValue()) {
-		begin_timestamp = std::chrono::high_resolution_clock::now(); //compute the computing time
 		ComputePID();
-		current_timestamp = std::chrono::high_resolution_clock::now();
-		//wait and deduce the computing time of the controller
-		std::this_thread::sleep_for(std::chrono::microseconds(m_Te*1000 - std::chrono::duration_cast<std::chrono::microseconds>(current_timestamp - begin_timestamp).count()));
+		std::this_thread::sleep_for(std::chrono::microseconds(wait_time)); //wait
 	}
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {
 		m_Arduino->SetHbridge(0); //stop the motor at the end

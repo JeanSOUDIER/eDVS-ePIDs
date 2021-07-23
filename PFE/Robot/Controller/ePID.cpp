@@ -39,19 +39,14 @@ void* ePID::ThreadRun() {
 	lk.unlock(); //unlock it
 	const int wait_time = static_cast<int>(static_cast<float>((1000.0f*m_hnom)/m_hnom_fact)); //compute the time to wait between events
 	std::cout << m_nb_corrector << " wait time " << wait_time << " " << m_hnom << " " << m_hnom_fact << std::endl;
-	std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, current_timestamp;
 	g_event[m_nb_corrector].store(false);
 	while(GetStartValue()) {
 		while(!g_event[m_nb_corrector].load()) { //while no event
 			g_cv[m_nb_corrector].wait(lk);	     //wait
 		}
-		begin_timestamp = std::chrono::high_resolution_clock::now(); //compute the computing time
 		ComputePID();
 		g_event[m_nb_corrector].store(false);	 //event done
-		current_timestamp = std::chrono::high_resolution_clock::now();
-		//wait and deduce the computing time of the controller
-		std::this_thread::sleep_for(std::chrono::microseconds(wait_time - std::chrono::duration_cast<std::chrono::microseconds>(current_timestamp - begin_timestamp).count()));
-		//std::this_thread::sleep_for(std::chrono::microseconds(wait_time)); //wait
+		std::this_thread::sleep_for(std::chrono::microseconds(wait_time)); //wait
 	}
 
 	if(LENGTH_PID_CHAIN == m_nb_corrector+1) {

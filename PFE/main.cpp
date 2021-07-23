@@ -14,7 +14,7 @@
 #include "Robot/Controller/PID.hpp"
 #include "Robot/MotorWheel/MotorWheel.hpp"
 
-#define EVENT_BASED
+//#define EVENT_BASED
 
 bool kbhit() { //function to get if a key is pressed without blocking the program
     int byteswaiting;
@@ -150,21 +150,31 @@ void two_loop() { //function with the two controllers
     	PIDmot.Read();
 	}*/
     unsigned int cpt = 0;
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 17000) {
+    int waiting_time = 4000;
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 100000) {
         start1 = std::chrono::high_resolution_clock::now();
-
-        g_setpoint[0].store(risedown.at(cpt));
+        
+        if(cpt < risedown.size()) {
+        	g_setpoint[0].store(risedown.at(cpt));
+        } else if(cpt < risedown.size()+waiting_time) {
+        	g_setpoint[0].store(risedown.at(risedown.size()-1));
+        } else if(cpt < risedown.size()+waiting_time+riseup.size()) {
+			g_setpoint[0].store(riseup.at(cpt-risedown.size()-waiting_time));
+        } else if(cpt < risedown.size()+waiting_time*2+riseup.size()-1) {
+        	g_setpoint[0].store(riseup.at(riseup.size()-1));
+        } else {
+        	cpt = 0;
+        }
         #ifdef EVENT_BASED
-            if(std::fabs(risedown.at(cpt)-g_feedback[0].load()) > elim_ball) {
+            if(std::fabs(g_setpoint[0].load()-g_feedback[0].load()) > elim_ball) {
                 if(!g_event[0].load()) {
                     g_event[0].store(true);
                     g_cv[0].notify_one();
                 }
             }
         #endif
-
         cpt++;
-        if(cpt >= risedown.size()) {cpt--;}
+
 
         while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 2) {
             PIDmot.Read();
@@ -184,19 +194,22 @@ void two_loop() { //function with the two controllers
     PIDbille.StopThread();
     g_event[0].store(true);
     g_cv[0].notify_one();
-    for(int i=0;i<10;i++) {delay(1);PIDmot.Read();}
+    start1 = std::chrono::high_resolution_clock::now();
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 10) {PIDmot.Read();}
 
     g_setpoint[1].store(0);
     if(!g_event[1].load()) {
 		g_event[1].store(true);
     	g_cv[1].notify_one();
 	}
-    for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
+    start1 = std::chrono::high_resolution_clock::now();
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 5000) {PIDmot.Read();}
 
     PIDmot.StopThread();
     g_event[1].store(true);
     g_cv[1].notify_one();
-    for(int i=0;i<100;i++) {delay(1);PIDmot.Read();}
+    start1 = std::chrono::high_resolution_clock::now();
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 100) {PIDmot.Read();}
     CamTrack.StopThread();
 	delay(100);
 }
@@ -222,9 +235,9 @@ void one_loop() { //function with the motor controller
     	g_cv[1].notify_one();
 	}
 
-    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
     std::chrono::time_point<std::chrono::high_resolution_clock> start1 = std::chrono::high_resolution_clock::now();
 	std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 1000) {PIDmot.Read();}
 	//while(!kbhit()) {
     while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 35000) {
 		start = std::chrono::high_resolution_clock::now();
@@ -252,13 +265,15 @@ void one_loop() { //function with the motor controller
 		g_event[1].store(true);
     	g_cv[1].notify_one();
 	}
-    for(int i=0;i<5000;i++) {delay(1);PIDmot.Read();}
+    start1 = std::chrono::high_resolution_clock::now();
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 5000) {PIDmot.Read();}
 
 
     PIDmot.StopThread();
     g_event[1].store(true);
     g_cv[1].notify_one();
-    for(int i=0;i<100;i++) {delay(1);PIDmot.Read();}
+    start1 = std::chrono::high_resolution_clock::now();
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 100) {PIDmot.Read();}
 }
 
 int main() {
