@@ -14,7 +14,7 @@
 #include "Robot/Controller/PID.hpp"
 #include "Robot/MotorWheel/MotorWheel.hpp"
 
-//#define EVENT_BASED
+#define EVENT_BASED //comment to pass in time-based
 
 bool kbhit() { //function to get if a key is pressed without blocking the program
     int byteswaiting;
@@ -24,20 +24,15 @@ bool kbhit() { //function to get if a key is pressed without blocking the progra
 
 void Triggering() { //function to trigger the oscilloscope with an I/O pin
 	std::cout << "trig start" << std::endl;
-	system("gpio mode 28 out");
-	system("gpio write 28 0");
-	delay(100);
-	system("gpio write 28 1");
+	system("gpio mode 28 out"); //set the 28 gpio to OUT
+	system("gpio write 28 0");  //set the output to 0
+	delay(100);					//wait
+	system("gpio write 28 1");	//set the output to 1
 	std::cout << "trig end" << std::endl;
 }
 
 std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float time, float Ts, float A_max, float V_max) { //function to create a vector for a smooth trajectory
-    // float Ts = 0.002;
-    // float J_max = 1;
-    // float A_max = 3;
-    // float V_max = 16;
-
-    float A4 = 35;
+    float A4 = 35; //polynomes coeffiscient
     float A5 = -84;
     float A6 = 70;
     float A7 = -20;
@@ -58,27 +53,28 @@ std::vector<float> ComputeTrajSmooth(float start_point, float end_point, float t
 
     std::vector<float> t, traj, s;
     for(int i=0;i<static_cast<int>(time/Ts);i++) {
-        t.push_back(i*Ts);
-        s.push_back(A4*std::pow(t.at(i)/T,4) + A5*std::pow(t.at(i)/T,5) + A6*std::pow(t.at(i)/T,6) + A7*std::pow(t.at(i)/T,7));
-        traj.push_back(start_point+sens*delta*s.at(i));
+        t.push_back(i*Ts); //time vector
+        s.push_back(A4*std::pow(t.at(i)/T,4) + A5*std::pow(t.at(i)/T,5) + A6*std::pow(t.at(i)/T,6) + A7*std::pow(t.at(i)/T,7)); //polynome vector
+        traj.push_back(start_point+sens*delta*s.at(i)); //setpoint vector
     }
 
     return traj;
 }
 
 void two_loop() { //function with the two controllers
-    std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now();
+    std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp = std::chrono::high_resolution_clock::now(); //use point reference
     logger l("Time",begin_timestamp);
     l.Write({ 0, 0 });
-    const int num = l.GetNumFile();
+    const int num = l.GetNumFile(); //test number file
 
+    //coeffisicent of control
     const float Kp_ball = 0.07735;
-    const float Ki_ball = 0.003288;
-    const float Kd_ball = 0.4455*50;
+    const float Ki_ball = 0;//0.003288;
+    const float Kd_ball = 0.4455;//*50;
     const float N_ball = 10.43;
     const float Te_ball = 20;
-    const float ai_ball = 100000;
-    const float ad_ball = 100000;
+    const float ai_ball = 1000000;
+    const float ad_ball = 1000000;
     const float fact_ball = 1;
     #ifdef EVENT_BASED
         const float elim_ball = 3;
@@ -95,32 +91,32 @@ void two_loop() { //function with the two controllers
     const float ad_motor = 1000000;
     const float fact_motor = 5;
     #ifdef EVENT_BASED
-        const float elim_motor = 0.7;
+        const float elim_motor = 0.9;
     #else
         const float elim_motor = 0;
     #endif
 
-    std::ofstream param_file = std::ofstream("files/param_"+std::to_string(num)+".txt");
+    std::ofstream param_file = std::ofstream("files/param_"+std::to_string(num)+".txt"); //save configuration
     param_file << "Ball : Kp " << Kp_ball << ",Ki " << Ki_ball << ",Kd " << Kd_ball << ",N " << N_ball << ",Te " << Te_ball << ",ai " << ai_ball << ",ad " << ad_ball << ",elim " << elim_ball << ",fact " << fact_ball << "\n";
     param_file << "Motor : Kp " << Kp_motor << ",Ki " << Ki_motor << ",Kd " << Kd_motor << ",N " << N_motor << ",Te " << Te_motor << ",ai " << ai_motor << ",ad " << ad_motor << ",elim " << elim_motor << ",fact " << fact_motor << "\n";
     param_file.close();
 
-    std::vector<float> risedown = ComputeTrajSmooth(0, -30, 4, 0.002, 12, 26);
-    std::vector<float> riseup = ComputeTrajSmooth(-30, 0, 4, 0.002, 12, 26);
+    std::vector<float> risedown = ComputeTrajSmooth(0, -40, 4, 0.002, 12, 26); //create trajectory to follow
+    std::vector<float> riseup = ComputeTrajSmooth(-40, 0, 4, 0.002, 12, 26);
 
-	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, elim_ball);
-    l.Tic();
-    Triggering();
-	CamTrack.StartThread();
+	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, elim_ball); //create a DVS object
+    l.Tic(); //save the start time
+    Triggering(); //trig the scope
+	CamTrack.StartThread(); //start the DVS thread
 
-	g_setpoint[0].store(0);
-    #ifdef EVENT_BASED
+	g_setpoint[0].store(0); //set the setpoint to 0
+    #ifdef EVENT_BASED //create the controller for the ball
         ePID PIDbille(begin_timestamp, num, Kp_ball, Ki_ball, Kd_ball, N_ball, 0, elim_ball, Te_ball, ai_ball, ad_ball, fact_ball);
     #else
         PID PIDbille(20, Kp_ball, Ki_ball, Kd_ball, begin_timestamp, num, 0, N_ball);
     #endif
 
-    PIDbille.StartThread();
+    PIDbille.StartThread(); //start the thread of the ball controller
 
     #ifdef EVENT_BASED
     	if(!g_event[0].load()) {
@@ -129,32 +125,22 @@ void two_loop() { //function with the two controllers
     	}
     #endif
 
-    #ifdef EVENT_BASED
+    #ifdef EVENT_BASED //create the controller of the motor
         ePID PIDmot(begin_timestamp, num, Kp_motor, Ki_motor, Kd_motor, N_motor, 1, elim_motor, Te_motor, ai_motor, ad_motor, fact_motor);
     #else
         PID PIDmot(Te_motor, Kp_motor, Ki_motor, Kd_motor, begin_timestamp, num, 1, N_motor);
     #endif
-	PIDmot.Read();
-	PIDmot.StartThread();
+	PIDmot.Read(); //read the sensor position
+	PIDmot.StartThread(); //start the motor thread controller
 
-    /*for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}
-	g_setpoint[0].store(-30);
-	if(!g_event[0].load()) {
-		g_event[0].store(true);
-    	g_cv[0].notify_one();
-	}*/
-	std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now();
+	std::chrono::time_point<std::chrono::high_resolution_clock> start = std::chrono::high_resolution_clock::now(); //create time variables
     std::chrono::time_point<std::chrono::high_resolution_clock> start1;
-	//while(!kbhit()) {
-    /*while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 6000) {
-    	PIDmot.Read();
-	}*/
-    unsigned int cpt = 0;
+    unsigned int cpt = 0; //create variables for the trajectory
     int waiting_time = 4000;
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 100000) {
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() < 100000) { //do until time is not reach
         start1 = std::chrono::high_resolution_clock::now();
         
-        if(cpt < risedown.size()) {
+        if(cpt < risedown.size()) { //update the control rise-down trajectory / wait / rise-up trajetory / wait / do over
         	g_setpoint[0].store(risedown.at(cpt));
         } else if(cpt < risedown.size()+waiting_time) {
         	g_setpoint[0].store(risedown.at(risedown.size()-1));
@@ -166,7 +152,7 @@ void two_loop() { //function with the two controllers
         	cpt = 0;
         }
         #ifdef EVENT_BASED
-            if(std::fabs(g_setpoint[0].load()-g_feedback[0].load()) > elim_ball) {
+            if(std::fabs(g_setpoint[0].load()-g_feedback[0].load()) > elim_ball) { //compute the event-based function
                 if(!g_event[0].load()) {
                     g_event[0].store(true);
                     g_cv[0].notify_one();
@@ -176,42 +162,42 @@ void two_loop() { //function with the two controllers
         cpt++;
 
 
-        while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 2) {
+        while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 2) { //read for 2 ms the sensor
             PIDmot.Read();
         }
     }
 
     PIDmot.Read();
-    l.Tac();
+    l.Tac(); //take a time point a the end
     std::cout << "end loop" << std::endl;
-    /*g_setpoint[0].store(0);
-    if(!g_event[0].load()) {
-		g_event[0].store(true);
-    	g_cv[0].notify_one();
-	}
-    for(int i=0;i<1000;i++) {delay(1);PIDmot.Read();}*/
 
-    PIDbille.StopThread();
-    g_event[0].store(true);
-    g_cv[0].notify_one();
+    PIDbille.StopThread(); //stop the ball controller
+    #ifdef EVENT_BASED
+	    g_event[0].store(true); //force thread loop to stop it
+	    g_cv[0].notify_one();
+    #endif
     start1 = std::chrono::high_resolution_clock::now();
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 10) {PIDmot.Read();}
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 100) {PIDmot.Read();} //wait
 
-    g_setpoint[1].store(0);
-    if(!g_event[1].load()) {
-		g_event[1].store(true);
-    	g_cv[1].notify_one();
-	}
+    g_setpoint[1].store(0); //replace the plate horizontally
+    #ifdef EVENT_BASED
+	    if(!g_event[1].load()) {
+			g_event[1].store(true);
+	    	g_cv[1].notify_one();
+		}
+	#endif
     start1 = std::chrono::high_resolution_clock::now();
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 5000) {PIDmot.Read();}
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 5000) {PIDmot.Read();} //wait
 
-    PIDmot.StopThread();
-    g_event[1].store(true);
-    g_cv[1].notify_one();
+    PIDmot.StopThread(); //stop the thread of the motor
+    #ifdef EVENT_BASED
+	    g_event[1].store(true); //force thread loop to stop it
+	    g_cv[1].notify_one();
+    #endif
     start1 = std::chrono::high_resolution_clock::now();
-    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 100) {PIDmot.Read();}
-    CamTrack.StopThread();
-	delay(100);
+    while(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start1).count() < 100) {PIDmot.Read();} //wait
+    CamTrack.StopThread(); //stop the thread of the DVS
+	delay(100); //wait
 }
 
 void one_loop() { //function with the motor controller
