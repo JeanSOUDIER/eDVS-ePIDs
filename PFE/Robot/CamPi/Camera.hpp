@@ -1,6 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
-#include "../logger/logger.hpp"
+#include "logger.hpp"
 #include<iostream>
 #include <unistd.h>
 #include <ctime>
@@ -23,7 +23,6 @@ public:
 
 private:
 	int m_a;
-	
     raspicam::RaspiCam_Cv *cap;
 };
 

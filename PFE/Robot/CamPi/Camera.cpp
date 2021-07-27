@@ -1,5 +1,5 @@
-#include "../logger/logger.hpp"
-#include "Camera.hpp"
+#include "logger.hpp"
+#include "camera.hpp"
 #include <iostream>
 #include <opencv2/aruco.hpp>
 #include <unistd.h>
@@ -15,33 +15,32 @@
 using namespace cv;
 using namespace std;
 
-camera::camera() {
+camera::camera() {//constructeur
     cap = new raspicam::RaspiCam_Cv();
-    cap->set(CAP_PROP_FPS,71);
-    cap->set(CAP_PROP_FRAME_HEIGHT,720);//720//1080//480
-    cap->set(CAP_PROP_FRAME_WIDTH,1280);//1280//1920//640
+    cap->set(CAP_PROP_FPS,40);//La vitesse de la caméra est à 40 fps
+    cap->set(CAP_PROP_FRAME_HEIGHT,128);//résolution de 128 pixels de haut
+    cap->set(CAP_PROP_FRAME_WIDTH,128);//résolution de 128 pixels de large
     cap->open();//On ouvre la camera
 }
 
-camera::~camera() {
+camera::~camera() {//destructeur
     cap->release();
     delay(100);
     delete cap;
 }
 
-Mat camera::TakePic(void){
+Mat camera::TakePic(void){//méthode pour prendre une photo
     Mat photo;
     cap->grab();//On prend une photo
     cap->retrieve(photo);//on récupère la photo
-    // cap->release();
     return photo;
 }
 
-void camera::OpenCam(void){
+void camera::OpenCam(void){//Méthode pour ouvrir la caméra
     cap->open();
 
 }
-void camera::ReleaseCam(void){
+void camera::ReleaseCam(void){//Méthode pour "release" la caméra 
     cap->release();
 
 }
