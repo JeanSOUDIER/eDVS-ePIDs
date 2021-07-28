@@ -9,10 +9,16 @@ clc;
 
 %serie of files to read
 Nfile = '0';
-Mode = "Cam";
-Mode2 = "ePID";
-Mode3 = "ePID";
-Mode4 = "none";
+Mode = "DVS";       % DVS ; Cam
+Mode2 = "ePID";      % PID ; ePID
+Mode3 = "ePID";      % PID ; ePID
+Mode4 = "sensor";   % sensor ; none
+
+% possible configurations
+%DVS ; ePID ; ePID ; sensor
+%DVS ;  PID ;  PID ; sensor
+%Cam ; ePID ; ePID ; none
+%Cam ;  PID ;  PID ; none
 
 %reading files
 Ttime = ReadCSVfiles('Time', Nfile);
@@ -75,6 +81,8 @@ if(Mode4 == "sensor")
     ProperYaxisMulti(PotData(:,1), PotData(:,2));
     legend({'Y','Ysp'},'Location','northeast');
     title('Sensor motor');
+    xlabel('time [us]');
+    ylabel('position [rad]');
     hold off;
     set(gcf, 'PaperSize', [20 20]);
     print(gcf, 'fig/SensorPot.pdf', '-dpdf', '-fillpage');
@@ -122,6 +130,8 @@ if(Mode4 == "sensor")
     ProperYaxisMulti(Data(:,2), -151/150*Dused(:,1)+64);
     legend({'Y','Ysp'},'Location','northeast');
     title('Sensor ball');
+    xlabel('time [us]');
+    ylabel('position [mm]');
     hold off;
     set(gcf, 'PaperSize', [20 20]);
     print(gcf, 'fig/SensorDVS.pdf', '-dpdf', '-fillpage');
@@ -135,7 +145,7 @@ end
         hold on;
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,1),'-or');
         stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-og');
-        stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
+        %stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,3),'-ob');
         if(DataGT ~= 0)
             stairs(DataGT(:,2)-Ttime(:,1)*ones(length(DataGT),1),140*ones(length(DataGT),1)-DataGT(:,1),'-om');
         end
@@ -153,14 +163,14 @@ end
         hold on;
         stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,1),'-or');
         stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,2),'-og');
-        stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,3),'-ob');
+        %stairs(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),Data2(:,3),'-ob');
         xlim([0 axi]);
-        ProperYaxisMulti(Data(:,1), Data(:,2));
+        ProperYaxisMulti(Data2(:,1), Data2(:,2));
         legend({'Y','Ysp'},'Location','northeast');
         hold off;
         title('Controller motor');
         xlabel('time [us]');
-        ylabel('
+        ylabel('position [rad]');
         set(gcf, 'PaperSize', [20 20]);
         print(gcf, 'fig/PIDmot.pdf', '-dpdf', '-fillpage');
     end
@@ -250,14 +260,6 @@ end
         xlabel('x piexls');
         ylabel('y piexls');
         zlabel('time [us]');
-        set(gcf, 'PaperSize', [20 20]);
-        print(gcf, 'fig/Points_cloud.pdf', '-dpdf', '-fillpage');
-    elseif(Mode == "Cam")
-        figure(2);
-        stairs(Dunused(:,2)-Ttime(:,1)*ones(length(Dunused),1),Dunused(:,3),'-ob');
-        title('Points cloud');
-        xlabel('time [us]');
-        ylabel('position [mm]');
         set(gcf, 'PaperSize', [20 20]);
         print(gcf, 'fig/Points_cloud.pdf', '-dpdf', '-fillpage');
     end

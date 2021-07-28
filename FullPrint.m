@@ -10,8 +10,8 @@ clc;
 %serie of files to read
 Nfile = '0';
 Mode = "DVS";       % DVS ; Cam
-Mode2 = "PID";      % PID ; ePID
-Mode3 = "PID";      % PID ; ePID
+Mode2 = "ePID";      % PID ; ePID
+Mode3 = "ePID";      % PID ; ePID
 Mode4 = "sensor";   % sensor ; none
 
 % possible configurations
