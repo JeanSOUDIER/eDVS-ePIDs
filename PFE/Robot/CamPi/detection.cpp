@@ -1,9 +1,7 @@
 #include "detection.hpp"
-#include "camera.hpp"
-#include "logger.hpp"
-#include "BaseThread.hpp"
-#include "pid.hpp"
-#include "pidN2.hpp"
+#include "Camera.hpp"
+#include "../logger/logger.hpp"
+#include "../BaseThread/BaseThread.hpp"
 #include <iostream>
 #include <unistd.h>
 #include <ctime>
@@ -17,24 +15,14 @@ using namespace std;
 
 
 detection::detection(int AireMax, int AireMin, int Xmax, int Xmin, int Ymin, 
-    int Ymax,std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp )
+    int Ymax,std::chrono::time_point<std::chrono::high_resolution_clock> begin_timestamp, int num_file, float elim)
     : BaseThread("detection"), m_AireMax(AireMax), m_AireMin(AireMin), m_Xmax(Xmax), m_Xmin(Xmin), m_Ymin(Ymin), m_Ymax(Ymax) {
         m_cam = new camera();
-        PIDBille= new pid(0.001,0.07735, 0, 0.4455, 9.4248, -9.4248, 
-            10.43, begin_timestamp);//paramètres pour le PID de la bille
-        // PIDBille= new pid(0.02,0.07735, 0.003288, 0.35, 9.4248, -9.4248, 
-        //     10.43, begin_timestamp);//Polynome deg 7
-        // PIDBille= new pid(0.02,0.07735*1.8, 0.003288*1.3, 0.4455*50, 9.4248, -9.4248, 
-        //     10.43, begin_timestamp);
-         // PIDBille= new pid(0.02,0.22,0.5, 0.05, 9.4248, -9.4248, 
-         //    10.43, begin_timestamp);
-        // PIDBille= new pid(0.02,0.1192,0.081, 0.045, 9.4248, -9.4248, 
-        //     10.43, begin_timestamp);
-         // PIDBille= new pid(0.02,0.140,0.05, 0.04, 9.4248, -9.4248, 
-         //    10.43, begin_timestamp);
-        m_log=new logger("TestBilleRelevePos",begin_timestamp,-1);
-        m_log_cpu=new logger("TestTempsPhoto",begin_timestamp,-1);
-        m_log_compute=new logger("TestTempsCompute",begin_timestamp,-1);
+        m_elim = elim;
+
+        m_log=new logger("Cam_points",begin_timestamp,num_file);
+        m_log_cpu=new logger("Read_timing",begin_timestamp,num_file);
+        m_log_compute=new logger("Cam_timing",begin_timestamp,num_file);
     }
 
     
@@ -111,12 +99,13 @@ Mat detection::LireImage(){//Méthode qui prend une photo et fait le suivi de la
 
 detection::~detection() {//Destructeur
     delete m_cam;
-    delete PIDBille;
     delete m_log;
+    delete m_log_cpu;
+    delete m_log_compute;
 }
 
   
-void detection::LirePosBille(void){//Méthode de détection de la bille et de renvoi de sa position
+float detection::LirePosBille(void){//Méthode de détection de la bille et de renvoi de sa position
     m_log_cpu->Tic();//calcul et sauvegarde du temps pour prendre une photo
     Mat image=m_cam->TakePic();//On prend une photo
     m_log_cpu->Tac();
@@ -193,42 +182,46 @@ void detection::LirePosBille(void){//Méthode de détection de la bille et de re
     // Point pt1(m_Xmin,m_Ymin);
     // Point pt2(m_Xmax,m_Ymax);
     // cv::rectangle(image_copy, pt1, pt2, cv::Scalar(0,0,255));
-    PIDBille->PosBille.store((Y[indice]-m_mil)*m_k);//On stocke la position de la bille en convertissant la position en mm
+    
     m_log_compute->Tac();
 
     // imshow("c", image_copy);
     // while(waitKey(0) != 27) {}
+
+    return (Y[indice]-m_mil)*m_k; //On stocke la position de la bille en convertissant la position en mm
+
 }
 void* detection::ThreadRun(){
     int Pos=(50-m_mil)*m_k;
     int var=(50-m_mil)*m_k;
     int i=0;
 
-    PIDBille->StartThread();//on lance le thread du PIDBille
     while (GetStartValue()) {
-        LirePosBille();
-        Pos=PIDBille->PosBille.load();//On lit la position de la bille 
-         if ((Pos>(26-m_mil)*m_k && Pos<(93-m_mil)*m_k && abs((Pos-var)<50) /*&& abs(Pos-var)>1*/) || i<2  ){//On teste si la position de la bille est cohérente
+        Pos = LirePosBille();
+        //std::cout << "Pos = " << Pos << std::endl;
+         if ((Pos>(26-m_mil)*m_k && Pos<(93-m_mil)*m_k && abs((Pos-var)<50)) || i<2  ){//On teste si la position de la bille est cohérente
             m_log->WriteIN({ i, Pos });//On sauveagarde la position dans le fichier csv
             m_log->TacI();
-            PIDBille->PosBille.store(Pos);//On sauvegarde la position
+            const float e = g_setpoint[0].load() - Pos;
+            if(std::fabs(e) >= m_elim) { //compute the event function
+                g_feedback[0].store(Pos);
+                g_event[0].store(true);
+                g_cv[0].notify_one();
+            }
             var=Pos;
             i++;
         } else {//Si la position détectée n'est pas cohérente on renvoit la position précédente
             cout<<"precedent"<<endl;
             m_log->WriteIN({ i, var });//On sauvegarde la position précédente dans le fichier csv
             m_log->TacI();
-            PIDBille->PosBille.store(var);//On sauvegarde la position précédente
+            const float e = g_setpoint[0].load() - var;
+            if(std::fabs(e) >= m_elim) { //compute the event function
+                g_feedback[0].store(Pos);
+                g_event[0].store(true);
+                g_cv[0].notify_one();
+            }
             i++;  
         }
     }
-    PIDBille->StopThread();//on stop le thread du PID de la Bille
     return ReturnFunction();
-}
-
- void detection::ReadPot() {//méthode qui appelle la méthode ReadPot() de PIDBille
-   PIDBille->ReadPot();
-}
- void detection::SetCons(double a) {//méthode qui appelle la méthode SetCons() de PIDBille
-   PIDBille->SetCons(a);
 }

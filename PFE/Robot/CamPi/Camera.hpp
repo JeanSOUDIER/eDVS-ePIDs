@@ -1,12 +1,12 @@
 #ifndef CAMERA_H
 #define CAMERA_H
-#include "logger.hpp"
-#include<iostream>
+#include "../logger/logger.hpp"
+#include <iostream>
 #include <unistd.h>
 #include <ctime>
 #include <fstream>
-#include<opencv2/highgui/highgui.hpp>
-#include<opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <string.h>
 #include <raspicam/raspicam_cv.h>
 using namespace cv;

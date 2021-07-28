@@ -13,6 +13,7 @@
 #include "Robot/Controller/ePID.hpp"
 #include "Robot/Controller/PID.hpp"
 #include "Robot/MotorWheel/MotorWheel.hpp"
+#include "Robot/CamPi/detection.hpp"
 
 #define EVENT_BASED //comment to pass in time-based
 
@@ -91,7 +92,7 @@ void two_loop() { //function with the two controllers
     const float ad_motor = 1000000;
     const float fact_motor = 5;
     #ifdef EVENT_BASED
-        const float elim_motor = 0.9;
+        const float elim_motor = 1;
     #else
         const float elim_motor = 0;
     #endif
@@ -101,9 +102,10 @@ void two_loop() { //function with the two controllers
     param_file << "Motor : Kp " << Kp_motor << ",Ki " << Ki_motor << ",Kd " << Kd_motor << ",N " << N_motor << ",Te " << Te_motor << ",ai " << ai_motor << ",ad " << ad_motor << ",elim " << elim_motor << ",fact " << fact_motor << "\n";
     param_file.close();
 
-    std::vector<float> risedown = ComputeTrajSmooth(0, -40, 4, 0.002, 12, 26); //create trajectory to follow
-    std::vector<float> riseup = ComputeTrajSmooth(-40, 0, 4, 0.002, 12, 26);
+    std::vector<float> risedown = ComputeTrajSmooth(0, -40, 4, 0.002, 18, 26); //create trajectory to follow
+    std::vector<float> riseup = ComputeTrajSmooth(-40, 0, 4, 0.002, 18, 26);
 
+    //detection CamTrack(19, 0, 100, 85, 21, 102, begin_timestamp, num, elim_ball);
 	DVS CamTrack("ttyUSB_DVS", 12000000, begin_timestamp, num, elim_ball); //create a DVS object
     l.Tic(); //save the start time
     Triggering(); //trig the scope
