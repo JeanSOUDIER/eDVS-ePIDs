@@ -73,7 +73,7 @@ void two_loop() { //function with the two controllers
     const float Ki_ball = 0;//0.003288;
     const float Kd_ball = 0.4455;//*50;
     const float N_ball = 10.43;
-    const float Te_ball = 20;
+    const float Te_ball = 1;
     const float ai_ball = 1000000;
     const float ad_ball = 1000000;
     const float fact_ball = 1;
@@ -115,7 +115,7 @@ void two_loop() { //function with the two controllers
     #ifdef EVENT_BASED //create the controller for the ball
         ePID PIDbille(begin_timestamp, num, Kp_ball, Ki_ball, Kd_ball, N_ball, 0, elim_ball, Te_ball, ai_ball, ad_ball, fact_ball);
     #else
-        PID PIDbille(20, Kp_ball, Ki_ball, Kd_ball, begin_timestamp, num, 0, N_ball);
+        PID PIDbille(Te_ball, Kp_ball, Ki_ball, Kd_ball, begin_timestamp, num, 0, N_ball);
     #endif
 
     PIDbille.StartThread(); //start the thread of the ball controller

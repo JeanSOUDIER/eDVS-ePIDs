@@ -172,10 +172,11 @@ void* DVS::ThreadRun() {
 					m_log->Tac();
 					m_XClustPose = m_XClustPose * m_alpha + x * m_alpha_m1; //update the cluster position
 					m_YClustPose = m_YClustPose * m_alpha + y * m_alpha_m1;
-					m_logTrack->WriteFN({ m_XClustPose, m_YClustPose, static_cast<float>(t)});
+					const float temp3 = g_setpoint[0].load();
+					m_logTrack->WriteFN({m_XClustPose, m_YClustPose, temp3});
 					m_logTrack->TacF();
 					const float temp2 = m_XClustPose*m_kx + m_u0; //convert the pixel position in [mm]
-					const float temp = g_setpoint[0].load() - temp2;
+					const float temp = temp3 - temp2;
 					if(std::fabs(temp) >= m_thresEvent) { //compute the event function
 					    g_feedback[0].store(temp2);
 				    	g_event[0].store(true);

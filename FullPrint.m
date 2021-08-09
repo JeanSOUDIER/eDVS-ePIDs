@@ -44,6 +44,9 @@ if(Mode2 == "ePID")
     else
         SubMode = 2;
     end
+    if(Mode == "Cam")
+        Dtracker = Data;
+    end
 elseif(Mode2 == "PID")
     Data = ReadCSVfiles('PID_points0', Nfile);
     Tcontroler = ReadCSVfiles('PID_timing0', Nfile);
@@ -57,6 +60,10 @@ elseif(Mode2 == "PID")
         SubMode = 3;
     else
         SubMode = 2;
+    end
+    if(Mode == "Cam")
+        Dtracker = Data;
+        Dtracker(:,3) = Dtracker(:,2);
     end
 else
     if(Mode3 == "ePID")
@@ -125,9 +132,17 @@ if(Mode4 == "sensor")
     figure(6);
     hold on;
     stairs(Data(:,4)-Ttime(:,1)*ones(length(Data),1),Data(:,2),'-or');
-    stairs(Dused(:,4)-Ttime(:,1)*ones(length(Dused),1),-151/150*Dused(:,1)+64,'-og');
+    if(Mode == "DVS")
+        stairs(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),-151/150*Dtracker(:,1)+64,'-og');
+    else
+        stairs(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),Dtracker(:,1),'-og');
+    end
     xlim([0 axi]);
-    ProperYaxisMulti(Data(:,2), -151/150*Dused(:,1)+64);
+    if(Mode == "DVS")
+        ProperYaxisMulti(Data(:,2), -151/150*Dtracker(:,1)+64);
+    else
+        ProperYaxisMulti(Data(:,2), Dtracker(:,1));
+    end
     legend({'Y','Ysp'},'Location','northeast');
     title('Sensor ball');
     xlabel('time [us]');
@@ -277,6 +292,18 @@ if(Mode2 ~= "NONE")
     fprintf('min time %f ms\n',mini/1000);
     fprintf('max time %f ms\n',maxi/1000);
     fprintf('mean time %f ms\n',means/1000);
+    
+    if(Mode == "DVS")
+        error = Dtracker(:,3)-(-151/150*Dtracker(:,1)+64);
+        IAE = trapz(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),abs(error));
+    else
+        error = Data(:,2)-Data(:,1);
+        IAE = trapz(Data(:,4)-Ttime(:,1)*ones(length(Data),1),abs(error));
+    end
+    fprintf('IAE ball %e\n',IAE);
+    IAU = trapz(Data(:,4)-Ttime(:,1)*ones(length(Data),1),abs(Data(:,3)));
+    fprintf('IAU ball %e\n',IAU);
+    
     if SubMode > 2
         PrintsUsage(Ycontroler2, Data2, Tdiffconstroler2, 'Controller2');
         fprintf('%d evts\n',length(Data2));
@@ -284,6 +311,12 @@ if(Mode2 ~= "NONE")
         fprintf('2 min time %f ms\n',mini2/1000);
         fprintf('2 max time %f ms\n',maxi2/1000);
         fprintf('2 mean time %f ms\n',means2/1000);
+        
+        error2 = PotData(:,2)-PotData(:,1);
+        IAE2 = trapz(PotData(:,4)-Ttime(:,1)*ones(length(PotData),1),abs(error2));
+        fprintf('IAE motor %e\n',IAE2);
+        IAU2 = trapz(Data2(:,4)-Ttime(:,1)*ones(length(Data2),1),abs(Data2(:,3)));
+        fprintf('IAU motor %e\n',IAU2);
     end
     PrintExistingUsage('hard_timing', Nfile, TdiffHard, 'command apply');
 end
@@ -293,5 +326,5 @@ WriteEvts('events',[length(Dsensor) length(Dused) length(Data) length(Data2)]);
 P = CurrentScope(Nfile);
 
 if(SubMode > 2)
-    WriteInfos('infos',mini, maxi, means, mini2, maxi2, means2, P);
+    WriteInfos('infos',mini, maxi, means, mini2, maxi2, means2, P, IAE, IAE2, IAU, IAU2);
 end
