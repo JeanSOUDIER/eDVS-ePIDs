@@ -9,10 +9,11 @@ clc;
 
 %serie of files to read
 Nfile = '0';
-Mode = "DVS";       % DVS ; Cam
+Mode = "DVS";        % DVS ; Cam
 Mode2 = "ePID";      % PID ; ePID
 Mode3 = "ePID";      % PID ; ePID
-Mode4 = "sensor";   % sensor ; none
+Mode4 = "sensor";    % sensor
+Mode5 = "DVS";       % DVS ; (Cam) => GT sensor for IAE and IAU (only Mode=="Cam")
 
 % possible configurations
 %DVS ; ePID ; ePID ; sensor
@@ -45,7 +46,13 @@ if(Mode2 == "ePID")
         SubMode = 2;
     end
     if(Mode == "Cam")
-        Dtracker = Data;
+        if(Mode5 == "DVS")
+            Ttime2 = ReadCSVfiles('Time2', Nfile);
+            Dtracker = ReadCSVfiles('Cluster_points', Nfile);
+        else
+            Dtracker = Data;
+            Dtracker(:,3) = Dtracker(:,2);
+        end
     end
 elseif(Mode2 == "PID")
     Data = ReadCSVfiles('PID_points0', Nfile);
@@ -62,8 +69,13 @@ elseif(Mode2 == "PID")
         SubMode = 2;
     end
     if(Mode == "Cam")
-        Dtracker = Data;
-        Dtracker(:,3) = Dtracker(:,2);
+        if(Mode5 == "DVS")
+            Ttime2 = ReadCSVfiles('Time2', Nfile);
+            Dtracker = ReadCSVfiles('Cluster_points', Nfile);
+        else
+            Dtracker = Data;
+            Dtracker(:,3) = Dtracker(:,2);
+        end
     end
 else
     if(Mode3 == "ePID")
@@ -135,15 +147,19 @@ if(Mode4 == "sensor")
     if(Mode == "DVS")
         stairs(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),-151/150*Dtracker(:,1)+64,'-og');
     else
-        stairs(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),Dtracker(:,1),'-og');
+        if(Mode5 == "DVS")
+            stairs(Dtracker(:,4)-Ttime2(:,1)*ones(length(Dtracker),1),-151/150*Dtracker(:,1)+64,'-og');
+        else
+            stairs(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),Dtracker(:,1),'-og');
+        end
     end
     xlim([0 axi]);
-    if(Mode == "DVS")
+    if(Mode5 == "DVS")
         ProperYaxisMulti(Data(:,2), -151/150*Dtracker(:,1)+64);
     else
         ProperYaxisMulti(Data(:,2), Dtracker(:,1));
     end
-    legend({'Y','Ysp'},'Location','northeast');
+    legend({'Ysp','Y'},'Location','northeast');
     title('Sensor ball');
     xlabel('time [us]');
     ylabel('position [mm]');
@@ -297,8 +313,13 @@ if(Mode2 ~= "NONE")
         error = Dtracker(:,3)-(-151/150*Dtracker(:,1)+64);
         IAE = trapz(Dtracker(:,4)-Ttime(:,1)*ones(length(Dtracker),1),abs(error));
     else
-        error = Data(:,2)-Data(:,1);
-        IAE = trapz(Data(:,4)-Ttime(:,1)*ones(length(Data),1),abs(error));
+        if(Mode5 == "DVS")
+            error = Dtracker(:,3)-(-151/150*Dtracker(:,1)+64);
+            IAE = trapz(Dtracker(:,4)-Ttime2(:,1)*ones(length(Dtracker),1),abs(error));
+        else
+            error = Data(:,2)-Data(:,1);
+            IAE = trapz(Data(:,4)-Ttime(:,1)*ones(length(Data),1),abs(error));
+        end
     end
     fprintf('IAE ball %e\n',IAE);
     IAU = trapz(Data(:,4)-Ttime(:,1)*ones(length(Data),1),abs(Data(:,3)));
